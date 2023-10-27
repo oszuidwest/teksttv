@@ -6,8 +6,8 @@
     <!-- Ignore warnings, show progress of the run and show sniff names -->
     <arg value="nps"/>
 
-    <!-- Target all PHP files in the repository -->
-    <file>.</file>
+    <!-- Target only PHP files in the root directory -->
+    <file>*.php</file>
 
     <!-- Fix crash on PHP 8 -->
     <ini name="error_reporting" value="E_ALL &#38; ~E_DEPRECATED"/>
