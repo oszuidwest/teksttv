@@ -6,8 +6,11 @@
     <!-- Ignore warnings, show progress of the run and show sniff names -->
     <arg value="nps"/>
 
-    <!-- Target only PHP files in the root directory -->
-    <file>*.php</file>
+    <!-- Target all files and directories in the root -->
+    <file>.</file>
+
+    <!-- Exclude all directories in the root from being checked -->
+    <exclude-pattern>*/</exclude-pattern>
 
     <!-- Fix crash on PHP 8 -->
     <ini name="error_reporting" value="E_ALL &#38; ~E_DEPRECATED"/>
