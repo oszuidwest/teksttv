@@ -28,7 +28,7 @@ $aContent = json_decode($sContent);
             <td><?= $aItem->title ?></td>
             <td><a href="index.php?slide=<?= $iCounter ?>">Tonen</a></td>
         </tr>
-        <?
+        <?php
         $iCounter++;
     }
 ?>
