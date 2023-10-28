@@ -5,7 +5,7 @@ ini_set('display_errors', 'true');
 
 //echo '<pre>';
 
-$sContent = file_get_contents('http://teksttv.zuidwesttv.nl/content.php');
+$sContent = file_get_contents('https://teksttv.zuidwesttv.nl/content.php');
 $aContent = json_decode($sContent);
 
 //print_r($sContent);
