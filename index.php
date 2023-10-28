@@ -1,4 +1,4 @@
-<?
+<?php
 
 $oTomorrow  = new DateTime(date('Y-m-d 02:55:00', strtotime('tomorrow')));
 $oToday     = new DateTime();
