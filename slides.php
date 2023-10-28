@@ -18,7 +18,7 @@ $aContent = json_decode($sContent);
         <th>Titel</th>
         <th>&nbsp;</th>
     </tr>
-    <?
+    <?php
     $iCounter = 0;
     foreach($aContent as $aItem) {
         ?>
