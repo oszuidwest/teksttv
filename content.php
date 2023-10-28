@@ -1,4 +1,4 @@
-<?
+<?php
 
 $sBaseUrl = "https://www.zuidwestupdate.nl";
 
@@ -142,48 +142,6 @@ foreach ($oNews as $oItem) {
 			'content' => (string)$oItem->kabelkrant_text);
 	}
 }
-
-# Agenda ophalen
-/*
-$sAgenda = file_get_contents('http://www.zuidwesttv.nl/feeds/agenda');
-$oAgenda = simplexml_load_string($sAgenda);
-
-foreach ($oAgenda->xpath('//item') as $oItem) {
-	$oStartDate = new DateTime((string)$oItem -> startdate);
-	$oEndDate = new DateTime((string)$oItem -> enddate);
-
-	if (($oToday -> diff($oStartDate) -> days) <= 7 && $oToday -> diff($oEndDate) -> days >= 0) {
-		# Event duurt 1 dag
-		if ($oStartDate -> diff($oEndDate) -> days == 0) {
-			$sDate = strftime('%e %B', $oStartDate -> getTimestamp());
-		} else {
-			# Event start en eindigt in dezelfde maand
-			if ($oStartDate -> diff($oEndDate) -> format('%m') == 0) {
-				$sDate = strftime('%e', $oStartDate -> getTimestamp()) . ' - ' . strftime('%e %B', $oEndDate -> getTimestamp());
-			} else {
-				# Event start en eindigt in twee verschillende maanden
-				$sDate = strftime('%e %B', $oStartDate -> getTimestamp()) . ' - ' . strftime('%e %B', $oEndDate -> getTimestamp());
-			}
-		}
-		
-		# Als er een foto geupload is
-		if((string)$oItem->photo!='') {
-			$sPhoto = (string)$oItem->photourl.(string)$oItem->photo;
-		} else {
-			$sPhoto = 'https://teksttv.zuidwesttv.nl/images/teksttv/Agenda - logo - kabelkrant2.jpg';
-		}
-
-		$aData[] = array(
-			'type' => 'agenda', 
-			'title' => (string)$oItem -> title, 
-			'datum' => $sDate, 
-			'photo' => $sPhoto,
-			'video' => '',
-			'location' => (string)$oItem -> location, 
-			'content' => (string)$oItem -> description);
-	}
-}
-*/
 
 # Reclame ophalen
 
