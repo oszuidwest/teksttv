@@ -4,9 +4,9 @@ $oTomorrow  = new DateTime(date('Y-m-d 02:55:00', strtotime('tomorrow')));
 $oToday     = new DateTime();
 $oInterval  = $oTomorrow->diff($oToday);
 
-$iSec       = $oInterval->format('%s');
-$iMin       = $oInterval->format('%i');
-$iHour      = $oInterval->format('%h');
+$iSec       = (int) $oInterval->format('%s');
+$iMin       = (int) $oInterval->format('%i');
+$iHour      = (int) $oInterval->format('%h');
 
 $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
 
