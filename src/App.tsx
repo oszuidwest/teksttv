@@ -48,12 +48,12 @@ const Slide = ({ content }: { content: Slide }) => (
 
 const slides: Slide[] = [
   {
-    title: 'Nieuw seizoen Warme Trapkes gestart',
+    title: 'TV Krant overgenomen door Hamsters!',
     body: `
-      <p>De bezoekers vertelden de Warme Trapkes vooral in de winter zeer op prijs te stellen. "Bij slecht weer kom je anders niet buiten. Het is leuk om elkaar eens per maand te ontmoeten, gezellig samen te eten en bij te praten; hier worden onderling afspraken gemaakt om eens ergens naartoe te gaan of samen iets te ondernemen". Na het eten werd door enkele groepjes gekaart of een ander spelletje gedaan.</p>
+      <p>In een verrassende wending hebben hamsters de redactie van de TV Krant overgenomen. Onder leiding van "Redacteur Whiskers" wordt nieuws zorgvuldig geknabbeld tot de kern. De hamsters brengen frisse content met de focus op onderwerpen dicht bij de grond. Naast hun strakke redactieschema nemen ze ook tijd voor hun favoriete bezigheden, zoals knagen aan pennen, rennen in hun loopwiel en dutjes doen.</p>
       <p>(2/3)</p>
     `,
-    image: 'https://i.imgur.com/YQ3Wyga.png',
+    image: 'https://i.imgur.com/8cDsFVg.png',
   },
   // Add more slides here...
 ]
