@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-const Slide = ({ content, currentTime, pageNumber, totalPages }) => (
+interface Slide {
+  title: string
+  body: string
+}
+
+const Slide = ({ content }: { content: Slide }) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]" />
     <svg
@@ -38,7 +43,7 @@ const Slide = ({ content, currentTime, pageNumber, totalPages }) => (
   </div>
 )
 
-const slides = [
+const slides: Slide[] = [
   {
     title: 'Nieuw seizoen Warme Trapkes gestart',
     body: `
@@ -51,7 +56,6 @@ const slides = [
 
 function App() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [currentTime, setCurrentTime] = useState('')
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -61,25 +65,9 @@ function App() {
     return () => clearInterval(timer)
   }, [])
 
-  useEffect(() => {
-    const timeUpdater = setInterval(() => {
-      const now = new Date()
-      setCurrentTime(
-        now.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' }),
-      )
-    }, 1000)
-
-    return () => clearInterval(timeUpdater)
-  }, [])
-
   return (
     <div className="h-[1080px] w-[1920px]">
-      <Slide
-        content={slides[currentSlide]}
-        currentTime={currentTime}
-        pageNumber={currentSlide + 1}
-        totalPages={slides.length}
-      />
+      <Slide content={slides[currentSlide]} />
     </div>
   )
 }
