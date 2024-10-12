@@ -3,11 +3,14 @@ import { useEffect, useState } from 'react'
 interface Slide {
   title: string
   body: string
+  image: string
 }
 
 const Slide = ({ content }: { content: Slide }) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
-    <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]" />
+    <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
+      <img src={content.image} alt="" className="inset-0 h-full object-cover" />
+    </div>
     <svg
       className="absolute inset-0 z-5 h-full w-full"
       preserveAspectRatio="none"
@@ -50,6 +53,8 @@ const slides: Slide[] = [
       <p>De bezoekers vertelden de Warme Trapkes vooral in de winter zeer op prijs te stellen. "Bij slecht weer kom je anders niet buiten. Het is leuk om elkaar eens per maand te ontmoeten, gezellig samen te eten en bij te praten; hier worden onderling afspraken gemaakt om eens ergens naartoe te gaan of samen iets te ondernemen". Na het eten werd door enkele groepjes gekaart of een ander spelletje gedaan.</p>
       <p>(2/3)</p>
     `,
+    image:
+      'https://preview.zuidwestupdate.nl/wp-content/uploads/2024/10/sidebar-halderberge.png',
   },
   // Add more slides here...
 ]
