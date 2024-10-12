@@ -53,8 +53,7 @@ const slides: Slide[] = [
       <p>De bezoekers vertelden de Warme Trapkes vooral in de winter zeer op prijs te stellen. "Bij slecht weer kom je anders niet buiten. Het is leuk om elkaar eens per maand te ontmoeten, gezellig samen te eten en bij te praten; hier worden onderling afspraken gemaakt om eens ergens naartoe te gaan of samen iets te ondernemen". Na het eten werd door enkele groepjes gekaart of een ander spelletje gedaan.</p>
       <p>(2/3)</p>
     `,
-    image:
-      'https://preview.zuidwestupdate.nl/wp-content/uploads/2024/10/sidebar-halderberge.png',
+    image: 'https://i.imgur.com/YQ3Wyga.png',
   },
   // Add more slides here...
 ]
