@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@theme {
+  --font-family-tahoma: Tahoma, sans-serif;
+}
+
+.sidebar {
+  clip-path: polygon(0 0, 100% 0%, 78% 100%, 0% 100%);
+}
+.prose p + p {
+  margin-top: 1em;
+}
