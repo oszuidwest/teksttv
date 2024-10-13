@@ -56,9 +56,24 @@ const TextSlide = ({ content }: { content: Slide }) => (
 
 const ImageSlide = ({ content }: { content: Slide }) => (
   <div className="relative h-full w-full">
-    <img src={content.url} alt="" className="h-full w-full object-cover" />
+    <img src={content.url} alt="" className="z-40 h-full w-full object-cover" />
   </div>
 )
+
+const Clock = () => {
+  const [time, setTime] = useState(new Date())
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const formatTime = (date: Date) => {
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+  }
+
+  return <span>{formatTime(time)}</span>
+}
 
 const Ticker = ({ items }: { items: TickerItem[] }) => {
   const [currentItem, setCurrentItem] = useState(0)
@@ -84,11 +99,20 @@ const Ticker = ({ items }: { items: TickerItem[] }) => {
   if (items.length === 0) return null
 
   return (
-    <div className="absolute right-0 bottom-[68px] left-0 flex bg-[#4C4C4C] text-[54px] text-white leading-[72px]">
-      <span className="w-[480px] bg-[#04C104] px-[18px] text-right font-bold text-white uppercase">
-        Ticker
+    <div className="absolute right-0 bottom-[91px] left-0 z-30 flex items-center bg-black font-bold font-tahoma text-[#F7BF19] text-[51px] tracking-wide">
+      <span className="grow pl-[121px]">{items[currentItem].message}</span>
+      <div className="relative w-[10px] self-stretch">
+        <svg
+          className="h-full w-full fill-white"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          <polygon points="0,100 100,0 100,100" />
+        </svg>
+      </div>
+      <span className="bg-white pr-[110px] pl-[30px] text-[56px] text-black">
+        <Clock />
       </span>
-      <span className="px-[18px]">{items[currentItem].message}</span>
     </div>
   )
 }
