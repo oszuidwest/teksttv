@@ -79,7 +79,15 @@ function App() {
     if (slides.length === 0) return
 
     const timer = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
+      // @ts-ignore
+      if (document.startViewTransition) {
+        // @ts-ignore
+        document.startViewTransition(() => {
+          setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
+        })
+      } else {
+        setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
+      }
     }, slides[currentSlide].duration)
 
     return () => clearInterval(timer)
@@ -94,7 +102,10 @@ function App() {
 
   return (
     <div className="h-[1080px] w-[1920px]">
-      <CurrentSlideComponent content={slides[currentSlide]} />
+      <CurrentSlideComponent
+        key={currentSlide}
+        content={slides[currentSlide]}
+      />
     </div>
   )
 }
