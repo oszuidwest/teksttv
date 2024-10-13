@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 
 interface Slide {
+  type: 'image' | 'text'
+  duration: number
   title: string
   body: string
   image: string
+  url: string
 }
 
-const Slide = ({ content }: { content: Slide }) => (
+const TextSlide = ({ content }: { content: Slide }) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
       <img src={content.image} alt="" className="inset-0 h-full object-cover" />
@@ -46,32 +49,52 @@ const Slide = ({ content }: { content: Slide }) => (
   </div>
 )
 
-const slides: Slide[] = [
-  {
-    title: 'TV Krant overgenomen door Hamsters!',
-    body: `
-      <p>In een verrassende wending hebben hamsters de redactie van de TV Krant overgenomen. Onder leiding van "Redacteur Whiskers" wordt nieuws zorgvuldig geknabbeld tot de kern. De hamsters brengen frisse content met de focus op onderwerpen dicht bij de grond. Naast hun strakke redactieschema nemen ze ook tijd voor hun favoriete bezigheden, zoals knagen aan pennen, rennen in hun loopwiel en dutjes doen.</p>
-      <p>(2/3)</p>
-    `,
-    image: 'https://i.imgur.com/8cDsFVg.png',
-  },
-  // Add more slides here...
-]
+const ImageSlide = ({ content }: { content: Slide }) => (
+  <div className="relative h-full w-full">
+    <img src={content.url} alt="" className="h-full w-full object-cover" />
+  </div>
+)
 
 function App() {
+  const [slides, setSlides] = useState<Slide[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const response = await fetch(
+          'https://preview.zuidwestupdate.nl/wp-json/narrowcasting/v1/slides',
+        )
+        const data = await response.json()
+        setSlides(data)
+      } catch (error) {
+        console.error('Error fetching slides:', error)
+      }
+    }
+
+    fetchSlides()
+  }, [])
+
+  useEffect(() => {
+    if (slides.length === 0) return
+
     const timer = setInterval(() => {
       setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
-    }, 10000) // Change slide every 10 seconds
+    }, slides[currentSlide].duration)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [slides, currentSlide])
+
+  if (slides.length === 0) {
+    return <div>Loading...</div>
+  }
+
+  const CurrentSlideComponent =
+    slides[currentSlide].type === 'image' ? ImageSlide : TextSlide
 
   return (
     <div className="h-[1080px] w-[1920px]">
-      <Slide content={slides[currentSlide]} />
+      <CurrentSlideComponent content={slides[currentSlide]} />
     </div>
   )
 }
