@@ -9,6 +9,11 @@ interface Slide {
   url: string
 }
 
+interface TickerItem {
+  message: string
+  duration: number
+}
+
 const TextSlide = ({ content }: { content: Slide }) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
@@ -55,9 +60,43 @@ const ImageSlide = ({ content }: { content: Slide }) => (
   </div>
 )
 
+const Ticker = ({ items }: { items: TickerItem[] }) => {
+  const [currentItem, setCurrentItem] = useState(0)
+
+  useEffect(() => {
+    if (items.length === 0) return
+
+    const timer = setInterval(() => {
+      // @ts-ignore
+      if (document.startViewTransition) {
+        // @ts-ignore
+        document.startViewTransition(() => {
+          setCurrentItem((prevItem) => (prevItem + 1) % items.length)
+        })
+      } else {
+        setCurrentItem((prevItem) => (prevItem + 1) % items.length)
+      }
+    }, items[currentItem].duration * 1000)
+
+    return () => clearInterval(timer)
+  }, [items, currentItem])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="absolute right-0 bottom-[68px] left-0 flex bg-[#4C4C4C] text-[54px] text-white leading-[72px]">
+      <span className="w-[480px] bg-[#04C104] px-[18px] text-right font-bold text-white uppercase">
+        Ticker
+      </span>
+      <span className="px-[18px]">{items[currentItem].message}</span>
+    </div>
+  )
+}
+
 function App() {
   const [slides, setSlides] = useState<Slide[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [tickerItems, setTickerItems] = useState<TickerItem[]>([])
 
   useEffect(() => {
     const fetchSlides = async () => {
@@ -72,7 +111,20 @@ function App() {
       }
     }
 
+    const fetchTickerItems = async () => {
+      try {
+        const response = await fetch(
+          'https://preview.zuidwestupdate.nl/wp-json/narrowcasting/v1/ticker',
+        )
+        const data = await response.json()
+        setTickerItems(data)
+      } catch (error) {
+        console.error('Error fetching ticker items:', error)
+      }
+    }
+
     fetchSlides()
+    fetchTickerItems()
   }, [])
 
   useEffect(() => {
@@ -101,11 +153,12 @@ function App() {
     slides[currentSlide].type === 'image' ? ImageSlide : TextSlide
 
   return (
-    <div className="h-[1080px] w-[1920px]">
+    <div className="relative h-[1080px] w-[1920px]">
       <CurrentSlideComponent
         key={currentSlide}
         content={slides[currentSlide]}
       />
+      <Ticker items={tickerItems} />
     </div>
   )
 }
