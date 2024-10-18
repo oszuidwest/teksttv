@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface Slide {
   type: 'image' | 'text'
@@ -110,37 +110,47 @@ const Ticker = ({
 
 function App() {
   const [slides, setSlides] = useState<Slide[]>([])
+  const [nextSlides, setNextSlides] = useState<Slide[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([])
+  const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
+  const [tickerIndex, setTickerIndex] = useState(0)
+
+  const fetchData = useCallback(async (isInitialLoad: boolean) => {
+    try {
+      const [slidesResponse, tickerResponse] = await Promise.all([
+        fetch('https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-slides'),
+        fetch('https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-ticker'),
+      ])
+      const newSlides = await slidesResponse.json()
+      const newTickerItems = await tickerResponse.json()
+
+      if (isInitialLoad) {
+        setSlides(newSlides)
+        setTickerItems(newTickerItems)
+      } else {
+        setNextSlides(newSlides)
+        setNextTickerItems(newTickerItems)
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }, [])
 
   useEffect(() => {
-    const fetchSlides = async () => {
-      try {
-        const response = await fetch(
-          'https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-slides',
-        )
-        const data = await response.json()
-        setSlides(data)
-      } catch (error) {
-        console.error('Error fetching slides:', error)
-      }
-    }
+    fetchData(true)
+  }, [fetchData])
 
-    const fetchTickerItems = async () => {
-      try {
-        const response = await fetch(
-          'https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-ticker',
-        )
-        const data = await response.json()
-        setTickerItems(data)
-      } catch (error) {
-        console.error('Error fetching ticker items:', error)
-      }
-    }
+  useEffect(() => {
+    const fetchInterval = setInterval(
+      () => {
+        fetchData(false)
+      },
+      slides.length > 0 ? 5 * 60 * 1000 : 60 * 1000,
+    )
 
-    fetchSlides()
-    fetchTickerItems()
-  }, [])
+    return () => clearInterval(fetchInterval)
+  }, [fetchData, slides.length])
 
   useEffect(() => {
     if (slides.length === 0) return
@@ -150,15 +160,41 @@ function App() {
       if (document.startViewTransition) {
         // @ts-ignore
         document.startViewTransition(() => {
-          setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
+          setCurrentSlide((prevSlide) => {
+            const nextSlide = (prevSlide + 1) % slides.length
+            if (nextSlide === 0 && nextSlides.length > 0) {
+              setSlides(nextSlides)
+              setNextSlides([])
+              return 0
+            }
+            return nextSlide
+          })
         })
       } else {
-        setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)
+        setCurrentSlide((prevSlide) => {
+          const nextSlide = (prevSlide + 1) % slides.length
+          if (nextSlide === 0 && nextSlides.length > 0) {
+            setSlides(nextSlides)
+            setNextSlides([])
+            return 0
+          }
+          return nextSlide
+        })
       }
+
+      setTickerIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % tickerItems.length
+        if (nextIndex === 0 && nextTickerItems.length > 0) {
+          setTickerItems(nextTickerItems)
+          setNextTickerItems([])
+          return 0
+        }
+        return nextIndex
+      })
     }, slides[currentSlide].duration)
 
     return () => clearInterval(timer)
-  }, [slides, currentSlide])
+  }, [slides, currentSlide, nextSlides, tickerItems, nextTickerItems])
 
   if (slides.length === 0) {
     return <div>Loading...</div>
@@ -173,10 +209,7 @@ function App() {
         key={currentSlide}
         content={slides[currentSlide]}
       />
-      <Ticker
-        items={tickerItems}
-        currentIndex={currentSlide % tickerItems.length}
-      />
+      <Ticker items={tickerItems} currentIndex={tickerIndex} />
     </div>
   )
 }
