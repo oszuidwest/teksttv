@@ -55,7 +55,7 @@ const TextSlide = ({ content }: { content: Slide }) => (
 )
 
 const ImageSlide = ({ content }: { content: Slide }) => (
-  <div className="relative z-40 h-full w-full">
+  <div className="relative z-40 h-full w-full bg-black">
     <img src={content.url} alt="" className="h-full w-full object-cover" />
   </div>
 )
