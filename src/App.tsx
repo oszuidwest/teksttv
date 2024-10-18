@@ -40,13 +40,13 @@ const TextSlide = ({ content }: { content: Slide }) => (
 
     <div className="absolute absolute inset-0 flex flex-col">
       <div className="z-20 mt-[92px] w-full bg-[#626671] px-[116px] py-[14px]">
-        <h1 className="font-bold text-[51px] text-white uppercase tracking-wide drop-shadow-[3px_3px_1px_black]">
+        <h1 className="font-bold text-[51px] text-shadow text-white uppercase tracking-wide">
           {content.title}
         </h1>
       </div>
       <div className="mt-[12px] mb-[92px] grow overflow-hidden bg-[#70747D] px-[116px] pl-[602px]">
         <div
-          className="prose py-[14px] font-bold text-[49px] text-white leading-[1.23em] drop-shadow-[3px_3px_1px_black]"
+          className="prose py-[14px] font-bold text-[49px] text-shadow text-white leading-[1.23em]"
           dangerouslySetInnerHTML={{ __html: content.body }}
         />
       </div>

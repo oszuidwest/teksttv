@@ -10,3 +10,7 @@
 .prose p + p {
   margin-top: 1em;
 }
+
+.text-shadow {
+  text-shadow: 3px 3px 1px black;
+}
