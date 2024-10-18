@@ -11,7 +11,6 @@ interface Slide {
 
 interface TickerItem {
   message: string
-  duration: number
 }
 
 const TextSlide = ({ content }: { content: Slide }) => (
@@ -84,32 +83,15 @@ const Clock = () => {
   return <span>{formatTime(time)}</span>
 }
 
-const Ticker = ({ items }: { items: TickerItem[] }) => {
-  const [currentItem, setCurrentItem] = useState(0)
-
-  useEffect(() => {
-    if (items.length === 0) return
-
-    const timer = setInterval(() => {
-      // @ts-ignore
-      if (document.startViewTransition) {
-        // @ts-ignore
-        document.startViewTransition(() => {
-          setCurrentItem((prevItem) => (prevItem + 1) % items.length)
-        })
-      } else {
-        setCurrentItem((prevItem) => (prevItem + 1) % items.length)
-      }
-    }, items[currentItem].duration * 1000)
-
-    return () => clearInterval(timer)
-  }, [items, currentItem])
-
+const Ticker = ({
+  items,
+  currentIndex,
+}: { items: TickerItem[]; currentIndex: number }) => {
   if (items.length === 0) return null
 
   return (
     <div className="absolute right-0 bottom-[91px] left-0 z-30 flex items-center bg-black font-bold font-tahoma text-[#F7BF19] text-[51px] tracking-wide">
-      <span className="grow pl-[121px]">{items[currentItem].message}</span>
+      <span className="grow pl-[121px]">{items[currentIndex].message}</span>
       <div className="relative w-[10px] self-stretch">
         <svg
           className="h-full w-full fill-white"
@@ -191,7 +173,10 @@ function App() {
         key={currentSlide}
         content={slides[currentSlide]}
       />
-      <Ticker items={tickerItems} />
+      <Ticker
+        items={tickerItems}
+        currentIndex={currentSlide % tickerItems.length}
+      />
     </div>
   )
 }
