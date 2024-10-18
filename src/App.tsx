@@ -126,7 +126,7 @@ function App() {
     const fetchSlides = async () => {
       try {
         const response = await fetch(
-          'https://preview.zuidwestupdate.nl/wp-json/narrowcasting/v1/slides',
+          'https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-slides',
         )
         const data = await response.json()
         setSlides(data)
@@ -138,7 +138,7 @@ function App() {
     const fetchTickerItems = async () => {
       try {
         const response = await fetch(
-          'https://preview.zuidwestupdate.nl/wp-json/narrowcasting/v1/ticker',
+          'https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-ticker',
         )
         const data = await response.json()
         setTickerItems(data)
