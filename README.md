@@ -43,6 +43,10 @@ Onderaan het scherm is een **ticker** die berichten en een klok toont. Berichten
 
 De app haalt bij het opstarten en elke 5 minuten nieuwe content op. Huidige slides blijven afspelen terwijl nieuwe worden geladen.
 
+Als de internetverbinding wegvalt, zal de app blijven werken met de reeds opgehaalde slides en ticker-items. Als er geen internetverbinding is, probeert de app elke 60 seconden opnieuw data op te halen, totdat dit succesvol is. Op deze manier kan de app blijven draaien en inhoud tonen, zelfs als de internetverbinding tijdelijk wegvalt.
+
+Daarnaast zorgt een meta-refresh ervoor dat de pagina elke dag rond 3 uur in de nacht volledig opnieuw wordt geladen. Dit gebeurt door een script dat de tijd berekent tot 3 uur 's nachts de volgende dag. Deze dagelijkse herstart voorkomt cacheproblemen. Gedurende de rest van de dag wordt de inhoud via JavaScript-updates ververst, zonder dat de pagina opnieuw hoeft te laden.
+
 ## Slide schema
 
 Een voorbeeld van een slide-schema:
