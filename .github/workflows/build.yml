@@ -1,1 +1,25 @@
+name: Build
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20' # Use your desired Node.js version
+
+      # Install dependencies and build project using npm
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
