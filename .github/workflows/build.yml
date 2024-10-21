@@ -1,4 +1,4 @@
-name: Build
+name: Manual build
 
 on:
   workflow_dispatch:
@@ -8,18 +8,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Node.js environment
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '20' # Use your desired Node.js version
 
-      # Install dependencies and build project using npm
       - name: Install and Build
         run: |
           npm install
           npm run build
+
+      # DEBUG - List contents of the dist directory
+      - name: List build directory contents
+        run: ls -la ./build/
