@@ -169,8 +169,19 @@ function App() {
             }
             return nextSlide
           })
+
+          setTickerIndex((prevIndex) => {
+            const nextIndex = (prevIndex + 1) % tickerItems.length
+            if (nextIndex === 0 && nextTickerItems.length > 0) {
+              setTickerItems(nextTickerItems)
+              setNextTickerItems([])
+              return 0
+            }
+            return nextIndex
+          })
         })
       } else {
+        // Fallback for browsers that don't support startViewTransition
         setCurrentSlide((prevSlide) => {
           const nextSlide = (prevSlide + 1) % slides.length
           if (nextSlide === 0 && nextSlides.length > 0) {
@@ -180,17 +191,17 @@ function App() {
           }
           return nextSlide
         })
-      }
 
-      setTickerIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % tickerItems.length
-        if (nextIndex === 0 && nextTickerItems.length > 0) {
-          setTickerItems(nextTickerItems)
-          setNextTickerItems([])
-          return 0
-        }
-        return nextIndex
-      })
+        setTickerIndex((prevIndex) => {
+          const nextIndex = (prevIndex + 1) % tickerItems.length
+          if (nextIndex === 0 && nextTickerItems.length > 0) {
+            setTickerItems(nextTickerItems)
+            setNextTickerItems([])
+            return 0
+          }
+          return nextIndex
+        })
+      }
     }, slides[currentSlide].duration)
 
     return () => clearInterval(timer)
