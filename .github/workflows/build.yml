@@ -1,4 +1,4 @@
-name: Manual build
+name: Manual build and release
 
 on:
   workflow_dispatch:
@@ -6,7 +6,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+      is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
+      zip_name: ${{ steps.zip_project.outputs.zip_name }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -14,13 +17,83 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use your desired Node.js version
+          node-version: '20'
 
-      - name: Install and Build
+      - name: Install dependencies and Build
         run: |
           npm install
           npm run build
 
-      # DEBUG - List contents of the dist directory
-      - name: List build directory contents
-        run: ls -la ./build/
+      - name: Read version and project name from package.json
+        id: read_version
+        run: |
+          VERSION=$(jq -r '.version' < package.json)
+          PROJECT_NAME=$(jq -r '.name' < package.json)
+          echo "Version is $VERSION"
+          echo "Project name is $PROJECT_NAME"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+
+      - name: Check if version is a pre-release
+        id: check_prerelease
+        run: |
+          if [[ "${{ steps.read_version.outputs.version }}" == *"beta"* || "${{ steps.read_version.outputs.version }}" == *"alpha"* || "${{ steps.read_version.outputs.version }}" == *"rc"* ]]; then
+            echo "This is a pre-release"
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "This is not a pre-release"
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Zip the contents of the dist directory with project name and version
+        id: zip_project
+        run: |
+          ZIP_NAME="${{ steps.read_version.outputs.project_name }}-${{ steps.read_version.outputs.version }}.zip"
+          cd dist
+          zip -r "../$ZIP_NAME" .
+          cd ..
+          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Upload the zip file as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-zip
+          path: ${{ steps.zip_project.outputs.zip_name }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download dist.zip artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-zip
+          path: ./
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt install -y gh
+
+      - name: Create Git tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag "${{ needs.build.outputs.version }}"
+          git push origin "${{ needs.build.outputs.version }}"
+
+      - name: Create GitHub Release and upload compressed file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Uploading ${{ needs.build.outputs.zip_name }} to GitHub release..."
+          PRERELEASE_FLAG=""
+          if [ "${{ needs.build.outputs.is_prerelease }}" == "true" ]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          gh release create "${{ needs.build.outputs.version }}" "${{ needs.build.outputs.zip_name }}" \
+            --title "${{ needs.build.outputs.version }}" \
+            --notes "Automated release for version ${{ needs.build.outputs.version }}" \
+            $PRERELEASE_FLAG
