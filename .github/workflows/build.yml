@@ -10,9 +10,12 @@ jobs:
       version: ${{ steps.read_version.outputs.version }}
       is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
       zip_name: ${{ steps.zip_project.outputs.zip_name }}
+      release_needed: ${{ steps.compare_versions.outputs.release_needed }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -37,12 +40,40 @@ jobs:
       - name: Check if version is a pre-release
         id: check_prerelease
         run: |
-          if [[ "${{ steps.read_version.outputs.version }}" == *"beta"* || "${{ steps.read_version.outputs.version }}" == *"alpha"* || "${{ steps.read_version.outputs.version }}" == *"rc"* ]]; then
+          VERSION="${{ steps.read_version.outputs.version }}"
+          if [[ "$VERSION" == *"beta"* || "$VERSION" == *"alpha"* || "$VERSION" == *"rc"* ]]; then
             echo "This is a pre-release"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
             echo "This is not a pre-release"
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fetch latest tag
+        id: fetch_latest_tag
+        run: |
+          if git rev-list --tags --max-count=1 >/dev/null 2>&1; then
+            LATEST_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
+          else
+            LATEST_TAG="none"
+          fi
+          echo "Latest tag: $LATEST_TAG"
+          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
+
+      - name: Compare versions and decide if a new tag is needed
+        id: compare_versions
+        run: |
+          VERSION="${{ steps.read_version.outputs.version }}"
+          LATEST_TAG="$LATEST_TAG"  # Retrieved from GITHUB_ENV
+          if [ "$LATEST_TAG" = "none" ]; then
+            echo "No previous tag found. Proceeding with new tag and release."
+            echo "release_needed=true" >> $GITHUB_OUTPUT
+          elif [ "$(printf '%s\n' "$VERSION" "$LATEST_TAG" | sort -V | head -n1)" != "$VERSION" ]; then
+            echo "New version detected. Proceeding with new tag and release."
+            echo "release_needed=true" >> $GITHUB_OUTPUT
+          else
+            echo "No new version. Skipping release."
+            echo "release_needed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Zip the contents of the dist directory with project name and version
@@ -63,9 +94,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: build
+    if: needs.build.outputs.release_needed == 'true'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download dist.zip artifact
         uses: actions/download-artifact@v4
@@ -73,11 +107,7 @@ jobs:
           name: dist-zip
           path: ./
 
-      - name: Install GitHub CLI
-        run: |
-          sudo apt install -y gh
-
-      - name: Create Git tag
+      - name: Create new Git tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
