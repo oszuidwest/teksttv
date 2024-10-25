@@ -89,9 +89,17 @@ function App() {
               setNextSlides([])
               setImagesToPreload((prevUrls) => {
                 // Remove images that are no longer in the new slides
-                const newImageUrls = nextSlides.flatMap((slide) =>
-                  [slide.image, slide.url].filter(Boolean),
-                )
+                const newImageUrls = nextSlides
+                  .flatMap((slide) => {
+                    if (slide.type === 'text') {
+                      return slide.image
+                    }
+                    if (slide.type === 'image') {
+                      return slide.url
+                    }
+                    return []
+                  })
+                  .filter(Boolean)
                 return prevUrls.filter((url) => newImageUrls.includes(url))
               })
               return 0
@@ -118,9 +126,17 @@ function App() {
             setNextSlides([])
             setImagesToPreload((prevUrls) => {
               // Remove images that are no longer in the new slides
-              const newImageUrls = nextSlides.flatMap((slide) =>
-                [slide.image, slide.url].filter(Boolean),
-              )
+              const newImageUrls = nextSlides
+                .flatMap((slide) => {
+                  if (slide.type === 'text') {
+                    return slide.image
+                  }
+                  if (slide.type === 'image') {
+                    return slide.url
+                  }
+                  return []
+                })
+                .filter(Boolean)
               return prevUrls.filter((url) => newImageUrls.includes(url))
             })
             return 0
