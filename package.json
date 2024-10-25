@@ -15,7 +15,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0",
-    "tailwindcss": "^4.0.0-alpha.30"
+    "tailwindcss": "^4.0.0-alpha.30",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
