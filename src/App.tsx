@@ -126,8 +126,8 @@ function App() {
   const fetchData = useCallback(async (isInitialLoad: boolean) => {
     try {
       const [slidesResponse, tickerResponse] = await Promise.all([
-        fetch('https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-slides'),
-        fetch('https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv-ticker'),
+        fetch('https://cms.tv-krant.nl/wp-json/zw/v1/teksttv-slides'),
+        fetch('https://cms.tv-krant.nl/wp-json/zw/v1/teksttv-ticker'),
       ])
       const newSlides = await slidesResponse.json()
       const newTickerItems = await tickerResponse.json()
