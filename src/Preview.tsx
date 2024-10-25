@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { ImageSlideComponent } from './components/ImageSlideComponent'
@@ -8,6 +9,31 @@ import { SlideDataSchema } from './types'
 export default function Preview() {
   const [searchParams] = useSearchParams()
   const encodedData = searchParams.get('data')
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function resizeViewport() {
+      if (containerRef.current) {
+        const parentWidth = window.innerWidth
+        const scaleFactor = Math.min(parentWidth / 1920, 1) // Limit scale to 1
+        containerRef.current.style.transform = `scale(${scaleFactor})`
+        containerRef.current.style.transformOrigin = 'top left'
+        containerRef.current.style.width = '1920px'
+        containerRef.current.style.height = '1080px'
+
+        // Inform the parent window of the new height
+        const newHeight = 1080 * scaleFactor
+        window.parent.postMessage({ type: 'resize', height: newHeight }, '*')
+      }
+    }
+
+    resizeViewport()
+    window.addEventListener('resize', resizeViewport)
+
+    return () => {
+      window.removeEventListener('resize', resizeViewport)
+    }
+  }, [])
 
   if (!encodedData) {
     return <div>Error: No data provided</div>
@@ -19,7 +45,7 @@ export default function Preview() {
     const validatedData = SlideDataSchema.parse(parsedData)
 
     return (
-      <div className="relative h-[1080px] w-[1920px]">
+      <div ref={containerRef} className="relative w-[1920px] h-[1080px]">
         {validatedData.type === 'image' ? (
           <ImageSlideComponent content={validatedData} />
         ) : (
