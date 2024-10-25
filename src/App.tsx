@@ -1,19 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
+import { SlideData, ImageSlideData, TextSlideData, TickerItem } from './types'
 
-interface Slide {
-  type: 'image' | 'text'
-  duration: number
-  title: string
-  body: string
-  image: string
-  url: string
-}
-
-interface TickerItem {
-  message: string
-}
-
-const TextSlide = ({ content }: { content: Slide }) => (
+const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
       <img src={content.image} alt="" className="inset-0 h-full object-cover" />
@@ -68,7 +56,7 @@ const TextSlide = ({ content }: { content: Slide }) => (
   </div>
 )
 
-const ImageSlide = ({ content }: { content: Slide }) => (
+const ImageSlideComponent = ({ content }: { content: ImageSlideData }) => (
   <div className="relative z-40 h-full w-full bg-black">
     <img src={content.url} alt="" className="h-full w-full object-cover" />
   </div>
@@ -115,8 +103,8 @@ const Ticker = ({
 }
 
 function App() {
-  const [slides, setSlides] = useState<Slide[]>([])
-  const [nextSlides, setNextSlides] = useState<Slide[]>([])
+  const [slides, setSlides] = useState<SlideData[]>([])
+  const [nextSlides, setNextSlides] = useState<SlideData[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([])
   const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
@@ -135,12 +123,14 @@ function App() {
       const imageUrls = [
         ...new Set(
           newSlides
-            .flatMap(
-              (slide: {
-                image: string | undefined
-                url: string | undefined | undefined
-              }) => [slide.image, slide.url],
-            )
+            .flatMap((slide: SlideData) => {
+              if (slide.type === 'text') {
+                return slide.image;
+              } else if (slide.type === 'image') {
+                return slide.url;
+              }
+              return undefined;
+            })
             .filter(Boolean),
         ),
       ] as string[]
@@ -249,18 +239,22 @@ function App() {
     return <div>Loading...</div>
   }
 
-  const CurrentSlideComponent =
-    slides[currentSlide].type === 'image' ? ImageSlide : TextSlide
-
   return (
     <div className="relative h-[1080px] w-[1920px]">
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      <CurrentSlideComponent
-        key={currentSlide}
-        content={slides[currentSlide]}
-      />
+      {slides[currentSlide].type === 'image' ? (
+        <ImageSlideComponent
+          key={currentSlide}
+          content={slides[currentSlide] as ImageSlideData}
+        />
+      ) : (
+        <TextSlideComponent
+          key={currentSlide}
+          content={slides[currentSlide] as TextSlideData}
+        />
+      )}
       <Ticker items={tickerItems} currentIndex={tickerIndex} />
     </div>
   )
