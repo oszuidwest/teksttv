@@ -25,7 +25,10 @@ export default function Preview() {
         ) : (
           <TextSlideComponent content={validatedData} />
         )}
-        <Ticker items={[{ message: 'Dit is een preview slide' }]} currentIndex={0} />
+        <Ticker
+          items={[{ message: 'Dit is een preview slide' }]}
+          currentIndex={0}
+        />
       </div>
     )
   } catch (error) {
