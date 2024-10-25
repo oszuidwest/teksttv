@@ -189,6 +189,13 @@ function App() {
             if (nextSlide === 0 && nextSlides.length > 0) {
               setSlides(nextSlides)
               setNextSlides([])
+              setImagesToPreload((prevUrls) => {
+                // Remove images that are no longer in the new slides
+                const newImageUrls = nextSlides.flatMap((slide) =>
+                  [slide.image, slide.url].filter(Boolean),
+                )
+                return prevUrls.filter((url) => newImageUrls.includes(url))
+              })
               return 0
             }
             return nextSlide
@@ -211,6 +218,13 @@ function App() {
           if (nextSlide === 0 && nextSlides.length > 0) {
             setSlides(nextSlides)
             setNextSlides([])
+            setImagesToPreload((prevUrls) => {
+              // Remove images that are no longer in the new slides
+              const newImageUrls = nextSlides.flatMap((slide) =>
+                [slide.image, slide.url].filter(Boolean),
+              )
+              return prevUrls.filter((url) => newImageUrls.includes(url))
+            })
             return 0
           }
           return nextSlide
