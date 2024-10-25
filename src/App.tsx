@@ -121,6 +121,7 @@ function App() {
   const [tickerItems, setTickerItems] = useState<TickerItem[]>([])
   const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
   const [tickerIndex, setTickerIndex] = useState(0)
+  const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
 
   const fetchData = useCallback(async (isInitialLoad: boolean) => {
     try {
@@ -131,12 +132,29 @@ function App() {
       const newSlides = await slidesResponse.json()
       const newTickerItems = await tickerResponse.json()
 
+      const imageUrls = [
+        ...new Set(
+          newSlides
+            .flatMap(
+              (slide: {
+                image: string | undefined
+                url: string | undefined | undefined
+              }) => [slide.image, slide.url],
+            )
+            .filter(Boolean),
+        ),
+      ] as string[]
+
       if (isInitialLoad) {
         setSlides(newSlides)
         setTickerItems(newTickerItems)
+        setImagesToPreload(imageUrls)
       } else {
         setNextSlides(newSlides)
         setNextTickerItems(newTickerItems)
+        setImagesToPreload((prevUrls) => [
+          ...new Set([...prevUrls, ...imageUrls]),
+        ])
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -171,6 +189,13 @@ function App() {
             if (nextSlide === 0 && nextSlides.length > 0) {
               setSlides(nextSlides)
               setNextSlides([])
+              setImagesToPreload((prevUrls) => {
+                // Remove images that are no longer in the new slides
+                const newImageUrls = nextSlides.flatMap((slide) =>
+                  [slide.image, slide.url].filter(Boolean),
+                )
+                return prevUrls.filter((url) => newImageUrls.includes(url))
+              })
               return 0
             }
             return nextSlide
@@ -193,6 +218,13 @@ function App() {
           if (nextSlide === 0 && nextSlides.length > 0) {
             setSlides(nextSlides)
             setNextSlides([])
+            setImagesToPreload((prevUrls) => {
+              // Remove images that are no longer in the new slides
+              const newImageUrls = nextSlides.flatMap((slide) =>
+                [slide.image, slide.url].filter(Boolean),
+              )
+              return prevUrls.filter((url) => newImageUrls.includes(url))
+            })
             return 0
           }
           return nextSlide
@@ -222,6 +254,9 @@ function App() {
 
   return (
     <div className="relative h-[1080px] w-[1920px]">
+      {imagesToPreload.map((url) => (
+        <link key={url} rel="preload" as="image" href={url} />
+      ))}
       <CurrentSlideComponent
         key={currentSlide}
         content={slides[currentSlide]}
