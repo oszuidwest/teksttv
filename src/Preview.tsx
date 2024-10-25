@@ -19,7 +19,7 @@ export default function Preview() {
     const validatedData = SlideDataSchema.parse(parsedData)
 
     return (
-      <div className="relative h-screen w-screen">
+      <div className="relative h-[1080px] w-[1920px]">
         {validatedData.type === 'image' ? (
           <ImageSlideComponent content={validatedData} />
         ) : (
