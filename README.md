@@ -84,7 +84,7 @@ Voorbeeld ticker-schema:
 ```
 
 ## Previews maken
-Het is mogelijk om previews te tonen van slides. Previews draaien op de route `/preview?data={{base64data}}`. Je kunt een preview genereren door de schema van een van de slides als base64 encoded data aan te leveren.
+Het is mogelijk om previews te tonen van slides. Previews draaien op de route `/preview?data={{base64data}}`. Je kunt een preview genereren door de schema van een van de slides als base64 encoded data aan te leveren. De preview-weergave is responsive maar altijd 16x9.
 
 ## Licentie
 
