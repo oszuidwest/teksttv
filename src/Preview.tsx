@@ -6,6 +6,11 @@ import { TextSlideComponent } from './components/TextSlideComponent'
 import { Ticker } from './components/Ticker'
 import { SlideDataSchema } from './types'
 
+function base64ToBytes(base64: string) {
+  const binString = atob(base64)
+  return Uint8Array.from(binString, (m) => m.codePointAt(0) || 0)
+}
+
 export default function Preview() {
   const [searchParams] = useSearchParams()
   const encodedData = searchParams.get('data')
@@ -40,7 +45,8 @@ export default function Preview() {
   }
 
   try {
-    const decodedData = atob(encodedData)
+    const bytes = base64ToBytes(encodedData)
+    const decodedData = new TextDecoder().decode(bytes)
     const parsedData = JSON.parse(decodedData)
     const validatedData = SlideDataSchema.parse(parsedData)
 
