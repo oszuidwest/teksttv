@@ -38,7 +38,7 @@ Alle slides hebben een **duur** die bepaalt hoe lang ze worden weergegeven.
 
 ## Ticker
 
-Onderaan het scherm is een **ticker** die berichten en een klok toont. Berichten worden opgehaald via een API.
+Onderaan het scherm is een **ticker** die berichten en een klok toont. Berichten worden opgehaald via een API. De ticker wordt automatisch afgebroken om het kapot maken van de template met een te lange ticker te voorkomen.
 
 ## Automatisch vernieuwen
 
