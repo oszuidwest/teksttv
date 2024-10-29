@@ -9,7 +9,9 @@ export const Ticker = ({
 
   return (
     <div className="absolute right-0 bottom-[91px] left-0 z-30 flex items-center bg-black font-bold font-tahoma text-[#F7BF19] text-[51px] tracking-wide">
-      <span className="grow pl-[121px]">{items[currentIndex].message}</span>
+      <span className="min-w-0 grow truncate pl-[121px]">
+        {items[currentIndex].message}
+      </span>
       <div className="relative w-[10px] self-stretch">
         <svg
           className="h-full w-full fill-white"
