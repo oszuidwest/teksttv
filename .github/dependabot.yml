@@ -1,9 +1,12 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/" # Location of package manifests
+    directory: "/"
     schedule:
       interval: "monthly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
