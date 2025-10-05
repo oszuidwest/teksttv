@@ -301,6 +301,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
 
             <script>
                 var iSelectedSlide = <?= isset($_GET['slide']) && is_numeric($_GET['slide']) ? $_GET['slide'] : 'null'; ?>;
+                var sRegio = <?= isset($_GET['regio']) ? "'" . preg_replace('/[^0-9,]/', '', $_GET['regio']) . "'" : 'null'; ?>;
                 var aContentData = new Array();
                 var iContentCounter = 0;
                 var iContentTimeout = null;
@@ -325,9 +326,14 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                 function getContentData() {
                     writeDebug('getContentData');
                     clearTimeout(iContentTimeout);
-                    
+
+                    var sUrl = "content.php";
+                    if(sRegio !== null) {
+                        sUrl += "?regio=" + sRegio;
+                    }
+
                     $.ajax({
-                      url: "content.php",
+                      url: sUrl,
                       cache: false,
                       timeout: 20000
                     })

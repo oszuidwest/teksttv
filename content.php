@@ -122,7 +122,18 @@ $aData[] = array(
 	'content' => $sContent);
 
 # Nieuws ophalen
-$oNews = json_decode(file_get_contents($sBaseUrl.'/wp-json/wp/v2/posts?per_page=15&_fields=title,kabelkrant_text,featured_media'));
+$sNewsUrl = $sBaseUrl.'/wp-json/wp/v2/posts?per_page=15&_fields=title,kabelkrant_text,featured_media';
+
+// Add region parameter if provided
+if(isset($_GET['regio']) && !empty($_GET['regio'])) {
+	// Sanitize the region parameter - allow only numbers and commas
+	$sRegio = preg_replace('/[^0-9,]/', '', $_GET['regio']);
+	if(!empty($sRegio)) {
+		$sNewsUrl .= '&regio=' . $sRegio;
+	}
+}
+
+$oNews = json_decode(file_get_contents($sNewsUrl));
 
 $iCounter = 0;
 foreach ($oNews as $oItem) {
