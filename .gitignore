@@ -1,26 +1,70 @@
+# PHP Dependencies
+/vendor/
+composer.lock
+
+# Environment and Configuration
+.env
+.env.*
+!.env.example
+config.local.php
+*.local.php
+
+# Cache and Temporary Files
+*.cache
+*.tmp
+*.temp
+/cache/
+/tmp/
+/temp/
+
 # Logs
-logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+/logs/
+error_log
+access_log
 
-node_modules
-dist
-dist-ssr
-*.local
+# Runtime Data
+weather.json
+*.pid
+*.seed
+*.pid.lock
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS Files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
 
-*.tsbuildinfo
+# Backup Files
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*~
+
+# Build and Distribution
+/build/
+/dist/
+/out/
+
+# Testing
+/coverage/
+.phpunit.result.cache
+phpunit.xml
+.phpunit.cache/
+
+# Claude Code Configuration
+CLAUDE.md
+
+# Security - Never commit these
+*.key
+*.pem
+*.crt
+*.p12
+private.key
+public.key

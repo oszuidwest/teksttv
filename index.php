@@ -260,7 +260,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                 color: black;
             }
         </style>
-        <script src="jquery-1.6.1.min.js"></script>
+        <script src="jquery-3.7.1.min.js"></script>
     </head>
     <body>
         <div class="viewport">
@@ -329,10 +329,11 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                     $.ajax({
                       url: "content.php",
                       cache: false,
-                      timeout: 20000,
-                      success: function( result ) {
+                      timeout: 20000
+                    })
+                    .done(function( result ) {
                         clearTimeout(iContentTimeout);
-                        
+
                         // probeer het resultaat te parsen
                         try {
                             var aNewContentData = JSON.parse(result);
@@ -345,21 +346,20 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                             writeDebug(error);
                             writeDebug(result);
                         }
-                      },
-                      // fout in ophalen
-                      error: function() {
+                    })
+                    .fail(function() {
+                        // fout in ophalen
                         writeDebug('error in ophalen');
-                      },
-                      // en gewoon weer een ronde gaan draaien
-                      complete: function() {
+                    })
+                    .always(function() {
+                        // en gewoon weer een ronde gaan draaien
                         if(iSelectedSlide==null) {
                             iContentCounter = 0;
                         } else {
                             iContentCounter = iSelectedSlide;
                         }
-                        
+
                         setContent();
-                      }
                     });
                 }
                 
@@ -372,7 +372,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                         $('.reclame__photo__pre').css('display', 'block');
 
                         if(aContentData[iContentCounter]['type']=='reclame') {
-                            $('.reclame__photo__pre').animate({ opacity: 100 }, 400, function() {
+                            $('.reclame__photo__pre').animate({ opacity: 1 }, 400, function() {
                                 $('.reclame__photo__current').toggleClass('reclame__photo__current reclame__photo__temp');
                                 $('.reclame__photo__pre').toggleClass('reclame__photo__pre reclame__photo__current');
                                 $('.reclame__photo__temp').toggleClass('reclame__photo__temp reclame__photo__pre');
@@ -416,7 +416,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                             }
 
                             $('.carousel__photo__pre').css('display', 'block');
-                            $('.carousel__photo__pre').css('opacity', '100');
+                            $('.carousel__photo__pre').css('opacity', '1');
 
                             $('.carousel__photo__current').animate({ opacity: 0 }, 400, function() {
                                 $('.carousel__photo__current').toggleClass('carousel__photo__current carousel__photo__temp');
@@ -472,8 +472,9 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                 function getTickerData() {
                     writeDebug('getTickerData');
                     $.ajax({
-                      url: "https://www.zuidwestupdate.nl/wp-json/zw/v1/broadcast_data",
-                      success: function( result ) {
+                      url: "https://www.zuidwestupdate.nl/wp-json/zw/v1/broadcast_data"
+                    })
+                    .done(function( result ) {
                         if(typeof result.fm!=undefined || typeof result.tv!=undefined) {
                             aTickerData = new Array();
                         }
@@ -498,12 +499,12 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                                 }
                             }
                         }
-                        
+
                         iTickerCounter = 0;
                         clearTimeout(iTickerTimeout);
                         setTickerData();
-                      },
-                      complete: function() {
+                    })
+                    .always(function() {
                         writeDebug(aTickerData.length*iTickerTimeoutLength*5);
                         if(aTickerData.length>0) {
                             setTimeout(getTickerData, aTickerData.length*iTickerTimeoutLength*5);
@@ -511,7 +512,6 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                         else {
                             setTimeout(getTickerData, 4*iTickerTimeoutLength*5);
                         }
-                      }
                     });
                 };
                 
