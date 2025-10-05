@@ -231,17 +231,12 @@ if(isset($aWeatherData[4])) $sContent .= '		<td style="border-left: 1px solid #B
 $sContent .= '	</tr></table>';
 
 // Extract city name from location (e.g., "Amsterdam,NL" -> "Amsterdam")
-// Show "Weer" by default, or "Weerstation [City]" if it's not the default config location
+// Always show "Weerstation [City]" for all locations
 $sWeatherTitle = 'Weer';
-if(isset($oConfigFile->default) && isset($oConfigFile->configurations->{$oConfigFile->default})) {
-	$oDefaultConfig = $oConfigFile->configurations->{$oConfigFile->default};
-	if($sWeatherLocation !== $oDefaultConfig->weather->location) {
-		$aCityParts = explode(',', $sWeatherLocation);
-		$sCityName = trim($aCityParts[0]);
-		if(!empty($sCityName)) {
-			$sWeatherTitle = 'Weerstation ' . $sCityName;
-		}
-	}
+$aCityParts = explode(',', $sWeatherLocation);
+$sCityName = trim($aCityParts[0]);
+if(!empty($sCityName)) {
+	$sWeatherTitle = 'Weerstation ' . $sCityName;
 }
 
 $aData[] = array(
