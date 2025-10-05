@@ -1,0 +1,51 @@
+{
+  "default": "zwtv1",
+  "configurations": {
+    "zwtv1": {
+      "id": "zwtv1",
+      "name": "ZuidWest TV 1",
+      "display": {
+        "brandColor": "#04C104",
+        "preview": false,
+        "slide": null
+      },
+      "content": {
+        "regio": [3, 2, 29, 498, 5],
+        "newsApiUrl": "https://www.zuidwestupdate.nl",
+        "numberOfPosts": 15
+      },
+      "weather": {
+        "location": "Woensdrecht,NL",
+        "apiKey": "YOUR_OPENWEATHERMAP_API_KEY"
+      },
+      "images": {
+        "weatherLogo": "images/Weer - logo - kabelkrant2.jpg",
+        "standardLogo": "images/Standaard - logo - kabelkrant2.jpg",
+        "reclameLogo": "images/Kabelkrant reclame.jpg"
+      }
+    },
+    "zwtv2": {
+      "id": "zwtv2",
+      "name": "ZuidWest TV 2",
+      "display": {
+        "brandColor": "#1E90FF",
+        "preview": false,
+        "slide": null
+      },
+      "content": {
+        "regio": [498, 5],
+        "newsApiUrl": "https://www.zuidwestupdate.nl",
+        "numberOfPosts": 15
+      },
+      "weather": {
+        "location": "Zundert,NL",
+        "apiKey": "YOUR_OPENWEATHERMAP_API_KEY"
+      },
+      "images": {
+        "weatherLogo": "images/Weer - logo - kabelkrant2.jpg",
+        "standardLogo": "images/Standaard - logo - kabelkrant2.jpg",
+        "reclameLogo": "images/Kabelkrant reclame.jpg"
+      }
+    }
+  }
+}

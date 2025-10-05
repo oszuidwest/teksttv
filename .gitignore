@@ -6,6 +6,8 @@ composer.lock
 .env
 .env.*
 !.env.example
+config.json
+!config.json.example
 config.local.php
 *.local.php
 
@@ -58,6 +60,7 @@ desktop.ini
 .phpunit.result.cache
 phpunit.xml
 .phpunit.cache/
+test_config.php
 
 # Claude Code Configuration
 CLAUDE.md

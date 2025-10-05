@@ -1,6 +1,58 @@
 <?php
 
-$oTomorrow  = new DateTime(date('Y-m-d 02:55:00', strtotime('tomorrow')));
+// Get config ID from URL parameter
+$sConfigId = isset($_GET['config']) ? $_GET['config'] : null;
+
+// Load configuration from config.json
+if(!file_exists('config.json')) {
+    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration file config.json not found</p></body></html>');
+}
+
+$sConfigContent = file_get_contents('config.json');
+$oConfigFile = json_decode($sConfigContent);
+
+if(json_last_error() !== JSON_ERROR_NONE) {
+    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Invalid JSON in config.json: ' . htmlspecialchars(json_last_error_msg()) . '</p></body></html>');
+}
+
+$oConfig = null;
+
+if($oConfigFile) {
+    // New multi-configuration structure
+    if(isset($oConfigFile->configurations)) {
+        if($sConfigId) {
+            // Config ID explicitly provided - must exist or error
+            if(isset($oConfigFile->configurations->{$sConfigId})) {
+                $oConfig = $oConfigFile->configurations->{$sConfigId};
+            } else {
+                die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration "' . htmlspecialchars($sConfigId) . '" not found in config.json</p></body></html>');
+            }
+        } else {
+            // No config ID provided - use default
+            if(isset($oConfigFile->default) && isset($oConfigFile->configurations->{$oConfigFile->default})) {
+                $oConfig = $oConfigFile->configurations->{$oConfigFile->default};
+            }
+        }
+    }
+    // Legacy single-configuration structure
+    elseif(isset($oConfigFile->display)) {
+        $oConfig = $oConfigFile;
+    }
+}
+
+// Exit with error if configuration is not properly loaded
+if(!$oConfig) {
+    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration not found or invalid structure in config.json</p></body></html>');
+}
+
+// Validate required configuration fields
+if(!isset($oConfig->display) || !isset($oConfig->display->brandColor)) {
+    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Missing required display configuration in config.json</p></body></html>');
+}
+
+// Calculate refresh timing (hardcoded to refresh at 02:55:00)
+$sRefreshTime = '02:55:00';
+$oTomorrow  = new DateTime(date('Y-m-d ' . $sRefreshTime, strtotime('tomorrow')));
 $oToday     = new DateTime();
 $oInterval  = $oTomorrow->diff($oToday);
 
@@ -9,6 +61,16 @@ $iMin       = (int) $oInterval->format('%i');
 $iHour      = (int) $oInterval->format('%h');
 
 $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
+
+// Get configuration values from config.json only
+$sBrandColor = $oConfig->display->brandColor;
+$sRegio = isset($oConfig->content->regio) ? $oConfig->content->regio : null; // regio is optional
+$sWeatherLocation = $oConfig->weather->location;
+
+// Hardcoded timeout lengths
+$iContentTimeoutLength = 25000;
+$iReclameTimeoutLength = 5000;
+$iTickerTimeoutLength = 20000;
 
 ?>
 <!doctype html>
@@ -112,7 +174,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
             }
 
             .ticker__label {
-                background: #04C104;
+                background: <?= $sBrandColor ?>;
                 color: #ffffff;
                 width: 480px; /* 320px */
                 text-transform: uppercase;
@@ -230,8 +292,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
 
             .blob__placeholder {
                 z-index: 75;
-                /*background-image: url('http://www.zuidwestupdate.nl/images/teksttv/Agenda%20-%20logo%20-%20kabelkrant2.jpg');*/
-                background-image: url('images/Agenda%20-%20logo%20-%20kabelkrant2.jpg');
+                background-image: url('images/Standaard - logo - kabelkrant2.jpg');
             }
 
             .carousel__punch {
@@ -247,8 +308,6 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
             .blob__line {
                 width: 668px; /* 445px */
                 height: 603px; /* 402px */
-                background: url('vorm.svg');
-                background-size: cover;
                 position: absolute;
                 right: 0;
                 bottom: 0;
@@ -297,25 +356,31 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                 <span class="ticker__content">&nbsp;</span>
             </div>
 
-            <div class="blob__line">&nbsp;</div>
+            <div class="blob__line">
+                <svg width="668" height="603" viewBox="0 0 446 403" version="1.1" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <g transform="translate(1.000000, 1.000000)" fill="<?= $sBrandColor ?>">
+                            <path d="M351.55,1.39 C365.17,-1.27 379.51,-0.98 392.79,3.25 C408.66,8.08 423.7,16.74 434.53,29.48 C437.77,33.35 441.57,36.69 445,40.38 L445,60.73 C439.34,53.13 435.15,44.38 428.29,37.71 C423.74,33.25 419.43,28.47 414.17,24.81 C398.88,13.42 379.2,8.22 360.26,10.3 C350.46,11.64 340.78,13.78 331.2,16.19 C306.79,21.61 283.03,29.45 259.36,37.41 C225.69,49.81 192.55,63.83 160.98,80.95 C118.43,103.84 77.95,130.78 41.32,162.32 C33.75,168.75 26.8,175.93 20.99,183.99 C12.56,196.72 7.89,212.68 11.12,227.86 C13.22,241.91 20.75,254.47 29.95,265.04 C35.09,271.63 42.01,276.39 48.53,281.47 C77.01,303.68 106.65,324.33 136.8,344.21 C159.77,358.83 182.82,373.39 206.91,386.13 C216.58,391.93 227.28,395.84 236.74,402 L212.46,402 C209.34,399.98 206.41,397.67 203.18,395.83 C186.58,386.54 169.91,377.36 153.8,367.21 C149.06,364.25 144.41,361.09 139.34,358.71 C132.95,355.75 127.75,350.89 121.78,347.23 C103.64,335.55 86.39,322.56 68.62,310.34 C54,297.21 36.59,287.34 23.27,272.74 C10.94,259.26 2.27,242.12 0.05,223.9 C-1.66,207.86 4.01,191.94 12.58,178.6 C20.18,167.1 30.45,157.74 41,149.01 C49.85,141.81 58.76,134.69 67.97,127.96 C90.92,110.32 115.46,94.89 140.53,80.49 C206.31,43.66 277.49,15.98 351.55,1.39 L351.55,1.39 Z"></path>
+                        </g>
+                    </g>
+                </svg>
+            </div>
 
             <script>
-                var iSelectedSlide = <?= isset($_GET['slide']) && is_numeric($_GET['slide']) ? $_GET['slide'] : 'null'; ?>;
-                var sRegio = <?= isset($_GET['regio']) ? "'" . preg_replace('/[^0-9,]/', '', $_GET['regio']) . "'" : 'null'; ?>;
-                var sLocation = <?= isset($_GET['location']) ? "'" . preg_replace('/[^a-zA-Z0-9\s,\-]/', '', $_GET['location']) . "'" : 'null'; ?>;
+                var iSelectedSlide = <?= isset($oConfig->display->slide) ? $oConfig->display->slide : 'null'; ?>;
                 var aContentData = new Array();
                 var iContentCounter = 0;
                 var iContentTimeout = null;
-                var iContentTimeoutLength = <?= isset($_GET['preview']) ? 4000 : '25*1000' ?>;
-                var iReclameTimeoutLength = 5*1000;
+                var iContentTimeoutLength = <?= $iContentTimeoutLength ?>;
+                var iReclameTimeoutLength = <?= $iReclameTimeoutLength ?>;
                 var iPhotoId = 1;
                 var sContentResult = null;
                 var bDebug = false;
-                
+
                 var aTickerData = new Array();
                 var iTickerCounter = 0;
                 var iTickerTimeout = null;
-                var iTickerTimeoutLength = 20*1000;
+                var iTickerTimeoutLength = <?= $iTickerTimeoutLength ?>;
                 var aTickerConst = {tv_today: 'Vandaag op TV', tv_tomorrow: 'Morgen op TV', fm_now: 'Nu op FM', fm_next: 'Straks op FM'};
                 
                 $(document).ready(function() {
@@ -328,22 +393,11 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                     writeDebug('getContentData');
                     clearTimeout(iContentTimeout);
 
-                    var sUrl = "content.php";
-                    var aParams = [];
-
-                    if(sRegio !== null) {
-                        aParams.push("regio=" + sRegio);
-                    }
-                    if(sLocation !== null) {
-                        aParams.push("location=" + encodeURIComponent(sLocation));
-                    }
-
-                    if(aParams.length > 0) {
-                        sUrl += "?" + aParams.join("&");
-                    }
+                    // Pass config parameter to content.php
+                    var sConfigParam = '<?php echo isset($_GET['config']) ? '?config=' . urlencode($_GET['config']) : ''; ?>';
 
                     $.ajax({
-                      url: sUrl,
+                      url: "content.php" + sConfigParam,
                       cache: false,
                       timeout: 20000
                     })
@@ -414,10 +468,6 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                             
                             if(aContentData[iContentCounter]['type']=='nieuws') {
                                 $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
-                            }
-                            
-                            if(aContentData[iContentCounter]['type']=='agenda') {
-                                $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1><h2>'+aContentData[iContentCounter]['location']+' - '+aContentData[iContentCounter]['datum']+'</h2>'+aContentData[iContentCounter]['content']);
                             }
                             
                             iTimeoutLength = iContentTimeoutLength;
