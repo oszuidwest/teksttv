@@ -204,8 +204,8 @@ $sContent = '';
 // Get brand color from config
 $brandColor = isset($oConfig->display->brandColor) ? $oConfig->display->brandColor : '#04C104';
 
-// Full width container with proper margins
-$sContent .= '<div style="position: absolute; left: 80px; right: 80px; top: 90px; bottom: 50px;">';
+// Full width container with proper margins and ticker clearance
+$sContent .= '<div style="position: absolute; left: 80px; right: 80px; top: 90px; height: 420px;">';
 
 // TODAY'S WEATHER - Primary focus (Left panel, 38% of container)
 if(isset($aWeatherData[0])) {
@@ -253,40 +253,40 @@ $sContent .= '<div style="margin-bottom: 50px;">';
 $sContent .= '<h3 style="margin: 0; font-size: 24px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 2px;">Vooruitzicht</h3>';
 $sContent .= '</div>';
 
-// Forecast grid - 2x2 with generous spacing
-$sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">';
+// Forecast grid - 2x2 with appropriate spacing for container height
+$sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px;">';
 
 for($i = 1; $i <= 4; $i++) {
 	if(isset($aWeatherData[$i])) {
 		// Forecast card with clear information hierarchy
-		$sContent .= '<div style="background: #f9f9f9; padding: 28px; position: relative;">';
+		$sContent .= '<div style="background: #f9f9f9; padding: 24px; position: relative;">';
 
 		// Visual accent bar
 		$sContent .= '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ' . $brandColor . ';"></div>';
 
 		// Day label - clear and prominent
 		$dayName = $i == 1 ? 'Morgen' : $aWeatherData[$i]['date'];
-		$sContent .= '<div style="font-size: 18px; font-weight: 600; color: #000; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1.5px;">' . $dayName . '</div>';
+		$sContent .= '<div style="font-size: 20px; font-weight: 600; color: #000; margin-bottom: 18px; text-transform: uppercase; letter-spacing: 1.5px;">' . $dayName . '</div>';
 
 		// Temperature and icon group
 		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">';
 
 		// Temperature hierarchy
 		$sContent .= '<div style="display: flex; align-items: baseline; gap: 12px;">';
-		$sContent .= '<span style="font-size: 48px; font-weight: 300; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
-		$sContent .= '<span style="font-size: 30px; color: #999; font-weight: 300;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
+		$sContent .= '<span style="font-size: 52px; font-weight: 300; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
+		$sContent .= '<span style="font-size: 32px; color: #777; font-weight: 300;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
 		$sContent .= '</div>';
 
 		// Weather icon
-		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 70px; height: 70px;"/>';
+		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 75px; height: 75px;"/>';
 
 		$sContent .= '</div>';
 
-		// Weather description
-		$sContent .= '<div style="font-size: 18px; color: #444; margin-bottom: 10px; line-height: 1.4;">' . $aWeatherData[$i]['weertype'] . '</div>';
+		// Weather description - larger and higher contrast
+		$sContent .= '<div style="font-size: 22px; color: #111; margin-bottom: 15px; line-height: 1.3; font-weight: 400;">' . $aWeatherData[$i]['weertype'] . '</div>';
 
-		// Wind - tertiary information
-		$sContent .= '<div style="font-size: 16px; color: #999;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
+		// Wind - more prominent with better contrast
+		$sContent .= '<div style="font-size: 20px; color: #333; font-weight: 500; background: rgba(255,255,255,0.6); padding: 8px 12px; display: inline-block;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
 
 		$sContent .= '</div>';
 	}
