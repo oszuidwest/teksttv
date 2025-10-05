@@ -198,115 +198,104 @@ if($oWeather && isset($oWeather->list)) {
 	}
 }
 
-// Build modern, magazine-style weather layout
+// Build perfect information architecture for TV weather display
 $sContent = '';
 
 // Get brand color from config
 $brandColor = isset($oConfig->display->brandColor) ? $oConfig->display->brandColor : '#04C104';
 
-// Create two-column layout: Today's weather hero (left) and 4-day forecast (right)
+// Full width container with proper margins
+$sContent .= '<div style="position: absolute; left: 80px; right: 80px; top: 90px; bottom: 50px;">';
+
+// TODAY'S WEATHER - Primary focus (Left panel, 38% of container)
 if(isset($aWeatherData[0])) {
-	// TODAY'S WEATHER - Hero Section (Left side, 40% width)
-	$sContent .= '<div style="position: absolute; left: 50px; top: 90px; width: 35%;">';
+	$sContent .= '<div style="position: absolute; left: 0; top: 0; width: 38%;">';
 
-	// Large "VANDAAG" header with accent line
-	$sContent .= '<div style="border-bottom: 4px solid ' . $brandColor . '; padding-bottom: 10px; margin-bottom: 30px;">';
-	$sContent .= '<h2 style="margin: 0; font-size: 48px; font-weight: 300; color: #333;">VANDAAG</h2>';
+	// Section header with strong visual anchor
+	$sContent .= '<div style="margin-bottom: 50px;">';
+	$sContent .= '<div style="display: inline-block; border-bottom: 3px solid ' . $brandColor . '; padding-bottom: 8px;">';
+	$sContent .= '<h2 style="margin: 0; font-size: 36px; font-weight: 600; color: #000; text-transform: uppercase; letter-spacing: 3px;">Vandaag</h2>';
+	$sContent .= '</div>';
 	$sContent .= '</div>';
 
-	// Huge temperature display
-	$sContent .= '<div style="margin-bottom: 30px;">';
-	$sContent .= '<div style="font-size: 120px; font-weight: bold; line-height: 1; color: #222; margin-bottom: 10px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
-	$sContent .= '<div style="font-size: 40px; color: #888;">Minimum: ' . $aWeatherData[0]['tempmin'] . '°</div>';
+	// Primary temperature - maximum visual impact
+	$sContent .= '<div style="margin-bottom: 45px;">';
+	$sContent .= '<div style="font-size: 130px; font-weight: 200; line-height: 1; color: #000; letter-spacing: -5px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
+	$sContent .= '<div style="font-size: 36px; color: #666; margin-top: 20px; font-weight: 300;">minimaal ' . $aWeatherData[0]['tempmin'] . '°</div>';
 	$sContent .= '</div>';
 
-	// Large weather icon and description
-	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 30px;">';
-	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 100px; height: 100px; margin-right: 20px;"/>';
-	$sContent .= '<div style="font-size: 36px; color: #444; line-height: 1.3;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
+	// Weather condition with icon - clear pairing
+	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 50px; gap: 25px;">';
+	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 100px; height: 100px;"/>';
+	$sContent .= '<div style="font-size: 30px; color: #222; font-weight: 400; line-height: 1.3; max-width: 250px;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
 	$sContent .= '</div>';
 
-	// Wind information with visual indicator
+	// Wind information - secondary data group
 	$windForce = min($aWeatherData[0]['windspd'], 10);
 	$windStrength = $windForce <= 3 ? 'Zwak' : ($windForce <= 6 ? 'Matig' : 'Krachtig');
-	$windColor = $windForce <= 3 ? '#4CAF50' : ($windForce <= 6 ? '#FF9800' : '#F44336');
 
-	$sContent .= '<div style="background: rgba(0,0,0,0.05); padding: 20px; border-radius: 8px;">';
-	$sContent .= '<div style="font-size: 24px; color: #666; margin-bottom: 10px;">WIND</div>';
-	$sContent .= '<div style="display: flex; justify-content: space-between; align-items: center;">';
-	$sContent .= '<div>';
-	$sContent .= '<span style="font-size: 36px; font-weight: bold; color: ' . $windColor . ';">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</span>';
-	$sContent .= '<div style="font-size: 24px; color: #777; margin-top: 5px;">' . $windStrength . '</div>';
-	$sContent .= '</div>';
-
-	// Wind strength bar
-	$sContent .= '<div style="width: 120px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">';
-	$sContent .= '<div style="width: ' . ($windForce * 10) . '%; height: 100%; background: ' . $windColor . ';"></div>';
-	$sContent .= '</div>';
+	$sContent .= '<div style="border-top: 2px solid #e0e0e0; padding-top: 30px;">';
+	$sContent .= '<div style="font-size: 18px; color: #999; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; font-weight: 600;">Wind</div>';
+	$sContent .= '<div style="display: flex; align-items: baseline; gap: 20px;">';
+	$sContent .= '<div style="font-size: 46px; font-weight: 600; color: #000;">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</div>';
+	$sContent .= '<div style="font-size: 26px; color: #666; font-weight: 300;">' . $windStrength . '</div>';
 	$sContent .= '</div>';
 	$sContent .= '</div>';
 
 	$sContent .= '</div>';
 }
 
-// 4-DAY FORECAST - Grid (Right side, 55% width)
-$sContent .= '<div style="position: absolute; right: 50px; top: 90px; width: 55%;">';
+// FORECAST SECTION - Secondary focus (Right panel, 58% of container)
+$sContent .= '<div style="position: absolute; right: 0; top: 0; width: 58%;">';
 
-// "VOORUITZICHT" header
-$sContent .= '<h3 style="font-size: 32px; font-weight: 300; color: #666; margin: 0 0 25px 0; padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">4-DAAGSE VOORUITZICHT</h3>';
+// Section header aligned with left panel
+$sContent .= '<div style="margin-bottom: 50px;">';
+$sContent .= '<h3 style="margin: 0; font-size: 24px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 2px;">Vooruitzicht</h3>';
+$sContent .= '</div>';
 
-// Create 2x2 grid for next 4 days
-$sContent .= '<div style="display: flex; flex-wrap: wrap; gap: 20px;">';
+// Forecast grid - 2x2 with generous spacing
+$sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;">';
 
 for($i = 1; $i <= 4; $i++) {
 	if(isset($aWeatherData[$i])) {
-		// Each forecast card (2 per row)
-		$sContent .= '<div style="width: calc(50% - 10px); background: rgba(255,255,255,0.5); padding: 20px; border-left: 3px solid ' . $brandColor . '; min-height: 180px;">';
+		// Forecast card with clear information hierarchy
+		$sContent .= '<div style="background: #f9f9f9; padding: 28px; position: relative;">';
 
-		// Day name
+		// Visual accent bar
+		$sContent .= '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ' . $brandColor . ';"></div>';
+
+		// Day label - clear and prominent
 		$dayName = $i == 1 ? 'Morgen' : $aWeatherData[$i]['date'];
-		$sContent .= '<div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 15px;">' . $dayName . '</div>';
+		$sContent .= '<div style="font-size: 18px; font-weight: 600; color: #000; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1.5px;">' . $dayName . '</div>';
 
-		// Icon and temps in flex layout
-		$sContent .= '<div style="display: flex; align-items: center; gap: 15px;">';
-		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 60px; height: 60px;"/>';
-		$sContent .= '<div>';
-		$sContent .= '<div style="font-size: 36px; font-weight: bold; color: #222;">' . $aWeatherData[$i]['tempmax'] . '°</div>';
-		$sContent .= '<div style="font-size: 24px; color: #888;">' . $aWeatherData[$i]['tempmin'] . '°</div>';
+		// Temperature and icon group
+		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">';
+
+		// Temperature hierarchy
+		$sContent .= '<div style="display: flex; align-items: baseline; gap: 12px;">';
+		$sContent .= '<span style="font-size: 48px; font-weight: 300; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
+		$sContent .= '<span style="font-size: 30px; color: #999; font-weight: 300;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
 		$sContent .= '</div>';
+
+		// Weather icon
+		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 70px; height: 70px;"/>';
+
 		$sContent .= '</div>';
 
 		// Weather description
-		$sContent .= '<div style="font-size: 20px; color: #555; margin-top: 10px;">' . $aWeatherData[$i]['weertype'] . '</div>';
+		$sContent .= '<div style="font-size: 18px; color: #444; margin-bottom: 10px; line-height: 1.4;">' . $aWeatherData[$i]['weertype'] . '</div>';
 
-		// Compact wind info
-		$sContent .= '<div style="font-size: 18px; color: #777; margin-top: 8px;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
+		// Wind - tertiary information
+		$sContent .= '<div style="font-size: 16px; color: #999;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
 
 		$sContent .= '</div>';
 	}
 }
 
 $sContent .= '</div>'; // End grid
-$sContent .= '</div>'; // End right column
+$sContent .= '</div>'; // End forecast section
 
-// Decorative windsock in top right corner
-if(isset($aWeatherData[0])) {
-	$windAngle = 30 - (min($aWeatherData[0]['windspd'], 10) * 3);
-
-	$sContent .= '<div style="position: absolute; right: 20px; top: 50px; opacity: 0.1;">';
-	$sContent .= '<svg width="150" height="100" viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg">';
-
-	// Simple windsock
-	$sContent .= '<g transform="translate(20, 50) rotate(' . $windAngle . ')">';
-	$sContent .= '<path d="M 0,0 L 60,-8 L 80,-4 L 90,0 L 80,4 L 60,8 L 0,0 Z" fill="' . $brandColor . '" opacity="0.5"/>';
-	$sContent .= '<rect x="15" y="-8" width="10" height="16" fill="white" opacity="0.3"/>';
-	$sContent .= '<rect x="35" y="-6" width="10" height="12" fill="white" opacity="0.3"/>';
-	$sContent .= '<rect x="55" y="-4" width="8" height="8" fill="white" opacity="0.3"/>';
-	$sContent .= '</g>';
-
-	$sContent .= '</svg>';
-	$sContent .= '</div>';
-}
+$sContent .= '</div>'; // End container
 
 // Extract city name from location (e.g., "Amsterdam,NL" -> "Amsterdam")
 // Always show "Weerstation [City]" for all locations
