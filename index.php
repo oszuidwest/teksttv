@@ -302,6 +302,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
             <script>
                 var iSelectedSlide = <?= isset($_GET['slide']) && is_numeric($_GET['slide']) ? $_GET['slide'] : 'null'; ?>;
                 var sRegio = <?= isset($_GET['regio']) ? "'" . preg_replace('/[^0-9,]/', '', $_GET['regio']) . "'" : 'null'; ?>;
+                var sLocation = <?= isset($_GET['location']) ? "'" . preg_replace('/[^a-zA-Z0-9\s,\-]/', '', $_GET['location']) . "'" : 'null'; ?>;
                 var aContentData = new Array();
                 var iContentCounter = 0;
                 var iContentTimeout = null;
@@ -328,8 +329,17 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                     clearTimeout(iContentTimeout);
 
                     var sUrl = "content.php";
+                    var aParams = [];
+
                     if(sRegio !== null) {
-                        sUrl += "?regio=" + sRegio;
+                        aParams.push("regio=" + sRegio);
+                    }
+                    if(sLocation !== null) {
+                        aParams.push("location=" + encodeURIComponent(sLocation));
+                    }
+
+                    if(aParams.length > 0) {
+                        sUrl += "?" + aParams.join("&");
                     }
 
                     $.ajax({
@@ -399,7 +409,7 @@ $iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
                             }
 
                             if(aContentData[iContentCounter]['type']=='weer') {
-                                $('.carousel__content').html('<h1>Weer</h1>'+aContentData[iContentCounter]['content']);
+                                $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
                             }
                             
                             if(aContentData[iContentCounter]['type']=='nieuws') {

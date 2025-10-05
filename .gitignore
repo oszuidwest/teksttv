@@ -25,6 +25,7 @@ access_log
 
 # Runtime Data
 weather.json
+weather_*.json
 *.pid
 *.seed
 *.pid.lock

@@ -62,24 +62,73 @@ $oToday -> setTime(0, 0, 0);
 $aData = array();
 
 # Weer ophalen
-$oWeather = json_decode(file_get_contents('./weather.json'));
+// Handle location parameter for weather
+$sWeatherLocation = 'Woensdrecht,NL';
+if(isset($_GET['location']) && !empty($_GET['location'])) {
+	// Sanitize the location parameter - allow letters, numbers, spaces, commas, and hyphens
+	$sWeatherLocation = preg_replace('/[^a-zA-Z0-9\s,\-]/', '', $_GET['location']);
+	if(empty($sWeatherLocation)) {
+		$sWeatherLocation = 'Woensdrecht,NL';
+	}
+}
+
+// Determine cache file name based on location
+$sWeatherCacheFile = './weather_' . preg_replace('/[^a-zA-Z0-9]/', '_', strtolower($sWeatherLocation)) . '.json';
+
+// Check if cache exists and is less than 1 hour old
+if(file_exists($sWeatherCacheFile) && (time() - filemtime($sWeatherCacheFile) < 3600)) {
+	// Use cached data
+	$oWeather = json_decode(file_get_contents($sWeatherCacheFile));
+} else {
+	// Fetch new weather data from OpenWeatherMap
+	$oWeather = null;
+	for ($iRetryCounter = 0; $iRetryCounter <= 3; $iRetryCounter++) {
+		$sUrl = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=' . urlencode($sWeatherLocation) . '&units=metric&lang=nl&cnt=5&appid=1e8c419c622b073f3fb80961fba99241';
+		$sWeatherData = @file_get_contents($sUrl);
+
+		if ($sWeatherData !== false) {
+			$oWeather = json_decode($sWeatherData);
+			// Save to location-specific cache file
+			file_put_contents($sWeatherCacheFile, $sWeatherData);
+			// Also maintain backward compatibility with the default weather.json
+			if($sWeatherLocation === 'Woensdrecht,NL') {
+				file_put_contents('./weather.json', $sWeatherData);
+			}
+			break;
+		}
+		if ($iRetryCounter < 3) {
+			sleep(1); // Short delay before retry
+		}
+	}
+
+	// If fetching failed, try to use existing cache or fallback
+	if($oWeather === null) {
+		if(file_exists($sWeatherCacheFile)) {
+			$oWeather = json_decode(file_get_contents($sWeatherCacheFile));
+		} elseif(file_exists('./weather.json')) {
+			$oWeather = json_decode(file_get_contents('./weather.json'));
+		}
+	}
+}
+
 $aWeatherData = array();
 
-foreach($oWeather->list as $oWeatherDay) {
-	$oDate = new DateTime;
-	$oDate->setTimeStamp($oWeatherDay->dt);
-	
-	$aWeatherData[$oToday->diff($oDate)->days] = array(
-		'date' => getDay($oDate->format('N')),
-		'tempday' => round($oWeatherDay->temp->day, 1),
-		'tempmin' => round($oWeatherDay->temp->min, 1),
-		'tempmax' => round($oWeatherDay->temp->max, 1),
-		'weertype' => $oWeatherDay->weather[0]->description,
-		'weericon' => 'http://openweathermap.org/img/w/'.$oWeatherDay->weather[0]->icon. '.png',
-		'winddir' => getWindDir($oWeatherDay->deg),
-		'windspd' => getWindSpeed($oWeatherDay->speed)
+if($oWeather && isset($oWeather->list)) {
+	foreach($oWeather->list as $oWeatherDay) {
+		$oDate = new DateTime;
+		$oDate->setTimeStamp($oWeatherDay->dt);
+
+		$aWeatherData[$oToday->diff($oDate)->days] = array(
+			'date' => getDay($oDate->format('N')),
+			'tempday' => round($oWeatherDay->temp->day, 1),
+			'tempmin' => round($oWeatherDay->temp->min, 1),
+			'tempmax' => round($oWeatherDay->temp->max, 1),
+			'weertype' => $oWeatherDay->weather[0]->description,
+			'weericon' => 'http://openweathermap.org/img/w/'.$oWeatherDay->weather[0]->icon. '.png',
+			'winddir' => getWindDir($oWeatherDay->deg),
+			'windspd' => getWindSpeed($oWeatherDay->speed)
 		);
-	
+	}
 }
 
 $sContent = '<table style="position: absolute; top: 90px; font-size: 42px; text-align: center; width: 75%;" cellspacing=0 cellpadding=3><tr>';
@@ -114,10 +163,20 @@ if(isset($aWeatherData[3])) $sContent .= '		<td style="border-left: 1px solid #B
 if(isset($aWeatherData[4])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[4]['winddir'].' '.$aWeatherData[4]['windspd'].'</td>';
 $sContent .= '	</tr></table>';
 
+// Extract city name from location (e.g., "Amsterdam,NL" -> "Amsterdam")
+$sWeatherTitle = 'Weer';
+if($sWeatherLocation !== 'Woensdrecht,NL') {
+	$aCityParts = explode(',', $sWeatherLocation);
+	$sCityName = trim($aCityParts[0]);
+	if(!empty($sCityName)) {
+		$sWeatherTitle = 'Weerstation ' . $sCityName;
+	}
+}
+
 $aData[] = array(
 	'type' => 'weer',
-	'title' => 'Weer',
-	'photo' => 'images/Weer - logo - kabelkrant2.jpg', 
+	'title' => $sWeatherTitle,
+	'photo' => 'images/Weer - logo - kabelkrant2.jpg',
 	'video' => '',
 	'content' => $sContent);
 
