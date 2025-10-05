@@ -403,25 +403,25 @@ $iTickerTimeoutLength = 20000;
                     .done(function( result ) {
                         clearTimeout(iContentTimeout);
 
-                        // probeer het resultaat te parsen
+                        // Try to parse the result
                         try {
                             var aNewContentData = JSON.parse(result);
                             sContentResult      = result;
                             aContentData        = aNewContentData;
                             aNewContentData     = null;
                         }
-                        // error tonen in debug mode
+                        // Show error in debug mode
                         catch(error) {
                             writeDebug(error);
                             writeDebug(result);
                         }
                     })
                     .fail(function() {
-                        // fout in ophalen
+                        // Error fetching content
                         writeDebug('error in ophalen');
                     })
                     .always(function() {
-                        // en gewoon weer een ronde gaan draaien
+                        // Continue with next rotation cycle
                         if(iSelectedSlide==null) {
                             iContentCounter = 0;
                         } else {

@@ -1,8 +1,5 @@
 <?php
 
-error_reporting(E_ALL);
-ini_set('display_errors', 'true');
-
 // Get config ID from URL parameter
 $sConfigId = isset($_GET['config']) ? $_GET['config'] : null;
 $sConfigParam = $sConfigId ? '?config=' . urlencode($sConfigId) : '';

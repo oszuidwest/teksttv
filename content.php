@@ -1,6 +1,6 @@
 <?php
 
-// Get config ID from URL parameter, default to "zwtv1"
+// Get config ID from URL parameter
 $sConfigId = isset($_GET['config']) ? $_GET['config'] : null;
 
 // Load configuration from config.json
@@ -73,21 +73,13 @@ if(!isset($oConfig->images->weatherLogo) || !isset($oConfig->images->standardLog
 
 $sBaseUrl = $oConfig->content->newsApiUrl;
 
-error_reporting(E_ALL);
-ini_set('display_errors', 'true');
-
-error_reporting(~E_ALL);
-ini_set('display_errors', 'false');
-
 setlocale(LC_ALL, 'nl_NL.utf8');
 
-function debug($s) {
-	print_r($s);
-	echo "\n";
-}
-
-//echo "<pre>";
-
+/**
+ * Convert wind direction in degrees to compass direction abbreviation
+ * @param int $iDeg Wind direction in degrees (0-360)
+ * @return string Compass direction (N, NO, O, ZO, Z, ZW, W, NW)
+ */
 function getWindDir($iDeg) {
 	if($iDeg<22.5)  return 'N';
 	if($iDeg<67.5)  return 'NO';
@@ -100,6 +92,11 @@ function getWindDir($iDeg) {
 	return 'N';
 }
 
+/**
+ * Convert wind speed in m/s to Beaufort scale (0-12)
+ * @param float $iSpeed Wind speed in meters per second
+ * @return string Beaufort scale number as string
+ */
 function getWindSpeed($iSpeed) {
 	if($iSpeed<0.3) return '0';
 	if($iSpeed<1.6) return '1';
@@ -116,6 +113,11 @@ function getWindSpeed($iSpeed) {
 	return '12';
 }
 
+/**
+ * Convert day number to Dutch day name
+ * @param int $iDay Day number (1=Monday, 7=Sunday)
+ * @return string Dutch day name
+ */
 function getDay($iDay) {
 	switch($iDay) {
 		case 1: return 'Maandag';
@@ -132,7 +134,7 @@ $oToday = new DateTime();
 $oToday -> setTime(0, 0, 0);
 $aData = array();
 
-# Weer ophalen
+# Fetch weather data
 // Get weather location from config.json only
 $sWeatherLocation = $oConfig->weather->location;
 
@@ -313,7 +315,7 @@ $aData[] = array(
 	'video' => '',
 	'content' => $sContent);
 
-# Nieuws ophalen
+# Fetch news data
 $iNumberOfPosts = $oConfig->content->numberOfPosts;
 $sNewsUrl = $sBaseUrl.'/wp-json/wp/v2/posts?per_page=' . $iNumberOfPosts . '&_fields=title,kabelkrant_text,featured_media';
 
@@ -328,7 +330,7 @@ $iCounter = 0;
 foreach ($oNews as $oItem) {
 	if(trim((string)$oItem->kabelkrant_text)!="") {
 		$sPhoto = $oConfig->images->standardLogo;
-		# Als er een foto geupload is
+		# If a photo is uploaded
 		if((string)$oItem->featured_media!='') {
 			$oMedia = json_decode(file_get_contents($sBaseUrl."/wp-json/wp/v2/media/".$oItem->featured_media."?_fields=source_url"));
 			if($oMedia!="")	$sPhoto = $oMedia->source_url;
@@ -343,9 +345,7 @@ foreach ($oNews as $oItem) {
 	}
 }
 
-# Reclame ophalen
-
-//$oReclame = json_decode(file_get_contents('https://preview.zuidwestupdate.nl/wp-json/zw/v1/broadcast_data'));
+# Fetch commercials data
 $oReclame  = json_decode(file_get_contents($sBaseUrl.'/wp-json/zw/v1/broadcast_data'));
 
 if(count($oReclame->commercials)>0) {
@@ -362,7 +362,6 @@ foreach ($oReclame->commercials as $oItem) {
 		'photo' => $oItem);
 }
 
-//print_r($aData);
 echo json_encode($aData);
 
 ?>
