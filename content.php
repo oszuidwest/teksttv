@@ -198,37 +198,115 @@ if($oWeather && isset($oWeather->list)) {
 	}
 }
 
-$sContent = '<table style="position: absolute; top: 90px; font-size: 42px; text-align: center; width: 75%;" cellspacing=0 cellpadding=3><tr>';
-if(isset($aWeatherData[0])) $sContent .= '		<td style="width: 20%;">Vandaag</td>';
-if(isset($aWeatherData[1])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5; width: 20%;">Morgen</td>';
-if(isset($aWeatherData[2])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5; width: 20%;">'.$aWeatherData[2]['date'].'</td>';
-if(isset($aWeatherData[3])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5; width: 20%;">'.$aWeatherData[3]['date'].'</td>';
-if(isset($aWeatherData[4])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5; width: 20%;">'.$aWeatherData[4]['date'].'</td>';
-$sContent .= '	</tr><tr>';
-if(isset($aWeatherData[0])) $sContent .= '		<td><img style="width: 75px;" src="'.$aWeatherData[0]['weericon'].'"/></td>';
-if(isset($aWeatherData[1])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;"><img style="width: 75px;" src="'.$aWeatherData[1]['weericon'].'"/></td>';
-if(isset($aWeatherData[2])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;"><img style="width: 75px;" src="'.$aWeatherData[2]['weericon'].'"/></td>';
-if(isset($aWeatherData[3])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;"><img style="width: 75px;" src="'.$aWeatherData[3]['weericon'].'"/></td>';
-if(isset($aWeatherData[4])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;"><img style="width: 75px;" src="'.$aWeatherData[4]['weericon'].'"/></td>';
-$sContent .= '	</tr><tr>';
-if(isset($aWeatherData[0])) $sContent .= '		<td nowrap>'.$aWeatherData[0]['weertype'].'</td>';
-if(isset($aWeatherData[1])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[1]['weertype'].'</td>';
-if(isset($aWeatherData[2])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[2]['weertype'].'</td>';
-if(isset($aWeatherData[3])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[3]['weertype'].'</td>';
-if(isset($aWeatherData[4])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[4]['weertype'].'</td>';
-$sContent .= '	</tr><tr>';
-if(isset($aWeatherData[0])) $sContent .= '		<td nowrap>'.$aWeatherData[0]['tempmin'].'&deg; / '.$aWeatherData[0]['tempmax'].'&deg;</td>';
-if(isset($aWeatherData[1])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[1]['tempmin'].'&deg; / '.$aWeatherData[1]['tempmax'].'&deg;</td>';
-if(isset($aWeatherData[2])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[2]['tempmin'].'&deg; / '.$aWeatherData[2]['tempmax'].'&deg;</td>';
-if(isset($aWeatherData[3])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[3]['tempmin'].'&deg; / '.$aWeatherData[3]['tempmax'].'&deg;</td>';
-if(isset($aWeatherData[4])) $sContent .= '		<td nowrap style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[4]['tempmin'].'&deg; / '.$aWeatherData[4]['tempmax'].'&deg;</td>';
-$sContent .= '	</tr><tr>';
-if(isset($aWeatherData[0])) $sContent .= '		<td>'.$aWeatherData[0]['winddir'].' '.$aWeatherData[0]['windspd'].'</td>';
-if(isset($aWeatherData[1])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[1]['winddir'].' '.$aWeatherData[1]['windspd'].'</td>';
-if(isset($aWeatherData[2])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[2]['winddir'].' '.$aWeatherData[2]['windspd'].'</td>';
-if(isset($aWeatherData[3])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[3]['winddir'].' '.$aWeatherData[3]['windspd'].'</td>';
-if(isset($aWeatherData[4])) $sContent .= '		<td style="border-left: 1px solid #B5B5B5;">'.$aWeatherData[4]['winddir'].' '.$aWeatherData[4]['windspd'].'</td>';
-$sContent .= '	</tr></table>';
+// Build modern, magazine-style weather layout
+$sContent = '';
+
+// Get brand color from config
+$brandColor = isset($oConfig->display->brandColor) ? $oConfig->display->brandColor : '#04C104';
+
+// Create two-column layout: Today's weather hero (left) and 4-day forecast (right)
+if(isset($aWeatherData[0])) {
+	// TODAY'S WEATHER - Hero Section (Left side, 40% width)
+	$sContent .= '<div style="position: absolute; left: 50px; top: 90px; width: 35%;">';
+
+	// Large "VANDAAG" header with accent line
+	$sContent .= '<div style="border-bottom: 4px solid ' . $brandColor . '; padding-bottom: 10px; margin-bottom: 30px;">';
+	$sContent .= '<h2 style="margin: 0; font-size: 48px; font-weight: 300; color: #333;">VANDAAG</h2>';
+	$sContent .= '</div>';
+
+	// Huge temperature display
+	$sContent .= '<div style="margin-bottom: 30px;">';
+	$sContent .= '<div style="font-size: 120px; font-weight: bold; line-height: 1; color: #222; margin-bottom: 10px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
+	$sContent .= '<div style="font-size: 40px; color: #888;">Minimum: ' . $aWeatherData[0]['tempmin'] . '°</div>';
+	$sContent .= '</div>';
+
+	// Large weather icon and description
+	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 30px;">';
+	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 100px; height: 100px; margin-right: 20px;"/>';
+	$sContent .= '<div style="font-size: 36px; color: #444; line-height: 1.3;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
+	$sContent .= '</div>';
+
+	// Wind information with visual indicator
+	$windForce = min($aWeatherData[0]['windspd'], 10);
+	$windStrength = $windForce <= 3 ? 'Zwak' : ($windForce <= 6 ? 'Matig' : 'Krachtig');
+	$windColor = $windForce <= 3 ? '#4CAF50' : ($windForce <= 6 ? '#FF9800' : '#F44336');
+
+	$sContent .= '<div style="background: rgba(0,0,0,0.05); padding: 20px; border-radius: 8px;">';
+	$sContent .= '<div style="font-size: 24px; color: #666; margin-bottom: 10px;">WIND</div>';
+	$sContent .= '<div style="display: flex; justify-content: space-between; align-items: center;">';
+	$sContent .= '<div>';
+	$sContent .= '<span style="font-size: 36px; font-weight: bold; color: ' . $windColor . ';">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</span>';
+	$sContent .= '<div style="font-size: 24px; color: #777; margin-top: 5px;">' . $windStrength . '</div>';
+	$sContent .= '</div>';
+
+	// Wind strength bar
+	$sContent .= '<div style="width: 120px; height: 10px; background: rgba(0,0,0,0.1); border-radius: 5px; overflow: hidden;">';
+	$sContent .= '<div style="width: ' . ($windForce * 10) . '%; height: 100%; background: ' . $windColor . ';"></div>';
+	$sContent .= '</div>';
+	$sContent .= '</div>';
+	$sContent .= '</div>';
+
+	$sContent .= '</div>';
+}
+
+// 4-DAY FORECAST - Grid (Right side, 55% width)
+$sContent .= '<div style="position: absolute; right: 50px; top: 90px; width: 55%;">';
+
+// "VOORUITZICHT" header
+$sContent .= '<h3 style="font-size: 32px; font-weight: 300; color: #666; margin: 0 0 25px 0; padding-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.1);">4-DAAGSE VOORUITZICHT</h3>';
+
+// Create 2x2 grid for next 4 days
+$sContent .= '<div style="display: flex; flex-wrap: wrap; gap: 20px;">';
+
+for($i = 1; $i <= 4; $i++) {
+	if(isset($aWeatherData[$i])) {
+		// Each forecast card (2 per row)
+		$sContent .= '<div style="width: calc(50% - 10px); background: rgba(255,255,255,0.5); padding: 20px; border-left: 3px solid ' . $brandColor . '; min-height: 180px;">';
+
+		// Day name
+		$dayName = $i == 1 ? 'Morgen' : $aWeatherData[$i]['date'];
+		$sContent .= '<div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 15px;">' . $dayName . '</div>';
+
+		// Icon and temps in flex layout
+		$sContent .= '<div style="display: flex; align-items: center; gap: 15px;">';
+		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 60px; height: 60px;"/>';
+		$sContent .= '<div>';
+		$sContent .= '<div style="font-size: 36px; font-weight: bold; color: #222;">' . $aWeatherData[$i]['tempmax'] . '°</div>';
+		$sContent .= '<div style="font-size: 24px; color: #888;">' . $aWeatherData[$i]['tempmin'] . '°</div>';
+		$sContent .= '</div>';
+		$sContent .= '</div>';
+
+		// Weather description
+		$sContent .= '<div style="font-size: 20px; color: #555; margin-top: 10px;">' . $aWeatherData[$i]['weertype'] . '</div>';
+
+		// Compact wind info
+		$sContent .= '<div style="font-size: 18px; color: #777; margin-top: 8px;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
+
+		$sContent .= '</div>';
+	}
+}
+
+$sContent .= '</div>'; // End grid
+$sContent .= '</div>'; // End right column
+
+// Decorative windsock in top right corner
+if(isset($aWeatherData[0])) {
+	$windAngle = 30 - (min($aWeatherData[0]['windspd'], 10) * 3);
+
+	$sContent .= '<div style="position: absolute; right: 20px; top: 50px; opacity: 0.1;">';
+	$sContent .= '<svg width="150" height="100" viewBox="0 0 150 100" xmlns="http://www.w3.org/2000/svg">';
+
+	// Simple windsock
+	$sContent .= '<g transform="translate(20, 50) rotate(' . $windAngle . ')">';
+	$sContent .= '<path d="M 0,0 L 60,-8 L 80,-4 L 90,0 L 80,4 L 60,8 L 0,0 Z" fill="' . $brandColor . '" opacity="0.5"/>';
+	$sContent .= '<rect x="15" y="-8" width="10" height="16" fill="white" opacity="0.3"/>';
+	$sContent .= '<rect x="35" y="-6" width="10" height="12" fill="white" opacity="0.3"/>';
+	$sContent .= '<rect x="55" y="-4" width="8" height="8" fill="white" opacity="0.3"/>';
+	$sContent .= '</g>';
+
+	$sContent .= '</svg>';
+	$sContent .= '</div>';
+}
 
 // Extract city name from location (e.g., "Amsterdam,NL" -> "Amsterdam")
 // Always show "Weerstation [City]" for all locations
@@ -242,7 +320,7 @@ if(!empty($sCityName)) {
 $aData[] = array(
 	'type' => 'weer',
 	'title' => $sWeatherTitle,
-	'photo' => $oConfig->images->weatherLogo,
+	'photo' => '',
 	'video' => '',
 	'content' => $sContent);
 

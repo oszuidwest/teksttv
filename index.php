@@ -292,7 +292,6 @@ $iTickerTimeoutLength = 20000;
 
             .blob__placeholder {
                 z-index: 75;
-                background-image: url('images/Standaard - logo - kabelkrant2.jpg');
             }
 
             .carousel__punch {
@@ -337,15 +336,15 @@ $iTickerTimeoutLength = 20000;
                     <div class="carousel__content">&nbsp;</div>
                     <div class="carousel__photo">
                         <div class="carousel__photo__current">
-                            <img src="images/Weer - logo - kabelkrant2.jpg"/>
+                            <img src=""/>
                             <video width="711" height="400" muted="muted"><source src="" type="video/mp4"></video>
                         </div>
                         <div class="carousel__photo__pre">
-                            <img src="images/Weer - logo - kabelkrant2.jpg"/>
+                            <img src=""/>
                             <video width="711" height="400" muted="muted"><source src="" type="video/mp4"></video>
                         </div>
                         <div class="carousel__photo__base">
-                            <img src="images/Standaard - logo - kabelkrant2.jpg"/>
+                            <img src=""/>
                         </div>
                     </div>
                     <div class="carousel__photo"></div>
@@ -442,6 +441,8 @@ $iTickerTimeoutLength = 20000;
                         $('.reclame__photo__pre').css('display', 'block');
 
                         if(aContentData[iContentCounter]['type']=='reclame') {
+                            // Show blob line for reclame slides
+                            $('.blob__line').css('display', 'block');
                             $('.reclame__photo__pre').animate({ opacity: 1 }, 400, function() {
                                 $('.reclame__photo__current').toggleClass('reclame__photo__current reclame__photo__temp');
                                 $('.reclame__photo__pre').toggleClass('reclame__photo__pre reclame__photo__current');
@@ -453,7 +454,14 @@ $iTickerTimeoutLength = 20000;
 
                             $('.carousel__photo__pre img').attr('src', aContentData[0]['photo']);
                             $('.carousel__photo__pre video').attr('src', aContentData[0]['video']);
-                            
+
+                            // Hide image if photo is empty
+                            if(aContentData[0]['photo'] == '') {
+                                $('.carousel__photo__pre img').css('display', 'none');
+                            } else {
+                                $('.carousel__photo__pre img').css('display', 'block');
+                            }
+
                             iTimeoutLength = iReclameTimeoutLength;
                         } else {
                             if(iContentCounter==0) {
@@ -464,10 +472,16 @@ $iTickerTimeoutLength = 20000;
 
                             if(aContentData[iContentCounter]['type']=='weer') {
                                 $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
+                                // Weather slides have no photo or blob, ensure they are hidden
+                                $('.carousel__photo__current img').css('display', 'none');
+                                $('.carousel__photo__pre img').css('display', 'none');
+                                $('.blob__line').css('display', 'none');
                             }
                             
                             if(aContentData[iContentCounter]['type']=='nieuws') {
                                 $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
+                                // Show blob line for non-weather slides
+                                $('.blob__line').css('display', 'block');
                             }
                             
                             iTimeoutLength = iContentTimeoutLength;
@@ -475,6 +489,13 @@ $iTickerTimeoutLength = 20000;
                             if(iSelectedSlide!=null) {
                                 $('.carousel__photo__pre img').attr('src', aContentData[iContentCounter]['photo']);
                                 $('.carousel__photo__pre video').attr('src', aContentData[iContentCounter]['video']);
+                            }
+
+                            // Hide image if photo is empty
+                            if(aContentData[iContentCounter]['photo'] == '') {
+                                $('.carousel__photo__pre img').css('display', 'none');
+                            } else {
+                                $('.carousel__photo__pre img').css('display', 'block');
                             }
 
                             if(aContentData[iContentCounter]['video']!="") {
@@ -490,12 +511,22 @@ $iTickerTimeoutLength = 20000;
                                 $('.carousel__photo__temp').toggleClass('carousel__photo__temp carousel__photo__pre');
 
                                 if(aContentData[iContentCounter]['type']!='reclame') {
+                                    var nextPhoto = '';
                                     if((iContentCounter+1)>aContentData.length) {
-                                        $('.carousel__photo__pre img').attr('src', aContentData[0]['photo']);
+                                        nextPhoto = aContentData[0]['photo'];
+                                        $('.carousel__photo__pre img').attr('src', nextPhoto);
                                         $('.carousel__photo__pre video').attr('src', aContentData[0]['video']);
                                     } else {
-                                        $('.carousel__photo__pre img').attr('src', aContentData[iContentCounter]['photo']);
+                                        nextPhoto = aContentData[iContentCounter]['photo'];
+                                        $('.carousel__photo__pre img').attr('src', nextPhoto);
                                         $('.carousel__photo__pre video').attr('src', aContentData[iContentCounter]['video']);
+                                    }
+
+                                    // Hide image if photo is empty
+                                    if(nextPhoto == '') {
+                                        $('.carousel__photo__pre img').css('display', 'none');
+                                    } else {
+                                        $('.carousel__photo__pre img').css('display', 'block');
                                     }
 
                                     if($('.carousel__photo__pre video').attr('src')!="") {
