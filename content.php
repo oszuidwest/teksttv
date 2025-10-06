@@ -73,6 +73,8 @@ if(!isset($oConfig->images->weatherLogo) || !isset($oConfig->images->standardLog
 
 $sBaseUrl = $oConfig->content->newsApiUrl;
 
+// Set timezone to Netherlands
+date_default_timezone_set('Europe/Amsterdam');
 setlocale(LC_ALL, 'nl_NL.utf8');
 
 /**

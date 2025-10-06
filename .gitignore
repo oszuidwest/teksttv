@@ -72,3 +72,4 @@ CLAUDE.md
 *.p12
 private.key
 public.key
+weather.json
