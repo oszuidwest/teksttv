@@ -67,6 +67,12 @@ $sBrandColor = $oConfig->display->brandColor;
 $sRegio = isset($oConfig->content->regio) ? $oConfig->content->regio : null; // regio is optional
 $sWeatherLocation = $oConfig->weather->location;
 
+// Check for slide preview parameter in URL (overrides config setting)
+$iSlidePreview = isset($_GET['slide']) ? (int)$_GET['slide'] : null;
+if($iSlidePreview !== null) {
+	$oConfig->display->slide = $iSlidePreview;
+}
+
 // Hardcoded timeout lengths
 $iContentTimeoutLength = 25000;
 $iReclameTimeoutLength = 5000;
@@ -264,11 +270,6 @@ $iTickerTimeoutLength = 20000;
                 object-fit: cover;
             }
 
-            .carousel__photo__pre video {
-                position: absolute;
-                z-index: 84;
-            }
-            
             .carousel__photo__current {
                 position: absolute;
                 display: block;
@@ -283,11 +284,6 @@ $iTickerTimeoutLength = 20000;
                 height: 100%;
                 width: 100%;
                 object-fit: cover;
-            }
-
-            .carousel__photo__current video {
-                position: absolute;
-                z-index: 87;
             }
 
             .blob__placeholder {
@@ -337,11 +333,9 @@ $iTickerTimeoutLength = 20000;
                     <div class="carousel__photo">
                         <div class="carousel__photo__current">
                             <img src=""/>
-                            <video width="711" height="400" muted="muted"><source src="" type="video/mp4"></video>
                         </div>
                         <div class="carousel__photo__pre">
                             <img src=""/>
-                            <video width="711" height="400" muted="muted"><source src="" type="video/mp4"></video>
                         </div>
                         <div class="carousel__photo__base">
                             <img src=""/>
@@ -488,7 +482,6 @@ $iTickerTimeoutLength = 20000;
                             
                             if(iSelectedSlide!=null) {
                                 $('.carousel__photo__pre img').attr('src', aContentData[iContentCounter]['photo']);
-                                $('.carousel__photo__pre video').attr('src', aContentData[iContentCounter]['video']);
                             }
 
                             // Hide image if photo is empty
@@ -496,10 +489,6 @@ $iTickerTimeoutLength = 20000;
                                 $('.carousel__photo__pre img').css('display', 'none');
                             } else {
                                 $('.carousel__photo__pre img').css('display', 'block');
-                            }
-
-                            if(aContentData[iContentCounter]['video']!="") {
-                                $('.carousel__photo__pre video').get(0).play().catch(function() {});
                             }
 
                             $('.carousel__photo__pre').css('display', 'block');
@@ -515,11 +504,9 @@ $iTickerTimeoutLength = 20000;
                                     if((iContentCounter+1)>aContentData.length) {
                                         nextPhoto = aContentData[0]['photo'];
                                         $('.carousel__photo__pre img').attr('src', nextPhoto);
-                                        $('.carousel__photo__pre video').attr('src', aContentData[0]['video']);
                                     } else {
                                         nextPhoto = aContentData[iContentCounter]['photo'];
                                         $('.carousel__photo__pre img').attr('src', nextPhoto);
-                                        $('.carousel__photo__pre video').attr('src', aContentData[iContentCounter]['video']);
                                     }
 
                                     // Hide image if photo is empty
@@ -527,13 +514,6 @@ $iTickerTimeoutLength = 20000;
                                         $('.carousel__photo__pre img').css('display', 'none');
                                     } else {
                                         $('.carousel__photo__pre img').css('display', 'block');
-                                    }
-
-                                    if($('.carousel__photo__pre video').attr('src')!="") {
-                                        $('.carousel__photo__pre video').css('display', 'block');
-                                    }
-                                    else {
-                                        $('.carousel__photo__pre video').css('display', 'none');
                                     }
                                 }
                                 else {

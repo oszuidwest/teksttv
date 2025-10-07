@@ -66,9 +66,9 @@ if(!isset($oConfig->weather->location) || !isset($oConfig->weather->apiKey)) {
     die(json_encode(['error' => 'Missing required weather configuration (location or apiKey)']));
 }
 
-if(!isset($oConfig->images->weatherLogo) || !isset($oConfig->images->standardLogo) || !isset($oConfig->images->reclameLogo)) {
+if(!isset($oConfig->images->standardLogo) || !isset($oConfig->images->reclameLogo)) {
     header('HTTP/1.1 500 Internal Server Error');
-    die(json_encode(['error' => 'Missing required image configuration (weatherLogo, standardLogo, or reclameLogo)']));
+    die(json_encode(['error' => 'Missing required image configuration (standardLogo or reclameLogo)']));
 }
 
 $sBaseUrl = $oConfig->content->newsApiUrl;
@@ -76,6 +76,76 @@ $sBaseUrl = $oConfig->content->newsApiUrl;
 // Set timezone to Netherlands
 date_default_timezone_set('Europe/Amsterdam');
 setlocale(LC_ALL, 'nl_NL.utf8');
+
+/**
+ * Fetch URL with timeout to prevent hanging
+ * @param string $sUrl URL to fetch
+ * @param int $iTimeout Timeout in seconds (default: 10)
+ * @return string|false Content on success, false on failure
+ */
+function fetchUrlWithTimeout($sUrl, $iTimeout = 10) {
+	$oContext = stream_context_create(array(
+		'http' => array(
+			'timeout' => $iTimeout,
+			'ignore_errors' => true,
+			'user_agent' => 'TekstTV/1.0'
+		)
+	));
+
+	$sResult = @file_get_contents($sUrl, false, $oContext);
+
+	if($sResult === false) {
+		$aError = error_get_last();
+		error_log('TekstTV: URL fetch failed for ' . $sUrl . ' - ' . ($aError['message'] ?? 'Unknown error'));
+		return false;
+	}
+
+	return $sResult;
+}
+
+/**
+ * Fetch multiple URLs in parallel using curl_multi
+ * @param array $aUrls Associative array of key => URL
+ * @param int $iTimeout Timeout in seconds per request (default: 10)
+ * @return array Associative array of key => response content
+ */
+function fetchMultipleUrls($aUrls, $iTimeout = 10) {
+	$mh = curl_multi_init();
+	$aHandles = array();
+	$aResults = array();
+
+	// Initialize all curl handles
+	foreach($aUrls as $sKey => $sUrl) {
+		$ch = curl_init($sUrl);
+		curl_setopt_array($ch, array(
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_TIMEOUT => $iTimeout,
+			CURLOPT_CONNECTTIMEOUT => 5,
+			CURLOPT_USERAGENT => 'TekstTV/1.0'
+		));
+		curl_multi_add_handle($mh, $ch);
+		$aHandles[$sKey] = $ch;
+	}
+
+	// Execute all requests simultaneously
+	$running = null;
+	do {
+		curl_multi_exec($mh, $running);
+		curl_multi_select($mh);
+	} while ($running > 0);
+
+	// Collect results
+	foreach($aHandles as $sKey => $ch) {
+		$sContent = curl_multi_getcontent($ch);
+		$aResults[$sKey] = $sContent !== null ? $sContent : false;
+		curl_multi_remove_handle($mh, $ch);
+		curl_close($ch);
+	}
+
+	curl_multi_close($mh);
+	return $aResults;
+}
 
 /**
  * Convert wind direction in degrees to compass direction abbreviation
@@ -136,7 +206,7 @@ $oToday = new DateTime();
 $oToday -> setTime(0, 0, 0);
 $aData = array();
 
-# Fetch weather data
+// Fetch weather data
 // Get weather location from config.json only
 $sWeatherLocation = $oConfig->weather->location;
 
@@ -155,20 +225,18 @@ if(file_exists($sWeatherCacheFile) && (time() - filemtime($sWeatherCacheFile) < 
 	for ($iRetryCounter = 0; $iRetryCounter <= 3; $iRetryCounter++) {
 		$sUrl = 'http://api.openweathermap.org/data/2.5/forecast/daily?q=' . urlencode($sWeatherLocation) .
 		        '&units=metric&lang=nl&cnt=5&appid=' . $sApiKey;
-		$sWeatherData = @file_get_contents($sUrl);
+		$sWeatherData = fetchUrlWithTimeout($sUrl, 10);
 
 		if ($sWeatherData !== false) {
 			$oWeather = json_decode($sWeatherData);
-			// Save to location-specific cache file
 			file_put_contents($sWeatherCacheFile, $sWeatherData);
-			// Also maintain backward compatibility with the default weather.json
 			if($sWeatherLocation === 'Woensdrecht,NL') {
 				file_put_contents('./weather.json', $sWeatherData);
 			}
 			break;
 		}
 		if ($iRetryCounter < 3) {
-			sleep(1); // Short delay before retry
+			usleep(200000 * pow(2, $iRetryCounter)); // Exponential backoff: 200ms, 400ms, 800ms
 		}
 	}
 
@@ -202,104 +270,101 @@ if($oWeather && isset($oWeather->list)) {
 	}
 }
 
-// Build weather display matching overall design system
+// Build weather display optimized for TV readability with focus on today
 $sContent = '';
 
 // Get brand color from config
 $brandColor = isset($oConfig->display->brandColor) ? $oConfig->display->brandColor : '#04C104';
 
-// Full width container with proper margins and ticker clearance
-$sContent .= '<div style="position: absolute; left: 80px; right: 80px; top: 90px; height: 420px;">';
+// Full width container that extends to edges
+// Using position absolute to override the carousel__slide padding
+// Right: 150px to align with top__datetime (respect TV overscan)
+// Left padding: 48px to align with h1 (matches carousel__slide left padding)
+// Top: 100px to match spacing under h1 on other slides
+$sContent .= '<div style="position: absolute; left: 0; right: 150px; top: 100px; bottom: 0; padding: 0 40px 0 48px;">';
 
-// TODAY'S WEATHER - Primary focus (Left panel, 38% of container)
+// Flex container to position sections side by side
+$sContent .= '<div style="display: flex; gap: 40px; height: 100%;">';
+
+// TODAY'S WEATHER - Less dominant (45% width)
 if(isset($aWeatherData[0])) {
-	$sContent .= '<div style="position: absolute; left: 0; top: 0; width: 38%;">';
+	$sContent .= '<div style="flex: 0 0 45%;">';
 
-	// Section header matching h2 style
-	$sContent .= '<div style="margin-bottom: 40px;">';
-	$sContent .= '<div style="display: inline-block; border-bottom: 3px solid ' . $brandColor . '; padding-bottom: 6px;">';
-	$sContent .= '<h2 style="margin: 0; font-size: 44px; font-weight: 600; color: #000; text-transform: uppercase; letter-spacing: 2px;">Vandaag</h2>';
-	$sContent .= '</div>';
-	$sContent .= '</div>';
+	$sContent .= '<div style="border: 3px solid ' . $brandColor . '; background: #fff;">';
 
-	// Primary temperature - bolder for consistency
-	$sContent .= '<div style="margin-bottom: 40px;">';
-	$sContent .= '<div style="font-size: 120px; font-weight: 600; line-height: 1; color: #000; letter-spacing: -3px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
-	$sContent .= '<div style="font-size: 38px; color: #333; margin-top: 15px; font-weight: 400;">minimaal ' . $aWeatherData[0]['tempmin'] . '°</div>';
+	$sContent .= '<div style="background: ' . $brandColor . '; padding: 10px 25px;">';
+	$sContent .= '<h2 style="margin: 0; font-size: 40px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px;">Vandaag</h2>';
 	$sContent .= '</div>';
 
-	// Weather condition with icon - clear pairing
-	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 40px; gap: 20px;">';
+	$sContent .= '<div style="padding: 25px 25px 20px 25px;">';
+
+	$sContent .= '<div style="margin-bottom: 20px;">';
+	$sContent .= '<div style="font-size: 120px; font-weight: 800; line-height: 0.9; color: #000; letter-spacing: -5px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
+	$sContent .= '<div style="font-size: 36px; color: #666; margin-top: 8px; font-weight: 600;">minimaal ' . $aWeatherData[0]['tempmin'] . '°</div>';
+	$sContent .= '</div>';
+
+	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px; padding-bottom: 20px; border-bottom: 2px solid #e0e0e0;">';
 	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 90px; height: 90px;"/>';
-	$sContent .= '<div style="font-size: 32px; color: #000; font-weight: 400; line-height: 1.3; max-width: 250px;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
+	$sContent .= '<div style="font-size: 32px; color: #000; font-weight: 600; line-height: 1.2; max-width: 280px;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
 	$sContent .= '</div>';
 
-	// Wind information - secondary data group
 	$windForce = min($aWeatherData[0]['windspd'], 10);
 	$windStrength = $windForce <= 3 ? 'Zwak' : ($windForce <= 6 ? 'Matig' : 'Krachtig');
 
-	$sContent .= '<div style="border-top: 2px solid #ccc; padding-top: 25px;">';
-	$sContent .= '<div style="font-size: 20px; color: #666; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; font-weight: 600;">Wind</div>';
-	$sContent .= '<div style="display: flex; align-items: baseline; gap: 15px;">';
-	$sContent .= '<div style="font-size: 48px; font-weight: 600; color: #000;">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</div>';
-	$sContent .= '<div style="font-size: 28px; color: #333; font-weight: 400;">' . $windStrength . '</div>';
+	$sContent .= '<div style="padding-top: 15px;">';
+	$sContent .= '<div style="font-size: 22px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600;">Wind</div>';
+	$sContent .= '<div style="font-size: 44px; font-weight: 800; color: #000; line-height: 1;">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</div>';
+	$sContent .= '<div style="font-size: 26px; color: #000; font-weight: 600; margin-top: 4px;">' . $windStrength . '</div>';
+	$sContent .= '</div>';
+
 	$sContent .= '</div>';
 	$sContent .= '</div>';
 
 	$sContent .= '</div>';
 }
 
-// FORECAST SECTION - Secondary focus (Right panel, 58% of container)
-$sContent .= '<div style="position: absolute; right: 0; top: 0; width: 58%;">';
+// FORECAST SECTION - Takes remaining space (55%)
+$sContent .= '<div style="flex: 1;">';
 
-// Section header aligned with left panel
-$sContent .= '<div style="margin-bottom: 40px;">';
-$sContent .= '<h3 style="margin: 0; font-size: 28px; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 1.5px;">Vooruitzicht</h3>';
+$sContent .= '<div style="margin-bottom: 30px;">';
+$sContent .= '<h3 style="margin: 0; font-size: 32px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 1px;">Komende dagen</h3>';
 $sContent .= '</div>';
 
-// Forecast grid - 2x2 with appropriate spacing for container height
-$sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">';
+$sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">';
 
 for($i = 1; $i <= 4; $i++) {
 	if(isset($aWeatherData[$i])) {
-		// Forecast card with clear information hierarchy
-		$sContent .= '<div style="background: #fff; border: 2px solid #e0e0e0; padding: 20px; position: relative;">';
+		$sContent .= '<div style="background: #fff; border: 2px solid #ddd; padding: 18px 18px 18px 22px; position: relative;">';
 
-		// Visual accent bar
-		$sContent .= '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: ' . $brandColor . ';"></div>';
+		$sContent .= '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: ' . $brandColor . ';"></div>';
 
-		// Day label - clear and prominent
 		$dayName = $i == 1 ? 'Morgen' : $aWeatherData[$i]['date'];
-		$sContent .= '<div style="font-size: 22px; font-weight: 600; color: #000; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">' . $dayName . '</div>';
+		$sContent .= '<div style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">' . $dayName . '</div>';
 
-		// Temperature and icon group
-		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">';
+		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">';
 
-		// Temperature hierarchy
-		$sContent .= '<div style="display: flex; align-items: baseline; gap: 10px;">';
-		$sContent .= '<span style="font-size: 50px; font-weight: 600; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
-		$sContent .= '<span style="font-size: 32px; color: #666; font-weight: 400;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
+		$sContent .= '<div style="display: flex; align-items: baseline; gap: 8px;">';
+		$sContent .= '<span style="font-size: 54px; font-weight: 700; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
+		$sContent .= '<span style="font-size: 34px; color: #666; font-weight: 600;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
 		$sContent .= '</div>';
 
-		// Weather icon
-		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 70px; height: 70px;"/>';
+		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 60px; height: 60px;"/>';
 
 		$sContent .= '</div>';
 
-		// Weather description
-		$sContent .= '<div style="font-size: 24px; color: #000; margin-bottom: 12px; line-height: 1.3; font-weight: 400;">' . $aWeatherData[$i]['weertype'] . '</div>';
+		$sContent .= '<div style="font-size: 22px; color: #000; margin-bottom: 8px; line-height: 1.2; font-weight: 500;">' . $aWeatherData[$i]['weertype'] . '</div>';
 
-		// Wind
-		$sContent .= '<div style="font-size: 20px; color: #000; font-weight: 400;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
+		$sContent .= '<div style="font-size: 20px; color: #555; font-weight: 500;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
 
 		$sContent .= '</div>';
 	}
 }
 
-$sContent .= '</div>'; // End grid
-$sContent .= '</div>'; // End forecast section
+$sContent .= '</div>';
+$sContent .= '</div>';
 
-$sContent .= '</div>'; // End container
+$sContent .= '</div>';
+$sContent .= '</div>';
 
 // Extract city name from location (e.g., "Amsterdam,NL" -> "Amsterdam")
 // Always show "Weerstation [City]" for all locations
@@ -314,54 +379,84 @@ $aData[] = array(
 	'type' => 'weer',
 	'title' => $sWeatherTitle,
 	'photo' => '',
-	'video' => '',
 	'content' => $sContent);
 
-# Fetch news data
+// Prepare URLs for parallel API fetching
 $iNumberOfPosts = $oConfig->content->numberOfPosts;
 $sNewsUrl = $sBaseUrl.'/wp-json/wp/v2/posts?per_page=' . $iNumberOfPosts . '&_fields=title,kabelkrant_text,featured_media';
 
-// Add region parameter from config.json (regio is optional, must be an array if present)
 if(isset($oConfig->content->regio) && is_array($oConfig->content->regio)) {
 	$sNewsUrl .= '&regio=' . urlencode(implode(',', $oConfig->content->regio));
 }
 
-$oNews = json_decode(file_get_contents($sNewsUrl));
+// Fetch news and commercials in parallel
+$aApiUrls = array(
+	'news' => $sNewsUrl,
+	'broadcast' => $sBaseUrl . '/wp-json/zw/v1/broadcast_data'
+);
 
+$aApiResults = fetchMultipleUrls($aApiUrls, 10);
+
+// Parse news results
+$oNews = $aApiResults['news'] !== false ? json_decode($aApiResults['news']) : array();
+
+// Collect all media IDs that need to be fetched
+$aMediaIds = array();
+if($oNews) {
+	foreach ($oNews as $oItem) {
+		if(trim((string)$oItem->kabelkrant_text)!="" && (string)$oItem->featured_media!='') {
+			$aMediaIds[] = (string)$oItem->featured_media;
+		}
+	}
+}
+
+// Fetch media URLs if needed
+$aMediaUrls = array();
+if(count($aMediaIds) > 0) {
+	$sMediaUrl = $sBaseUrl.'/wp-json/wp/v2/media?include=' . implode(',', $aMediaIds) . '&_fields=id,source_url';
+	$sMediaData = fetchUrlWithTimeout($sMediaUrl, 10);
+	if($sMediaData !== false) {
+		$oMedia = json_decode($sMediaData);
+		if($oMedia) {
+			foreach($oMedia as $oMediaItem) {
+				$aMediaUrls[$oMediaItem->id] = $oMediaItem->source_url;
+			}
+		}
+	}
+}
+
+// Build news data array
 $iCounter = 0;
 foreach ($oNews as $oItem) {
 	if(trim((string)$oItem->kabelkrant_text)!="") {
 		$sPhoto = $oConfig->images->standardLogo;
-		# If a photo is uploaded
-		if((string)$oItem->featured_media!='') {
-			$oMedia = json_decode(file_get_contents($sBaseUrl."/wp-json/wp/v2/media/".$oItem->featured_media."?_fields=source_url"));
-			if($oMedia!="")	$sPhoto = $oMedia->source_url;
+		if((string)$oItem->featured_media!='' && isset($aMediaUrls[(int)$oItem->featured_media])) {
+			$sPhoto = $aMediaUrls[(int)$oItem->featured_media];
 		}
 
 		$aData[] = array(
 			'type' => 'nieuws',
 			'title' => (string)$oItem->title->rendered,
 			'photo' => $sPhoto,
-			'video' => '', //(((string) $oItem ->video)!="") ? (string) $oItem->video : '',
 			'content' => (string)$oItem->kabelkrant_text);
 	}
 }
 
-# Fetch commercials data
-$oReclame  = json_decode(file_get_contents($sBaseUrl.'/wp-json/zw/v1/broadcast_data'));
+// Parse commercials data (already fetched in parallel with news)
+$oReclame = $aApiResults['broadcast'] !== false ? json_decode($aApiResults['broadcast']) : null;
 
-if(count($oReclame->commercials)>0) {
+if($oReclame && isset($oReclame->commercials) && count($oReclame->commercials)>0) {
 	$aData[] = array(
 		'type' => 'reclame',
 		'title' => 'Reclame',
 		'photo' => $oConfig->images->reclameLogo);
-}
 
-foreach ($oReclame->commercials as $oItem) {
-	$aData[] = array(
-		'type' => 'reclame',
-		'title' => 'reclame', 
-		'photo' => $oItem);
+	foreach ($oReclame->commercials as $oItem) {
+		$aData[] = array(
+			'type' => 'reclame',
+			'title' => 'reclame',
+			'photo' => $oItem);
+	}
 }
 
 echo json_encode($aData);

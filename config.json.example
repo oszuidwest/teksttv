@@ -19,7 +19,6 @@
         "apiKey": "YOUR_OPENWEATHERMAP_API_KEY"
       },
       "images": {
-        "weatherLogo": "images/Weer - logo - kabelkrant2.jpg",
         "standardLogo": "images/Standaard - logo - kabelkrant2.jpg",
         "reclameLogo": "images/Kabelkrant reclame.jpg"
       }
@@ -42,7 +41,6 @@
         "apiKey": "YOUR_OPENWEATHERMAP_API_KEY"
       },
       "images": {
-        "weatherLogo": "images/Weer - logo - kabelkrant2.jpg",
         "standardLogo": "images/Standaard - logo - kabelkrant2.jpg",
         "reclameLogo": "images/Kabelkrant reclame.jpg"
       }
