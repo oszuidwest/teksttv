@@ -199,6 +199,7 @@ function getDay($iDay) {
 		case 5: return 'Vrijdag';
 		case 6: return 'Zaterdag';
 		case 7: return 'Zondag';
+		default: return 'Onbekend';
 	}
 }
 
@@ -258,7 +259,7 @@ if($oWeather && isset($oWeather->list)) {
 		$oDate->setTimeStamp($oWeatherDay->dt);
 
 		$aWeatherData[$oToday->diff($oDate)->days] = array(
-			'date' => getDay($oDate->format('N')),
+			'date' => getDay((int)$oDate->format('N')),
 			'tempday' => round($oWeatherDay->temp->day, 1),
 			'tempmin' => round($oWeatherDay->temp->min, 1),
 			'tempmax' => round($oWeatherDay->temp->max, 1),
