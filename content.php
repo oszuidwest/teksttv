@@ -385,7 +385,7 @@ $aData[] = array(
 $iNumberOfPosts = $oConfig->content->numberOfPosts;
 $sNewsUrl = $sBaseUrl.'/wp-json/wp/v2/posts?per_page=' . $iNumberOfPosts . '&_fields=title,kabelkrant_text,featured_media';
 
-if(isset($oConfig->content->regio) && is_array($oConfig->content->regio)) {
+if(isset($oConfig->content->regio) && is_array($oConfig->content->regio) && count($oConfig->content->regio) > 0) {
 	$sNewsUrl .= '&regio=' . urlencode(implode(',', $oConfig->content->regio));
 }
 
