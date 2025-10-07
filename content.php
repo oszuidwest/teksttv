@@ -413,7 +413,7 @@ if($oNews) {
 // Fetch media URLs if needed
 $aMediaUrls = array();
 if(count($aMediaIds) > 0) {
-	$sMediaUrl = $sBaseUrl.'/wp-json/wp/v2/media?include=' . implode(',', $aMediaIds) . '&_fields=id,source_url';
+	$sMediaUrl = $sBaseUrl.'/wp-json/wp/v2/media?include=' . implode(',', $aMediaIds) . '&per_page=' . count($aMediaIds) . '&_fields=id,source_url';
 	$sMediaData = fetchUrlWithTimeout($sMediaUrl, 10);
 	if($sMediaData !== false) {
 		$oMedia = json_decode($sMediaData);
@@ -430,8 +430,8 @@ $iCounter = 0;
 foreach ($oNews as $oItem) {
 	if(trim((string)$oItem->kabelkrant_text)!="") {
 		$sPhoto = $oConfig->images->standardLogo;
-		if((string)$oItem->featured_media!='' && isset($aMediaUrls[(int)$oItem->featured_media])) {
-			$sPhoto = $aMediaUrls[(int)$oItem->featured_media];
+		if((string)$oItem->featured_media!='' && isset($aMediaUrls[$oItem->featured_media])) {
+			$sPhoto = $aMediaUrls[$oItem->featured_media];
 		}
 
 		$aData[] = array(
