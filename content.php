@@ -293,29 +293,29 @@ if(isset($aWeatherData[0])) {
 
 	$sContent .= '<div style="border: 3px solid ' . $brandColor . '; background: #fff;">';
 
-	$sContent .= '<div style="background: ' . $brandColor . '; padding: 10px 25px;">';
-	$sContent .= '<h2 style="margin: 0; font-size: 40px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px;">Vandaag</h2>';
+	$sContent .= '<div style="background: ' . $brandColor . '; padding: 8px 18px;">';
+	$sContent .= '<h2 style="margin: 0; font-size: 36px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 2px;">Vandaag</h2>';
 	$sContent .= '</div>';
 
-	$sContent .= '<div style="padding: 25px 25px 20px 25px;">';
+	$sContent .= '<div style="padding: 20px 18px 18px 18px; background: #fff;">';
 
-	$sContent .= '<div style="margin-bottom: 20px;">';
-	$sContent .= '<div style="font-size: 120px; font-weight: 800; line-height: 0.9; color: #000; letter-spacing: -5px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
-	$sContent .= '<div style="font-size: 36px; color: #666; margin-top: 8px; font-weight: 600;">minimaal ' . $aWeatherData[0]['tempmin'] . '°</div>';
+	$sContent .= '<div style="margin-bottom: 15px; text-align: center; border-bottom: 3px solid ' . $brandColor . '; padding-bottom: 12px;">';
+	$sContent .= '<div style="font-size: 100px; font-weight: 800; line-height: 0.9; color: #000; letter-spacing: -5px;">' . $aWeatherData[0]['tempmax'] . '°</div>';
+	$sContent .= '<div style="font-size: 30px; color: #4C4C4C; margin-top: 8px; font-weight: 600;">minimaal ' . $aWeatherData[0]['tempmin'] . '°</div>';
 	$sContent .= '</div>';
 
-	$sContent .= '<div style="display: flex; align-items: center; margin-bottom: 20px; gap: 15px; padding-bottom: 20px; border-bottom: 2px solid #e0e0e0;">';
-	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 90px; height: 90px;"/>';
-	$sContent .= '<div style="font-size: 32px; color: #000; font-weight: 600; line-height: 1.2; max-width: 280px;">' . ucfirst($aWeatherData[0]['weertype']) . '</div>';
+	$sContent .= '<div style="display: flex; align-items: center; justify-content: center; margin-bottom: 15px; gap: 15px; padding: 15px 12px; background: #4C4C4C;">';
+	$sContent .= '<img src="' . $aWeatherData[0]['weericon'] . '" style="width: 70px; height: 70px;"/>';
+	$sContent .= '<div style="font-size: 28px; color: #fff; font-weight: 700; line-height: 1.2;">' . strtoupper(ucfirst($aWeatherData[0]['weertype'])) . '</div>';
 	$sContent .= '</div>';
 
 	$windForce = min($aWeatherData[0]['windspd'], 10);
 	$windStrength = $windForce <= 3 ? 'Zwak' : ($windForce <= 6 ? 'Matig' : 'Krachtig');
 
-	$sContent .= '<div style="padding-top: 15px;">';
-	$sContent .= '<div style="font-size: 22px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 600;">Wind</div>';
-	$sContent .= '<div style="font-size: 44px; font-weight: 800; color: #000; line-height: 1;">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</div>';
-	$sContent .= '<div style="font-size: 26px; color: #000; font-weight: 600; margin-top: 4px;">' . $windStrength . '</div>';
+	$sContent .= '<div style="padding: 18px; background: ' . $brandColor . '; text-align: center;">';
+	$sContent .= '<div style="font-size: 20px; color: #fff; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; font-weight: 800;">Wind</div>';
+	$sContent .= '<div style="font-size: 48px; font-weight: 800; color: #fff; line-height: 1;">' . $aWeatherData[0]['winddir'] . ' ' . $aWeatherData[0]['windspd'] . '</div>';
+	$sContent .= '<div style="font-size: 24px; color: #fff; font-weight: 700; margin-top: 5px;">' . $windStrength . '</div>';
 	$sContent .= '</div>';
 
 	$sContent .= '</div>';
@@ -327,35 +327,33 @@ if(isset($aWeatherData[0])) {
 // FORECAST SECTION - Takes remaining space (55%)
 $sContent .= '<div style="flex: 1;">';
 
-$sContent .= '<div style="margin-bottom: 30px;">';
-$sContent .= '<h3 style="margin: 0; font-size: 32px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 1px;">Komende dagen</h3>';
+$sContent .= '<div style="margin-bottom: 20px;">';
+$sContent .= '<h3 style="margin: 0; font-size: 36px; font-weight: 800; color: #999; text-transform: uppercase; letter-spacing: 2px;">Komende dagen</h3>';
 $sContent .= '</div>';
 
 $sContent .= '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">';
 
 for($i = 1; $i <= 4; $i++) {
 	if(isset($aWeatherData[$i])) {
-		$sContent .= '<div style="background: #fff; border: 2px solid #ddd; padding: 18px 18px 18px 22px; position: relative;">';
-
-		$sContent .= '<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: ' . $brandColor . ';"></div>';
+		$sContent .= '<div style="background: #fff; padding: 15px; border-left: 4px solid ' . $brandColor . ';">';
 
 		$dayName = $i == 1 ? 'Morgen' : $aWeatherData[$i]['date'];
-		$sContent .= '<div style="font-size: 24px; font-weight: 700; color: #000; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">' . $dayName . '</div>';
+		$sContent .= '<div style="font-size: 24px; font-weight: 800; color: ' . $brandColor . '; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">' . $dayName . '</div>';
 
-		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">';
+		$sContent .= '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">';
 
 		$sContent .= '<div style="display: flex; align-items: baseline; gap: 8px;">';
-		$sContent .= '<span style="font-size: 54px; font-weight: 700; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
-		$sContent .= '<span style="font-size: 34px; color: #666; font-weight: 600;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
+		$sContent .= '<span style="font-size: 54px; font-weight: 800; color: #000; line-height: 1;">' . $aWeatherData[$i]['tempmax'] . '°</span>';
+		$sContent .= '<span style="font-size: 32px; color: #999; font-weight: 600;">' . $aWeatherData[$i]['tempmin'] . '°</span>';
 		$sContent .= '</div>';
 
-		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 60px; height: 60px;"/>';
+		$sContent .= '<img src="' . $aWeatherData[$i]['weericon'] . '" style="width: 65px; height: 65px;"/>';
 
 		$sContent .= '</div>';
 
-		$sContent .= '<div style="font-size: 22px; color: #000; margin-bottom: 8px; line-height: 1.2; font-weight: 500;">' . $aWeatherData[$i]['weertype'] . '</div>';
+		$sContent .= '<div style="font-size: 21px; color: #000; margin-bottom: 6px; line-height: 1.2; font-weight: 600;">' . ucfirst($aWeatherData[$i]['weertype']) . '</div>';
 
-		$sContent .= '<div style="font-size: 20px; color: #555; font-weight: 500;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
+		$sContent .= '<div style="font-size: 19px; color: #777; font-weight: 600;">Wind: ' . $aWeatherData[$i]['winddir'] . ' ' . $aWeatherData[$i]['windspd'] . '</div>';
 
 		$sContent .= '</div>';
 	}
