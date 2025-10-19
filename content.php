@@ -281,11 +281,11 @@ $brandColor = isset($oConfig->display->brandColor) ? $oConfig->display->brandCol
 // Using position absolute to override the carousel__slide padding
 // Right: 150px to align with top__datetime (respect TV overscan)
 // Left padding: 48px to align with h1 (matches carousel__slide left padding)
-// Top: 100px to match spacing under h1 on other slides
-$sContent .= '<div style="position: absolute; left: 0; right: 150px; top: 100px; bottom: 0; padding: 0 40px 0 48px;">';
+// Top: 100px to account for h1 title space, Bottom: 180px to account for ticker (68px + 72px line-height + padding)
+$sContent .= '<div style="position: absolute; left: 0; right: 150px; top: 100px; bottom: 180px; padding: 0 40px 0 48px; display: flex; align-items: center;">';
 
 // Flex container to position sections side by side
-$sContent .= '<div style="display: flex; gap: 40px; height: 100%;">';
+$sContent .= '<div style="display: flex; gap: 40px; width: 100%;">';
 
 // TODAY'S WEATHER - Less dominant (45% width)
 if(isset($aWeatherData[0])) {
