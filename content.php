@@ -581,7 +581,7 @@ for($i = 0; $i <= 3; $i++) {
 		}
 
 		// Add small "max" label above temperature
-		$labelSize = $i === 0 ? '12px' : '11px';
+		$labelSize = $i === 0 ? '20px' : '18px';
 		$sContent .= '<div style="font-size: ' . $labelSize . '; color: #999; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px;">Max</div>';
 
 		// Temperature with color
@@ -612,7 +612,7 @@ for($i = 0; $i <= 3; $i++) {
 		}
 
 		// Add small "min" label
-		$labelSize = $i === 0 ? '11px' : '10px';
+		$labelSize = $i === 0 ? '18px' : '16px';
 		$sContent .= '<div style="font-size: ' . $labelSize . '; color: #999; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px;">Min</div>';
 
 		// Temperature
@@ -705,7 +705,7 @@ for($i = 0; $i <= 3; $i++) {
 		$sContent .= '<div style="font-size: ' . $windTextSize . '; font-weight: 700; line-height: 1;">' . $windDir . ' ' . $iWindSpeed . '</div>';
 
 		// Always show descriptive text for wind strength
-		$descriptiveSize = $i === 0 ? '11px' : '10px';
+		$descriptiveSize = $i === 0 ? '16px' : '14px';
 		$windDescription = '';
 
 		if($iWindSpeed <= 1) {
