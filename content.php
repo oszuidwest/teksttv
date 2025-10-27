@@ -203,6 +203,107 @@ function getDay($iDay) {
 	}
 }
 
+/**
+ * Fetch region hierarchy from WordPress API with pagination support
+ * Caches the result for 24 hours to avoid repeated API calls
+ * @param string $sBaseUrl WordPress site base URL
+ * @return array Mapping of parent region IDs to array of child region IDs
+ */
+function fetchRegionHierarchy($sBaseUrl) {
+	$sCacheFile = './region_hierarchy.json';
+	$iCacheTime = 24 * 3600; // 24 hours
+
+	// Check if cache exists and is less than 24 hours old
+	if(file_exists($sCacheFile) && (time() - filemtime($sCacheFile) < $iCacheTime)) {
+		$sCachedData = file_get_contents($sCacheFile);
+		$aHierarchy = json_decode($sCachedData, true);
+		if($aHierarchy !== null) {
+			return $aHierarchy;
+		}
+	}
+
+	// Fetch all regions from WordPress API with pagination
+	$aAllRegios = array();
+	$iPage = 1;
+	$iPerPage = 100;
+	$iMaxPages = 20; // Safety limit to prevent infinite loops (covers up to 2000 regions)
+
+	while($iPage <= $iMaxPages) {
+		$sRegioUrl = $sBaseUrl . '/wp-json/wp/v2/regio?per_page=' . $iPerPage . '&page=' . $iPage . '&_fields=id,parent';
+		$sRegioData = fetchUrlWithTimeout($sRegioUrl, 10);
+
+		if($sRegioData === false) {
+			break; // API error, use what we have
+		}
+
+		$aRegios = json_decode($sRegioData, true);
+		if(!is_array($aRegios) || count($aRegios) === 0) {
+			break; // No more results
+		}
+
+		// Merge this page of results
+		$aAllRegios = array_merge($aAllRegios, $aRegios);
+
+		// If we got fewer results than requested, we've reached the last page
+		if(count($aRegios) < $iPerPage) {
+			break;
+		}
+
+		$iPage++;
+	}
+
+	$aHierarchy = array();
+
+	if(count($aAllRegios) > 0) {
+		// Build parent-to-children mapping
+		foreach($aAllRegios as $oRegio) {
+			if(isset($oRegio['parent']) && $oRegio['parent'] > 0) {
+				$iParent = (int)$oRegio['parent'];
+				$iChild = (int)$oRegio['id'];
+
+				if(!isset($aHierarchy[$iParent])) {
+					$aHierarchy[$iParent] = array();
+				}
+				$aHierarchy[$iParent][] = $iChild;
+			}
+		}
+
+		// Cache the hierarchy
+		file_put_contents($sCacheFile, json_encode($aHierarchy));
+	}
+
+	return $aHierarchy;
+}
+
+/**
+ * Expand region list to include sub-regions for any main regions
+ * Automatically fetches region hierarchy from the WordPress API
+ * @param array $aRegions Array of region IDs
+ * @param string $sBaseUrl WordPress site base URL
+ * @return array Expanded array of region IDs (unique values only)
+ */
+function expandRegions($aRegions, $sBaseUrl) {
+	// Fetch region hierarchy dynamically
+	$aRegionMapping = fetchRegionHierarchy($sBaseUrl);
+
+	$aExpandedRegions = array();
+
+	foreach($aRegions as $iRegion) {
+		// Add the region itself
+		$aExpandedRegions[] = $iRegion;
+
+		// If this is a main region with sub-regions, add them too
+		if(isset($aRegionMapping[$iRegion])) {
+			foreach($aRegionMapping[$iRegion] as $iSubRegion) {
+				$aExpandedRegions[] = $iSubRegion;
+			}
+		}
+	}
+
+	// Return unique values only
+	return array_unique($aExpandedRegions);
+}
+
 $oToday = new DateTime();
 $oToday -> setTime(0, 0, 0);
 $aData = array();
@@ -385,7 +486,9 @@ $iNumberOfPosts = $oConfig->content->numberOfPosts;
 $sNewsUrl = $sBaseUrl.'/wp-json/wp/v2/posts?per_page=' . $iNumberOfPosts . '&_fields=title,kabelkrant_text,featured_media';
 
 if(isset($oConfig->content->regio) && is_array($oConfig->content->regio) && count($oConfig->content->regio) > 0) {
-	$sNewsUrl .= '&regio=' . urlencode(implode(',', $oConfig->content->regio));
+	// Expand regions to include sub-regions automatically from API
+	$aExpandedRegions = expandRegions($oConfig->content->regio, $sBaseUrl);
+	$sNewsUrl .= '&regio=' . urlencode(implode(',', $aExpandedRegions));
 }
 
 // Fetch news and commercials in parallel
