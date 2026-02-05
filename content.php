@@ -618,7 +618,7 @@ function transformSlide($oSlide, $brandColor, $bIsFirstTransition = null)
 }
 
 // Fetch unified API
-$sApiUrl = 'https://preview.zuidwestupdate.nl/wp-json/zw/v1/teksttv?kanaal=' . urlencode($sKanaal);
+$sApiUrl = 'https://www.zuidwestupdate.nl/wp-json/zw/v1/teksttv?channel=' . urlencode($sKanaal);
 $sApiData = fetchUrlWithTimeout($sApiUrl, 15);
 
 if ($sApiData === false) {
