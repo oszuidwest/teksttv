@@ -1,53 +1,15 @@
 <?php
 
-// Get config ID from URL parameter
-$sConfigId = isset($_GET['config']) ? $_GET['config'] : null;
+// Get channel from URL parameter (defaults to tv1)
+$sKanaal = isset($_GET['kanaal']) ? $_GET['kanaal'] : 'tv1';
 
-// Load configuration from config.json
-if(!file_exists('config.json')) {
-    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration file config.json not found</p></body></html>');
-}
-
-$sConfigContent = file_get_contents('config.json');
-$oConfigFile = json_decode($sConfigContent);
-
-if(json_last_error() !== JSON_ERROR_NONE) {
-    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Invalid JSON in config.json: ' . htmlspecialchars(json_last_error_msg()) . '</p></body></html>');
-}
-
-$oConfig = null;
-
-if($oConfigFile) {
-    // New multi-configuration structure
-    if(isset($oConfigFile->configurations)) {
-        if($sConfigId) {
-            // Config ID explicitly provided - must exist or error
-            if(isset($oConfigFile->configurations->{$sConfigId})) {
-                $oConfig = $oConfigFile->configurations->{$sConfigId};
-            } else {
-                die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration "' . htmlspecialchars($sConfigId) . '" not found in config.json</p></body></html>');
-            }
-        } else {
-            // No config ID provided - use default
-            if(isset($oConfigFile->default) && isset($oConfigFile->configurations->{$oConfigFile->default})) {
-                $oConfig = $oConfigFile->configurations->{$oConfigFile->default};
-            }
-        }
+// Load brandColor for this channel from config.json
+$sBrandColor = '#04C104'; // default
+if (file_exists('config.json')) {
+    $oConfig = json_decode(file_get_contents('config.json'));
+    if ($oConfig && isset($oConfig->channels->{$sKanaal}->brandColor)) {
+        $sBrandColor = $oConfig->channels->{$sKanaal}->brandColor;
     }
-    // Legacy single-configuration structure
-    elseif(isset($oConfigFile->display)) {
-        $oConfig = $oConfigFile;
-    }
-}
-
-// Exit with error if configuration is not properly loaded
-if(!$oConfig) {
-    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Configuration not found or invalid structure in config.json</p></body></html>');
-}
-
-// Validate required configuration fields
-if(!isset($oConfig->display) || !isset($oConfig->display->brandColor)) {
-    die('<!DOCTYPE html><html><body><h1>Error</h1><p>Missing required display configuration in config.json</p></body></html>');
 }
 
 // Calculate refresh timing (hardcoded to refresh at 02:55:00)
@@ -60,22 +22,14 @@ $iSec       = (int) $oInterval->format('%s');
 $iMin       = (int) $oInterval->format('%i');
 $iHour      = (int) $oInterval->format('%h');
 
-$iTotSec    = $iSec+($iMin*60)+($iHour*3600)+300;
+$iTotSec    = $iSec + ($iMin * 60) + ($iHour * 3600) + 300;
 
-// Get configuration values from config.json only
-$sBrandColor = $oConfig->display->brandColor;
-$sRegio = isset($oConfig->content->regio) ? $oConfig->content->regio : null; // regio is optional
-$sWeatherLocation = $oConfig->weather->location;
+// Check for slide preview parameter in URL
+$iSlidePreview = isset($_GET['slide']) ? (int) $_GET['slide'] : null;
 
-// Check for slide preview parameter in URL (overrides config setting)
-$iSlidePreview = isset($_GET['slide']) ? (int)$_GET['slide'] : null;
-if($iSlidePreview !== null) {
-	$oConfig->display->slide = $iSlidePreview;
-}
-
-// Hardcoded timeout lengths
-$iContentTimeoutLength = 25000;
-$iReclameTimeoutLength = 5000;
+// Default timeout lengths (used as fallback if API doesn't provide duration)
+$iDefaultContentTimeout = 20000;
+$iDefaultReclameTimeout = 10000;
 $iTickerTimeoutLength = 20000;
 
 ?>
@@ -108,21 +62,21 @@ $iTickerTimeoutLength = 20000;
             }
 
             .viewport {
-                width: 1920px; /* done */
-                height: 1080px; /* done */
+                width: 1920px;
+                height: 1080px;
                 position: relative;
                 background: #B5B5B5;
             }
-            
+
             .reclame {
-                width: 1920px; /* done */
-                height: 1080px; /* done */
+                width: 1920px;
+                height: 1080px;
                 position: absolute;
                 left: 0px;
                 top: 0px;
                 z-index: 93;
             }
-            
+
             .reclame__photo__pre {
                 position: absolute;
                 width: 100%;
@@ -131,7 +85,7 @@ $iTickerTimeoutLength = 20000;
                 display: block;
                 z-index: 95;
             }
-            
+
             .reclame__photo__current {
                 position: absolute;
                 width: 100%;
@@ -145,24 +99,24 @@ $iTickerTimeoutLength = 20000;
                 position: absolute;
                 background-image: url(images/logos_kabelkrant.png);
                 background-size: cover;
-                left: 81px; /* 54px */
-                top: 45px; /* 30px */
-                width: 233px; /* 155px */
-                height: 393px; /* 262px */
+                left: 81px;
+                top: 45px;
+                width: 233px;
+                height: 393px;
             }
 
             .top {
-                width: 1920px; /* done */
-                height: 156px; /* 104px */
+                width: 1920px;
+                height: 156px;
                 position: absolue;
                 background: #4C4C4C;
             }
             .top__datetime {
                 position: absolute;
-                right: 150px; /* 100px */
+                right: 150px;
                 top: 6%;
                 color: #F5F5F5;
-                font-size: 44px; /* 29px */
+                font-size: 44px;
                 font-weight: bold;
                 text-align: right;
             }
@@ -171,33 +125,33 @@ $iTickerTimeoutLength = 20000;
                 position: absolute;
                 left: 0;
                 right: 0;
-                bottom: 68px; /* 45px */
+                bottom: 68px;
                 display: flex;
                 background: #4C4C4C;
                 color: #fff;
-                line-height: 72px; /* 48px */
-                font-size: 54px; /* 36px */
+                line-height: 72px;
+                font-size: 54px;
             }
 
             .ticker__label {
                 background: <?= $sBrandColor ?>;
                 color: #ffffff;
-                width: 480px; /* 320px */
+                width: 480px;
                 text-transform: uppercase;
                 text-align: right;
-                padding: 0 18px; /* 0 12px */
+                padding: 0 18px;
                 font-weight: bold;
             }
 
             .ticker__content {
-                padding: 0 18px; /* 0 12px */
+                padding: 0 18px;
             }
 
             .carousel {
                 position: absolute;
                 background: yellow;
-                left: 237px; /* 158px */
-                top: 156px; /* 104px */
+                left: 237px;
+                top: 156px;
                 bottom: 0;
                 right: 0;
             }
@@ -209,24 +163,24 @@ $iTickerTimeoutLength = 20000;
                 left: 0;
                 top: 0;
                 background: #F5F5F5;
-                padding: 24px 72px 0 48px; /* 16px 48px 0 32px */
+                padding: 24px 72px 0 48px;
                 overflow: auto;
-                font-size: 48px; /* 32px */
+                font-size: 48px;
             }
 
             .carousel__slide h1 {
-                font-size: 51px; /* 34px */
+                font-size: 51px;
                 font-weight: 800;
                 margin-top: 0px;
             }
 
             .carousel__slide h2 {
-                font-size: 44px; /* 29px */
+                font-size: 44px;
                 font-weight: 600;
                 margin-top: 0px;
-                margin-bottom: 15px; /* 10px */
+                margin-bottom: 15px;
             }
-            
+
             .carousel__slide p {
                 margin-top: 0px;
             }
@@ -235,8 +189,8 @@ $iTickerTimeoutLength = 20000;
                 position: absolute;
                 right: 0;
                 bottom: 0;
-                width: 660px; /* 440px */
-                height: 600px; /* 400px */
+                width: 660px;
+                height: 600px;
                 background-size: cover;
                 -webkit-clip-path: polygon(100% 11%, 93% 4%, 84% 0%, 62% 6%, 48% 12%, 33% 20%, 18% 30%, 7% 40%, 2% 46%, 0% 54%, 3% 65%, 25% 84%, 50% 100%, 100% 100%);
                 z-index: 80;
@@ -253,7 +207,7 @@ $iTickerTimeoutLength = 20000;
                 position: absolute;
                 z-index: 82;
             }
-            
+
             .carousel__photo__pre {
                 position: absolute;
                 display: block;
@@ -292,23 +246,23 @@ $iTickerTimeoutLength = 20000;
 
             .carousel__punch {
                 float: right;
-                margin-top: 300px; /* 200px */
-                right: -72px; /* -48px */
-                width: 660px; /* 440px */
-                height: 600px; /* 400px */
+                margin-top: 300px;
+                right: -72px;
+                width: 660px;
+                height: 600px;
                 shape-outside: content-box polygon(100% 11%, 93% 4%, 84% 0%, 62% 6%, 48% 12%, 33% 20%, 18% 30%, 7% 40%, 2% 46%, 0% 54%, 3% 65%, 25% 84%, 50% 100%, 100% 100%);
                 position: relative;
             }
 
             .blob__line {
-                width: 668px; /* 445px */
-                height: 603px; /* 402px */
+                width: 668px;
+                height: 603px;
                 position: absolute;
                 right: 0;
                 bottom: 0;
                 z-index: 90;
             }
-            
+
             a {
                 text-decoration: none;
                 color: black;
@@ -360,12 +314,12 @@ $iTickerTimeoutLength = 20000;
             </div>
 
             <script>
-                var iSelectedSlide = <?= isset($oConfig->display->slide) ? $oConfig->display->slide : 'null'; ?>;
+                var iSelectedSlide = <?= $iSlidePreview !== null ? $iSlidePreview : 'null'; ?>;
                 var aContentData = new Array();
                 var iContentCounter = 0;
                 var iContentTimeout = null;
-                var iContentTimeoutLength = <?= $iContentTimeoutLength ?>;
-                var iReclameTimeoutLength = <?= $iReclameTimeoutLength ?>;
+                var iDefaultContentTimeout = <?= $iDefaultContentTimeout ?>;
+                var iDefaultReclameTimeout = <?= $iDefaultReclameTimeout ?>;
                 var iPhotoId = 1;
                 var sContentResult = null;
                 var bDebug = false;
@@ -374,41 +328,36 @@ $iTickerTimeoutLength = 20000;
                 var iTickerCounter = 0;
                 var iTickerTimeout = null;
                 var iTickerTimeoutLength = <?= $iTickerTimeoutLength ?>;
-                var aTickerConst = {tv_today: 'Vandaag op TV', tv_tomorrow: 'Morgen op TV', fm_now: 'Nu op FM', fm_next: 'Straks op FM'};
-                
+
                 $(document).ready(function() {
                     getContentData();
-                    getTickerData();
                     setDatum();
                 });
-                
+
                 function getContentData() {
                     writeDebug('getContentData');
                     clearTimeout(iContentTimeout);
 
-                    // Pass config parameter to content.php
-                    var sConfigParam = '<?php echo isset($_GET['config']) ? '?config=' . urlencode($_GET['config']) : ''; ?>';
+                    // Pass kanaal parameter to content.php
+                    var sKanaalParam = '?kanaal=<?php echo urlencode($sKanaal); ?>';
 
                     $.ajax({
-                      url: "content.php" + sConfigParam,
+                      url: "content.php" + sKanaalParam,
                       cache: false,
                       timeout: 20000
                     })
                     .done(function( result ) {
                         clearTimeout(iContentTimeout);
 
-                        // Try to parse the result
-                        try {
-                            var aNewContentData = JSON.parse(result);
-                            sContentResult      = result;
-                            aContentData        = aNewContentData;
-                            aNewContentData     = null;
-                        }
-                        // Show error in debug mode
-                        catch(error) {
-                            writeDebug(error);
-                            writeDebug(result);
-                        }
+                        // Handle result (jQuery may auto-parse JSON)
+                        var oResponse = (typeof result === 'string') ? JSON.parse(result) : result;
+                        sContentResult = JSON.stringify(oResponse);
+
+                        // New response structure: {slides: [...], ticker: [...]}
+                        aContentData = oResponse.slides || [];
+
+                        // Process ticker data from API
+                        processTickerData(oResponse.ticker || []);
                     })
                     .fail(function() {
                         // Error fetching content
@@ -425,205 +374,210 @@ $iTickerTimeoutLength = 20000;
                         setContent();
                     });
                 }
-                
+
+                /**
+                 * Helper: Check if slide type is fullscreen
+                 */
+                function isFullScreenType(type) {
+                    return (type == 'reclame' || type == 'reclame_in' || type == 'reclame_uit' || type == 'afbeelding');
+                }
+
+                /**
+                 * Main content display function
+                 * Handles all slide types with proper layer visibility
+                 */
                 function setContent() {
                     writeDebug('setContent');
-                    iTimeoutLength = null;
-                    
-                    if(aContentData.length>iContentCounter) {
+
+                    // Guard: no data
+                    if(aContentData.length == 0) {
+                        setTimeout(getContentData, 60*1000);
+                        return;
+                    }
+
+                    // Guard: counter out of bounds
+                    if(iContentCounter >= aContentData.length) {
+                        iContentCounter = 0;
+                    }
+
+                    // Store current slide data BEFORE any async operations
+                    var currentIndex = iContentCounter;
+                    var currentSlide = aContentData[currentIndex];
+                    var currentType = currentSlide['type'];
+                    var currentPhoto = currentSlide['photo'] || '';
+                    var currentTitle = currentSlide['title'] || '';
+                    var currentContent = currentSlide['content'] || '';
+                    var currentDuration = currentSlide['duration'];
+                    var bIsFullScreen = isFullScreenType(currentType);
+
+                    // Calculate next slide info for preloading
+                    var nextIndex = (currentIndex + 1) % aContentData.length;
+                    var nextSlide = aContentData[nextIndex];
+                    var nextType = nextSlide['type'];
+                    var nextPhoto = nextSlide['photo'] || '';
+                    var bNextIsFullScreen = isFullScreenType(nextType);
+
+                    writeDebug('Slide ' + currentIndex + ': ' + currentType + (bIsFullScreen ? ' (fullscreen)' : ' (carousel)'));
+
+                    var iTimeoutLength;
+
+                    if(bIsFullScreen) {
+                        // ========== FULLSCREEN SLIDE ==========
+                        // Hide carousel elements
+                        $('.blob__line').css('display', 'none');
+                        $('.carousel__content').html('');
+                        $('.carousel__photo__current img').css('display', 'none');
+                        $('.carousel__photo__pre img').css('display', 'none');
+
+                        // Show reclame overlay
                         $('.reclame__photo__current').css('display', 'block');
                         $('.reclame__photo__pre').css('display', 'block');
 
-                        if(aContentData[iContentCounter]['type']=='reclame') {
-                            // Show blob line for reclame slides
+                        // Load current photo and animate in
+                        $('.reclame__photo__pre').attr('src', currentPhoto);
+                        $('.reclame__photo__pre').animate({ opacity: 1 }, 400, function() {
+                            // Swap current/pre
+                            $('.reclame__photo__current').toggleClass('reclame__photo__current reclame__photo__temp');
+                            $('.reclame__photo__pre').toggleClass('reclame__photo__pre reclame__photo__current');
+                            $('.reclame__photo__temp').toggleClass('reclame__photo__temp reclame__photo__pre');
+                            $('.reclame__photo__pre').css('opacity', 0);
+
+                            // Preload next slide's photo if also fullscreen
+                            if(bNextIsFullScreen && nextPhoto) {
+                                $('.reclame__photo__pre').attr('src', nextPhoto);
+                            }
+                        });
+
+                        iTimeoutLength = currentDuration || iDefaultReclameTimeout;
+
+                    } else {
+                        // ========== CAROUSEL SLIDE (nieuws, weer) ==========
+                        // ALWAYS hide reclame overlay when showing carousel
+                        $('.reclame__photo__pre').css('opacity', 0);
+                        $('.reclame__photo__current').animate({ opacity: 0 }, 400);
+
+                        // Set text content
+                        $('.carousel__content').html('<h1>' + currentTitle + '</h1>' + currentContent);
+
+                        if(currentType == 'weer') {
+                            // Weather: no photo, no blob
+                            $('.blob__line').css('display', 'none');
+                            $('.carousel__photo__current img').css('display', 'none');
+                            $('.carousel__photo__pre img').css('display', 'none');
+
+                        } else if(currentType == 'nieuws') {
+                            // News: show blob and photo
                             $('.blob__line').css('display', 'block');
-                            $('.reclame__photo__pre').animate({ opacity: 1 }, 400, function() {
-                                $('.reclame__photo__current').toggleClass('reclame__photo__current reclame__photo__temp');
-                                $('.reclame__photo__pre').toggleClass('reclame__photo__pre reclame__photo__current');
-                                $('.reclame__photo__temp').toggleClass('reclame__photo__temp reclame__photo__pre');
 
-                                $('.reclame__photo__pre').attr('src', aContentData[iContentCounter]['photo']);
-                                $('.reclame__photo__pre').css('opacity', 0);
-                            });
-
-                            $('.carousel__photo__pre img').attr('src', aContentData[0]['photo']);
-                            $('.carousel__photo__pre video').attr('src', aContentData[0]['video']);
-
-                            // Hide image if photo is empty
-                            if(aContentData[0]['photo'] == '') {
-                                $('.carousel__photo__pre img').css('display', 'none');
-                            } else {
+                            // Load photo if available
+                            if(currentPhoto) {
+                                $('.carousel__photo__pre img').attr('src', currentPhoto);
                                 $('.carousel__photo__pre img').css('display', 'block');
-                            }
-
-                            iTimeoutLength = iReclameTimeoutLength;
-                        } else {
-                            if(iContentCounter==0) {
-                                $('.reclame__photo__pre').css('opacity', 0);
-                                $('.reclame__photo__current').animate({ opacity: 0 }, 400);
-                                $('.reclame__photo__pre').attr('src', 'http://www.zuidwestupdate.nl/images/teksttv/Kabelkrant reclame.jpg');
-                            }
-
-                            if(aContentData[iContentCounter]['type']=='weer') {
-                                $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
-                                // Weather slides have no photo or blob, ensure they are hidden
-                                $('.carousel__photo__current img').css('display', 'none');
-                                $('.carousel__photo__pre img').css('display', 'none');
-                                $('.blob__line').css('display', 'none');
-                            }
-                            
-                            if(aContentData[iContentCounter]['type']=='nieuws') {
-                                $('.carousel__content').html('<h1>'+aContentData[iContentCounter]['title']+'</h1>'+aContentData[iContentCounter]['content']);
-                                // Show blob line for non-weather slides
-                                $('.blob__line').css('display', 'block');
-                            }
-                            
-                            iTimeoutLength = iContentTimeoutLength;
-                            
-                            if(iSelectedSlide!=null) {
-                                $('.carousel__photo__pre img').attr('src', aContentData[iContentCounter]['photo']);
-                            }
-
-                            // Hide image if photo is empty
-                            if(aContentData[iContentCounter]['photo'] == '') {
-                                $('.carousel__photo__pre img').css('display', 'none');
                             } else {
-                                $('.carousel__photo__pre img').css('display', 'block');
+                                $('.carousel__photo__pre img').css('display', 'none');
                             }
 
                             $('.carousel__photo__pre').css('display', 'block');
                             $('.carousel__photo__pre').css('opacity', '1');
 
+                            // Animate carousel photo swap
                             $('.carousel__photo__current').animate({ opacity: 0 }, 400, function() {
                                 $('.carousel__photo__current').toggleClass('carousel__photo__current carousel__photo__temp');
                                 $('.carousel__photo__pre').toggleClass('carousel__photo__pre carousel__photo__current');
                                 $('.carousel__photo__temp').toggleClass('carousel__photo__temp carousel__photo__pre');
 
-                                if(aContentData[iContentCounter]['type']!='reclame') {
-                                    var nextPhoto = '';
-                                    if((iContentCounter+1)>aContentData.length) {
-                                        nextPhoto = aContentData[0]['photo'];
-                                        $('.carousel__photo__pre img').attr('src', nextPhoto);
-                                    } else {
-                                        nextPhoto = aContentData[iContentCounter]['photo'];
-                                        $('.carousel__photo__pre img').attr('src', nextPhoto);
+                                // Preload next slide
+                                if(bNextIsFullScreen) {
+                                    // Next is fullscreen, preload into reclame
+                                    if(nextPhoto) {
+                                        $('.reclame__photo__pre').attr('src', nextPhoto);
                                     }
-
-                                    // Hide image if photo is empty
-                                    if(nextPhoto == '') {
-                                        $('.carousel__photo__pre img').css('display', 'none');
-                                    } else {
+                                } else {
+                                    // Next is carousel, preload into carousel
+                                    if(nextPhoto) {
+                                        $('.carousel__photo__pre img').attr('src', nextPhoto);
                                         $('.carousel__photo__pre img').css('display', 'block');
+                                    } else {
+                                        $('.carousel__photo__pre img').css('display', 'none');
                                     }
-                                }
-                                else {
-                                    $('.reclame__photo__pre').attr('src', aContentData[iContentCounter]['photo']);
                                 }
 
                                 $('.carousel__photo__current').css('display', 'block');
                                 $('.carousel__photo__pre').css('display', 'block');
                             });
                         }
-                        
-                        iContentCounter++;
-                        if(iContentCounter>=aContentData.length) {
-                            iContentCounter = 0;
-                        }
+
+                        iTimeoutLength = currentDuration || iDefaultContentTimeout;
                     }
-                    
-                    
-                    if(iSelectedSlide==null) {
-                        if(iTimeoutLength==null) {
-                            setTimeout(getContentData, 60*1000);
-                        }
-                        else {
-                            if(iContentCounter!=0) {
-                                iContentTimeout = setTimeout(setContent, iTimeoutLength);
-                            } else {
-                                setTimeout(getContentData, iTimeoutLength);
-                            }
+
+                    // Increment counter for next iteration
+                    iContentCounter++;
+                    if(iContentCounter >= aContentData.length) {
+                        iContentCounter = 0;
+                    }
+
+                    // Schedule next slide (only in auto-play mode)
+                    if(iSelectedSlide == null) {
+                        if(iContentCounter == 0) {
+                            // End of cycle, refresh data
+                            setTimeout(getContentData, iTimeoutLength);
+                        } else {
+                            iContentTimeout = setTimeout(setContent, iTimeoutLength);
                         }
                     }
                 }
-                
-                function getTickerData() {
-                    writeDebug('getTickerData');
-                    $.ajax({
-                      url: "https://www.zuidwestupdate.nl/wp-json/zw/v1/broadcast_data"
-                    })
-                    .done(function( result ) {
-                        if(typeof result.fm!=undefined || typeof result.tv!=undefined) {
-                            aTickerData = new Array();
-                        }
-                        if(typeof result.fm!=undefined) {
-                            if(typeof result.fm.now!=undefined) {
-                                aTickerData[aTickerData.length] = {'type' : 'fm_now', 'title': result.fm.now};
-                            }
-                            if(typeof result.fm.next!=undefined) {
-                                aTickerData[aTickerData.length] = {'type' : 'fm_next', 'title': result.fm.next};
-                            }
-                        }
 
-                        if(typeof result.tv!=undefined) {
-                            if(typeof result.tv.today!=undefined) {
-                                for(i=0; i<result.tv.today.length; i++) {
-                                    aTickerData[aTickerData.length] = {'type' : 'tv_today', 'title': result.tv.today[i]};
-                                }
-                            }
-                            if(typeof result.tv.tomorrow!=undefined) {
-                                for(i=0; i<result.tv.tomorrow.length; i++) {
-                                    aTickerData[aTickerData.length] = {'type' : 'tv_tomorrow', 'title': result.tv.tomorrow[i]};
-                                }
-                            }
-                        }
+                /**
+                 * Process ticker data from API response
+                 * Splits messages on colon into label and content
+                 */
+                function processTickerData(aTickerFromAPI) {
+                    aTickerData = [];
+                    for(var i = 0; i < aTickerFromAPI.length; i++) {
+                        var sMessage = aTickerFromAPI[i].message || '';
+                        var iColon = sMessage.indexOf(':');
+                        aTickerData.push({
+                            'label': iColon > -1 ? sMessage.substring(0, iColon).trim() : '',
+                            'content': iColon > -1 ? sMessage.substring(iColon + 1).trim() : sMessage
+                        });
+                    }
+                    iTickerCounter = 0;
+                    clearTimeout(iTickerTimeout);
+                    setTickerData();
+                }
 
-                        iTickerCounter = 0;
-                        clearTimeout(iTickerTimeout);
-                        setTickerData();
-                    })
-                    .always(function() {
-                        writeDebug(aTickerData.length*iTickerTimeoutLength*5);
-                        if(aTickerData.length>0) {
-                            setTimeout(getTickerData, aTickerData.length*iTickerTimeoutLength*5);
-                        }
-                        else {
-                            setTimeout(getTickerData, 4*iTickerTimeoutLength*5);
-                        }
-                    });
-                };
-                
                 function setTickerData() {
                     writeDebug('setTickerData');
-                    if(aTickerData.length>iTickerCounter) {
-                        $('.ticker__label').html(aTickerConst[aTickerData[iTickerCounter]['type']]);
-                        $('.ticker__content').html(aTickerData[iTickerCounter]['title']);
-                        
+                    if(aTickerData.length > iTickerCounter) {
+                        $('.ticker__label').html(aTickerData[iTickerCounter]['label']);
+                        $('.ticker__content').html(aTickerData[iTickerCounter]['content']);
+
                         iTickerCounter++;
-                        if(iTickerCounter>=aTickerData.length) {
+                        if(iTickerCounter >= aTickerData.length) {
                             iTickerCounter = 0;
                         }
                     }
                     else {
                         iTickerCounter = 0;
-                        $('#ticker__label').html('&nbsp;');
+                        $('.ticker__label').html('&nbsp;');
                         $('.ticker__content').html('&nbsp;');
                     }
-                    
+
                     iTickerTimeout = setTimeout(setTickerData, iTickerTimeoutLength);
                 }
-                
+
                 function setDatum() {
                     var oDate = new Date;
                     var aMonths = new Array('januari', 'februari', 'maart', 'april', 'mei', 'juni', 'juli', 'augustus', 'september', 'oktober', 'november', 'december');
                     var aDays = new Array('zondag', 'maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag');
                     var iHour = (oDate.getHours()<10) ? '0'+oDate.getHours() : oDate.getHours();
                     var iMinute = (oDate.getMinutes()<10) ? '0'+oDate.getMinutes() : oDate.getMinutes();
-                    
+
                     $('.top__datetime').html(aDays[oDate.getDay()]+' '+oDate.getDate()+' '+aMonths[oDate.getMonth()]+' &nbsp;&nbsp; '+iHour+':'+iMinute);
-                    
+
                     setTimeout(setDatum, 1000);
                 }
-                
+
                 function writeDebug(sDebug) {
                     if(bDebug) {
                         console.log(sDebug);
