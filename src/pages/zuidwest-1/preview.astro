@@ -1,0 +1,8 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import Preview from '../../Preview.tsx'
+---
+
+<Layout title="TekstTV - ZuidWest TV1 Preview">
+  <Preview client:only="react" apiBase="https://www.zuidwestupdate.nl/wp-json/zw/v1" />
+</Layout>

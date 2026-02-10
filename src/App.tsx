@@ -9,7 +9,7 @@ import type {
   TickerItem,
 } from './types'
 
-function App() {
+function App({ apiBase, channel }: { apiBase: string; channel?: string }) {
   const [slides, setSlides] = useState<SlideData[]>([])
   const [nextSlides, setNextSlides] = useState<SlideData[]>([])
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -18,46 +18,59 @@ function App() {
   const [tickerIndex, setTickerIndex] = useState(0)
   const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
 
-  const fetchData = useCallback(async (isInitialLoad: boolean) => {
-    try {
-      const [slidesResponse, tickerResponse] = await Promise.all([
-        fetch('https://cms.tv-krant.nl/wp-json/zw/v1/teksttv-slides'),
-        fetch('https://cms.tv-krant.nl/wp-json/zw/v1/teksttv-ticker'),
-      ])
-      const newSlides = await slidesResponse.json()
-      const newTickerItems = await tickerResponse.json()
+  const fetchData = useCallback(
+    async (isInitialLoad: boolean) => {
+      try {
+        let newSlides: SlideData[]
+        let newTickerItems: TickerItem[]
 
-      const imageUrls = [
-        ...new Set(
-          newSlides
-            .flatMap((slide: SlideData) => {
-              if (slide.type === 'text') {
-                return slide.image
-              }
-              if (slide.type === 'image') {
-                return slide.url
-              }
-              return undefined
-            })
-            .filter(Boolean),
-        ),
-      ] as string[]
+        if (channel) {
+          const response = await fetch(`${apiBase}/teksttv?channel=${channel}`)
+          const data = await response.json()
+          newSlides = data.slides
+          newTickerItems = data.ticker
+        } else {
+          const [slidesResponse, tickerResponse] = await Promise.all([
+            fetch(`${apiBase}/teksttv-slides`),
+            fetch(`${apiBase}/teksttv-ticker`),
+          ])
+          newSlides = await slidesResponse.json()
+          newTickerItems = await tickerResponse.json()
+        }
 
-      if (isInitialLoad) {
-        setSlides(newSlides)
-        setTickerItems(newTickerItems)
-        setImagesToPreload(imageUrls)
-      } else {
-        setNextSlides(newSlides)
-        setNextTickerItems(newTickerItems)
-        setImagesToPreload((prevUrls) => [
-          ...new Set([...prevUrls, ...imageUrls]),
-        ])
+        const imageUrls = [
+          ...new Set(
+            newSlides
+              .flatMap((slide: SlideData) => {
+                if (slide.type === 'text') {
+                  return slide.image
+                }
+                if (slide.type === 'image') {
+                  return slide.url
+                }
+                return undefined
+              })
+              .filter(Boolean),
+          ),
+        ] as string[]
+
+        if (isInitialLoad) {
+          setSlides(newSlides)
+          setTickerItems(newTickerItems)
+          setImagesToPreload(imageUrls)
+        } else {
+          setNextSlides(newSlides)
+          setNextTickerItems(newTickerItems)
+          setImagesToPreload((prevUrls) => [
+            ...new Set([...prevUrls, ...imageUrls]),
+          ])
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
       }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    }
-  }, [])
+    },
+    [apiBase, channel],
+  )
 
   useEffect(() => {
     fetchData(true)

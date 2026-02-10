@@ -1,0 +1,8 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import Preview from '../../Preview.tsx'
+---
+
+<Layout title="TekstTV - Rucphen Preview">
+  <Preview client:only="react" apiBase="https://cms.tv-krant.nl/wp-json/zw/v1" />
+</Layout>
