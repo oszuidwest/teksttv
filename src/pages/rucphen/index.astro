@@ -1,0 +1,8 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import App from '../../App.tsx'
+---
+
+<Layout title="TekstTV - Rucphen">
+  <App client:only="react" apiBase="https://cms.tv-krant.nl/wp-json/zw/v1" />
+</Layout>

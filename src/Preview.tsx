@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import { z } from 'zod'
 import { ImageSlideComponent } from './components/ImageSlideComponent'
 import { TextSlideComponent } from './components/TextSlideComponent'
@@ -11,9 +10,8 @@ function base64ToBytes(base64: string) {
   return Uint8Array.from(binString, (m) => m.codePointAt(0) || 0)
 }
 
-export default function Preview() {
-  const [searchParams] = useSearchParams()
-  const encodedData = searchParams.get('data')
+export default function Preview({ apiBase: _apiBase }: { apiBase: string }) {
+  const encodedData = new URLSearchParams(window.location.search).get('data')
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

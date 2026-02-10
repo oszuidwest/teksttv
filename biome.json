@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/legacy"]
+    "includes": ["**", "!**/legacy", "!**/*.astro"]
   },
   "formatter": {
     "enabled": true,
@@ -52,14 +52,5 @@
       "semicolons": "asNeeded"
     }
   },
-  "overrides": [
-    {
-      "includes": ["tsconfig.app.json", "tsconfig.node.json"],
-      "json": {
-        "parser": {
-          "allowComments": true
-        }
-      }
-    }
-  ]
+  "overrides": []
 }

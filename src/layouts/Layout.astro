@@ -1,0 +1,46 @@
+---
+import '../index.css'
+
+interface Props {
+  title?: string
+}
+
+const { title = 'TekstTV' } = Astro.props
+---
+
+<!doctype html>
+<html lang="nl" class="h-full">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
+    <title>{title}</title>
+    <script is:inline>
+      ;(() => {
+        function calculateRefreshTime() {
+          var now = new Date()
+          var tomorrow = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() + 1,
+            2,
+            55,
+            0
+          )
+          var diff = tomorrow - now
+          return Math.floor(diff / 1000) + 300
+        }
+
+        var meta = document.createElement('meta')
+        meta.httpEquiv = 'refresh'
+        meta.content = calculateRefreshTime().toString()
+        document.getElementsByTagName('head')[0].appendChild(meta)
+      })()
+    </script>
+  </head>
+  <body class="h-full bg-black overflow-hidden text-white">
+    <div id="root" class="grid min-h-full place-items-center">
+      <slot />
+    </div>
+  </body>
+</html>
