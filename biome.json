@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
@@ -7,15 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["legacy"]
+    "includes": ["**", "!**/legacy"]
   },
   "formatter": {
     "enabled": true,
     "indentStyle": "space"
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
     "rules": {
@@ -24,16 +22,16 @@
         "useHookAtTopLevel": "error"
       },
       "nursery": {
+        "useSortedClasses": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
         "useComponentExportOnlyModules": {
           "level": "warn",
           "options": {
             "allowConstantExport": true
           }
-        },
-        "useSortedClasses": "error"
-      },
-      "style": {
-        "noNonNullAssertion": "off"
+        }
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
@@ -41,6 +39,11 @@
       "a11y": {
         "noSvgWithoutTitle": "off"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "javascript": {
@@ -51,7 +54,7 @@
   },
   "overrides": [
     {
-      "include": ["./tsconfig.app.json", "./tsconfig.node.json"],
+      "includes": ["tsconfig.app.json", "tsconfig.node.json"],
       "json": {
         "parser": {
           "allowComments": true

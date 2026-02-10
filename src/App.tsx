@@ -78,9 +78,7 @@ function App() {
     if (slides.length === 0) return
 
     const timer = setInterval(() => {
-      // @ts-ignore
       if (document.startViewTransition) {
-        // @ts-ignore
         document.startViewTransition(() => {
           setCurrentSlide((prevSlide) => {
             const nextSlide = (prevSlide + 1) % slides.length

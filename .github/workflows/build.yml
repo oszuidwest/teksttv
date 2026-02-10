@@ -17,15 +17,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies and Build
         run: |
-          npm install
-          npm run build
+          bun install --frozen-lockfile
+          bun run build
 
       - name: Read version and project name from package.json
         id: read_version
@@ -86,7 +84,7 @@ jobs:
           echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
 
       - name: Upload the zip file as an artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: dist-zip
           path: ${{ steps.zip_project.outputs.zip_name }}
@@ -102,7 +100,7 @@ jobs:
           fetch-depth: 0
 
       - name: Download dist.zip artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: dist-zip
           path: ./
