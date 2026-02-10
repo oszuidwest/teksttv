@@ -4,7 +4,10 @@ import { Clock } from './Clock'
 export const Ticker = ({
   items,
   currentIndex,
-}: { items: TickerItem[]; currentIndex: number }) => {
+}: {
+  items: TickerItem[]
+  currentIndex: number
+}) => {
   if (items.length === 0) return null
 
   return (
