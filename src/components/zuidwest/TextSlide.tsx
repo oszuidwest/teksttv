@@ -27,15 +27,15 @@ export function TextSlide({
         {/* Card (fills remaining space) */}
         <div
           className={
-            'ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] px-[56px] pt-[32px] font-nunito'
+            'ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] font-nunito'
           }
         >
-          <div className="h-full overflow-hidden">
+          <div className="h-full overflow-hidden px-[56px] pt-[32px]">
             {/* Float spacer for photo area */}
             {hasImage && (
               <div
-                className="float-right ml-[16px]"
-                style={{ width: '450px', height: '408px' }}
+                className="float-right ml-[20px]"
+                style={{ width: '448px', height: '408px' }}
               />
             )}
 
@@ -46,7 +46,7 @@ export function TextSlide({
             />
 
             {/* Body */}
-            <div className="text-[#1d1d1b] text-[40px] leading-[55px]">
+            <div className="text-[40px] text-[#1d1d1b] leading-[55px]">
               <div dangerouslySetInnerHTML={{ __html: content.body }} />
             </div>
           </div>
@@ -61,7 +61,7 @@ export function TextSlide({
         <img
           src={content.image}
           alt=""
-          className="absolute top-[160px] right-[-2px] z-10 h-[440px] w-[642px] object-cover"
+          className="absolute top-[160px] right-0 z-10 h-[440px] w-[640px] object-cover"
           style={{ borderBottomLeftRadius: '64px' }}
         />
       )}
