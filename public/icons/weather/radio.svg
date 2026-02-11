@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="96px" viewBox="0 0 96 96" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>radio</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-934.000000, -768.000000)">
+            <g id="layer-MC1" transform="translate(149.000000, 80.000000)">
+                <path d="M867.333302,716.000005 L797.333302,716.000005 C794.571968,716.000005 792.333302,718.388005 792.333302,721.333338 L792.333302,769.333337 C792.333302,772.27867 794.571968,774.66667 797.333302,774.66667 L867.333302,774.66667 C870.094633,774.66667 872.333302,772.27867 872.333302,769.333337 L872.333302,721.333338 C872.333302,718.388005 870.094633,716.000005 867.333302,716.000005" id="path157" stroke="#BFBFBF" stroke-width="5.3333332" fill="#FFFFFF" fill-rule="nonzero" transform="translate(832.333301, 745.333337) scale(-1, 1) rotate(-180.000000) translate(-832.333301, -745.333337) "></path>
+                <path d="M860.3601,726.666664 L804.306768,726.666664 C803.585435,726.666664 803.000101,727.30533 803.000101,728.091997 L803.000101,735.907997 C803.000101,736.694663 803.585435,737.33333 804.306768,737.33333 L860.3601,737.33333 C861.081433,737.33333 861.666767,736.694663 861.666767,735.907997 L861.666767,728.091997 C861.666767,727.30533 861.081433,726.666664 860.3601,726.666664" id="path158" stroke="#BFBFBF" stroke-width="5.3333332" fill="#D9D9D9" fill-rule="nonzero" transform="translate(832.333434, 731.999997) scale(-1, 1) rotate(-180.000000) translate(-832.333434, -731.999997) "></path>
+                <path d="M861.6667,756 C861.6667,751.581333 858.085367,748 853.6667,748 C849.248034,748 845.6667,751.581333 845.6667,756 C845.6667,760.418667 849.248034,764 853.6667,764 C858.085367,764 861.6667,760.418667 861.6667,756" id="path159" fill="#008C3B" fill-rule="nonzero" transform="translate(853.666700, 756.000000) scale(-1, 1) rotate(-180.000000) translate(-853.666700, -756.000000) "></path>
+                <path d="M861.6667,756 C861.6667,751.581333 858.085367,748 853.6667,748 C849.248034,748 845.6667,751.581333 845.6667,756 C845.6667,760.418667 849.248034,764 853.6667,764 C858.085367,764 861.6667,760.418667 861.6667,756 Z" id="path160" stroke="#82BA26" stroke-width="5.3333332" transform="translate(853.666700, 756.000000) scale(-1, 1) rotate(-180.000000) translate(-853.666700, -756.000000) "></path>
+                <line x1="805.66667" y1="761.33333" x2="832.333336" y2="761.33333" id="path161" stroke="#BFBFBF" stroke-width="5.3333332" stroke-linecap="round" stroke-linejoin="round" transform="translate(819.000003, 761.333330) scale(-1, 1) rotate(-180.000000) translate(-819.000003, -761.333330) "></line>
+                <line x1="797.66667" y1="702.666667" x2="867.000002" y2="716" id="path162" stroke="#BFBFBF" stroke-width="5.3333332" stroke-linecap="round" stroke-linejoin="round" transform="translate(832.333336, 709.333333) scale(-1, 1) rotate(-180.000000) translate(-832.333336, -709.333333) "></line>
+                <line x1="805.66667" y1="750.66667" x2="832.333336" y2="750.66667" id="path163" stroke="#BFBFBF" stroke-width="5.3333332" stroke-linecap="round" stroke-linejoin="round" transform="translate(819.000003, 750.666670) scale(-1, 1) rotate(-180.000000) translate(-819.000003, -750.666670) "></line>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,7 +1,12 @@
 import type { ComponentType } from 'react'
 import { useEffect, useRef } from 'react'
 import { z } from 'zod'
-import type { ImageSlideData, TextSlideData, TickerItem } from './types'
+import type {
+  FullScreenSlideData,
+  TextSlideData,
+  TickerItem,
+  WeatherSlideData,
+} from './types'
 import { SlideDataSchema } from './types'
 
 function base64ToBytes(base64: string) {
@@ -11,7 +16,8 @@ function base64ToBytes(base64: string) {
 
 interface SlideComponents {
   text: ComponentType<{ content: TextSlideData }>
-  image: ComponentType<{ content: ImageSlideData }>
+  image: ComponentType<{ content: FullScreenSlideData }>
+  weather?: ComponentType<{ content: WeatherSlideData }>
 }
 
 interface PreviewProps {
@@ -60,14 +66,20 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
 
     const TextSlide = slides.text
     const ImageSlide = slides.image
+    const WeatherSlide = slides.weather
+
+    let slide: React.ReactNode
+    if (validatedData.type === 'text') {
+      slide = <TextSlide content={validatedData} />
+    } else if (validatedData.type === 'weather' && WeatherSlide) {
+      slide = <WeatherSlide content={validatedData} />
+    } else {
+      slide = <ImageSlide content={validatedData} />
+    }
 
     const content = (
       <>
-        {validatedData.type === 'image' ? (
-          <ImageSlide content={validatedData} />
-        ) : (
-          <TextSlide content={validatedData} />
-        )}
+        {slide}
         <Ticker
           items={[{ message: 'Dit is een preview slide' }]}
           currentIndex={0}

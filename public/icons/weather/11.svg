@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="150px" height="150px" viewBox="0 0 150 150" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>11</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linejoin="round">
+        <g id="Artboard" transform="translate(-651.000000, -293.000000)" fill-rule="nonzero" stroke-width="5.3333332">
+            <g id="layer-MC1" transform="translate(149.000000, 80.000000)">
+                <line x1="595" y1="352" x2="587" y2="336" id="path119" stroke="#32BEE6" fill="#FFD73C" stroke-linecap="round" transform="translate(591.000000, 344.000000) scale(-1, 1) rotate(-180.000000) translate(-591.000000, -344.000000) "></line>
+                <line x1="616.33333" y1="330.66667" x2="608.33333" y2="314.66667" id="path120" stroke="#32BEE6" fill="#FFD73C" stroke-linecap="round" transform="translate(612.333330, 322.666670) scale(-1, 1) rotate(-180.000000) translate(-612.333330, -322.666670) "></line>
+                <line x1="571" y1="352" x2="563" y2="336" id="path121" stroke="#32BEE6" fill="#FFD73C" stroke-linecap="round" transform="translate(567.000000, 344.000000) scale(-1, 1) rotate(-180.000000) translate(-567.000000, -344.000000) "></line>
+                <line x1="592.33333" y1="330.66667" x2="584.33333" y2="314.66667" id="path122" stroke="#32BEE6" fill="#FFD73C" stroke-linecap="round" transform="translate(588.333330, 322.666670) scale(-1, 1) rotate(-180.000000) translate(-588.333330, -322.666670) "></line>
+                <path d="M575,224.000002 L616.333335,224.000002 C629.587999,224.000002 640.333335,234.745335 640.333335,248.000002 C640.333335,261.254668 629.587999,272.000002 616.333335,272.000002 C615.223999,272.000002 614.141332,271.898667 613.071999,271.753334 C613.455999,273.553334 613.666666,275.418667 613.666666,277.333334 C613.666666,292.061334 601.727999,304.000002 587,304.000002 C572.670667,304.000002 561.014667,292.689334 560.393334,278.514667 C557.553334,281.086667 553.800001,282.666667 549.666667,282.666667 C540.830668,282.666667 533.666668,275.502667 533.666668,266.666668 C533.666668,264.653334 534.054668,262.733334 534.733334,260.958668 C533.528001,261.202668 532.278668,261.333334 531.000001,261.333334 C520.690668,261.333334 512.333335,252.976001 512.333335,242.666668 C512.333335,232.357335 520.690668,224.000002 531.000001,224.000002" id="path123" stroke="#8C8C8C" fill="#FFFFFF" stroke-linecap="round" transform="translate(576.333333, 264.000001) scale(-1, 1) rotate(-180.000000) translate(-576.333333, -264.000001) "></path>
+                <polygon id="path124" stroke="#FFB400" fill="#FFD73C" transform="translate(553.666664, 319.999999) scale(-1, 1) rotate(-180.000000) translate(-553.666664, -319.999999) " points="576.33333 351.999998 552.333331 351.999998 528.333331 314.666666 549.666664 314.666666 533.666664 288 578.999997 325.333332 554.999997 325.333332"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -40,13 +40,16 @@ export function useCarousel({
           ...new Set(
             newSlides
               .flatMap((slide: SlideData) => {
-                if (slide.type === 'text') {
-                  return slide.image
+                switch (slide.type) {
+                  case 'text':
+                    return slide.image || undefined
+                  case 'image':
+                  case 'commercial':
+                  case 'commercial_transition':
+                    return slide.url
+                  default:
+                    return undefined
                 }
-                if (slide.type === 'image') {
-                  return slide.url
-                }
-                return undefined
               })
               .filter(Boolean),
           ),
@@ -98,13 +101,16 @@ export function useCarousel({
             setImagesToPreload((prevUrls) => {
               const newImageUrls = nextSlides
                 .flatMap((slide) => {
-                  if (slide.type === 'text') {
-                    return slide.image
+                  switch (slide.type) {
+                    case 'text':
+                      return slide.image || undefined
+                    case 'image':
+                    case 'commercial':
+                    case 'commercial_transition':
+                      return slide.url
+                    default:
+                      return undefined
                   }
-                  if (slide.type === 'image') {
-                    return slide.url
-                  }
-                  return []
                 })
                 .filter(Boolean)
               return prevUrls.filter((url) => newImageUrls.includes(url))

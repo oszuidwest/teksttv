@@ -1,10 +1,22 @@
 import type { ComponentType } from 'react'
 import { useCarousel } from './hooks/useCarousel'
-import type { ImageSlideData, TextSlideData, TickerItem } from './types'
+import type {
+  FullScreenSlideData,
+  TextSlideData,
+  TickerItem,
+  WeatherSlideData,
+} from './types'
 
 interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
-  image: ComponentType<{ content: ImageSlideData; children?: React.ReactNode }>
+  image: ComponentType<{
+    content: FullScreenSlideData
+    children?: React.ReactNode
+  }>
+  weather?: ComponentType<{
+    content: WeatherSlideData
+    children?: React.ReactNode
+  }>
 }
 
 interface AppProps {
@@ -30,26 +42,40 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
 
   const TextSlide = slides.text
   const ImageSlide = slides.image
+  const WeatherSlide = slides.weather
   const currentSlideData = slideData[currentSlide]
 
   const tickerElement = (
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
+  let slide: React.ReactNode
+  if (currentSlideData.type === 'text') {
+    slide = (
+      <TextSlide key={currentSlide} content={currentSlideData}>
+        {tickerElement}
+      </TextSlide>
+    )
+  } else if (currentSlideData.type === 'weather' && WeatherSlide) {
+    slide = (
+      <WeatherSlide key={currentSlide} content={currentSlideData}>
+        {tickerElement}
+      </WeatherSlide>
+    )
+  } else {
+    slide = (
+      <ImageSlide key={currentSlide} content={currentSlideData}>
+        {tickerElement}
+      </ImageSlide>
+    )
+  }
+
   const content = (
     <>
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {currentSlideData.type === 'image' ? (
-        <ImageSlide key={currentSlide} content={currentSlideData}>
-          {tickerElement}
-        </ImageSlide>
-      ) : (
-        <TextSlide key={currentSlide} content={currentSlideData}>
-          {tickerElement}
-        </TextSlide>
-      )}
+      {slide}
     </>
   )
 

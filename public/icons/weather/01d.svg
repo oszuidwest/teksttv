@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="150px" height="150px" viewBox="0 0 150 150" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>01d</title>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Artboard" transform="translate(-139.000000, -69.000000)" stroke="#FFB400" stroke-width="5.3333332">
+            <g id="layer-MC1" transform="translate(149.000000, 80.000000)">
+                <path d="M101.66667,64 C101.66667,43.3813338 84.9520038,26.6666676 64.3333376,26.6666676 C43.7146714,26.6666676 27.0000052,43.3813338 27.0000052,64 C27.0000052,84.6186662 43.7146714,101.333332 64.3333376,101.333332 C84.9520038,101.333332 101.66667,84.6186662 101.66667,64" id="path5" fill="#FFD73C" fill-rule="nonzero" transform="translate(64.333338, 64.000000) scale(-1, 1) rotate(-180.000000) translate(-64.333338, -64.000000) "></path>
+                <line x1="115" y1="64" x2="128.333333" y2="64" id="path6" stroke-linecap="round" transform="translate(121.666667, 64.000000) scale(-1, 1) rotate(-180.000000) translate(-121.666667, -64.000000) "></line>
+                <line x1="0.33333" y1="64" x2="13.666663" y2="64" id="path7" stroke-linecap="round" transform="translate(6.999996, 64.000000) scale(-1, 1) rotate(-180.000000) translate(-6.999996, -64.000000) "></line>
+                <line x1="64.33333" y1="13.333333" x2="64.33333" y2="0" id="path8" stroke-linecap="round" transform="translate(64.333330, 6.666666) scale(-1, 1) rotate(-180.000000) translate(-64.333330, -6.666666) "></line>
+                <line x1="64.33333" y1="128.000003" x2="64.33333" y2="114.66667" id="path9" stroke-linecap="round" transform="translate(64.333330, 121.333337) scale(-1, 1) rotate(-180.000000) translate(-64.333330, -121.333337) "></line>
+                <line x1="108.212" y1="32.0000035" x2="119.758666" y2="38.66667" id="path10" stroke-linecap="round" transform="translate(113.985333, 35.333337) scale(-1, 1) rotate(-180.000000) translate(-113.985333, -35.333337) "></line>
+                <line x1="8.90773" y1="89.3333335" x2="20.4543964" y2="96" id="path11" stroke-linecap="round" transform="translate(14.681063, 92.666667) scale(-1, 1) rotate(-180.000000) translate(-14.681063, -92.666667) "></line>
+                <line x1="32.33333" y1="20.1210664" x2="38.9999965" y2="8.5744" id="path12" stroke-linecap="round" transform="translate(35.666663, 14.347733) scale(-1, 1) rotate(-180.000000) translate(-35.666663, -14.347733) "></line>
+                <line x1="89.66667" y1="119.425336" x2="96.3333365" y2="107.87867" id="path13" stroke-linecap="round" transform="translate(93.000003, 113.652003) scale(-1, 1) rotate(-180.000000) translate(-93.000003, -113.652003) "></line>
+                <line x1="89.66667" y1="8.57466362" x2="96.3333365" y2="20.12133" id="path14" stroke-linecap="round" transform="translate(93.000003, 14.347997) scale(-1, 1) rotate(-180.000000) translate(-93.000003, -14.347997) "></line>
+                <line x1="32.33333" y1="107.878934" x2="38.9999965" y2="119.4256" id="path15" stroke-linecap="round" transform="translate(35.666663, 113.652267) scale(-1, 1) rotate(-180.000000) translate(-35.666663, -113.652267) "></line>
+                <line x1="8.90773" y1="38.6666665" x2="20.4543964" y2="32" id="path16" stroke-linecap="round" transform="translate(14.681063, 35.333333) scale(-1, 1) rotate(-180.000000) translate(-14.681063, -35.333333) "></line>
+                <line x1="108.212" y1="95.9999965" x2="119.758666" y2="89.33333" id="path17" stroke-linecap="round" transform="translate(113.985333, 92.666663) scale(-1, 1) rotate(-180.000000) translate(-113.985333, -92.666663) "></line>
+            </g>
+        </g>
+    </g>
+</svg>

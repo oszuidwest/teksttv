@@ -3,6 +3,7 @@ import { Frame } from './components/zuidwest/Frame'
 import { ImageSlide } from './components/zuidwest/ImageSlide'
 import { TextSlide } from './components/zuidwest/TextSlide'
 import { Ticker } from './components/zuidwest/Ticker'
+import { WeatherSlide } from './components/zuidwest/WeatherSlide'
 
 export default function ZuidWestApp(props: {
   apiBase: string
@@ -20,6 +21,11 @@ export default function ZuidWestApp(props: {
           </TextSlide>
         ),
         image: ImageSlide,
+        weather: ({ children, ...p }) => (
+          <WeatherSlide {...p} theme={theme}>
+            {children}
+          </WeatherSlide>
+        ),
       }}
       Ticker={(p) => <Ticker {...p} theme={theme} />}
       Frame={(p) => <Frame {...p} theme={theme} />}
