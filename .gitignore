@@ -28,3 +28,8 @@ dist-ssr
 
 # Dev overlay design PNGs
 public/dev/
+
+# Markdown files (except README and SCHEMA)
+*.md
+!README.md
+!SCHEMA.md
