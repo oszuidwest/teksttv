@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { SlideDataSchema, TickerItemSchema } from '../types'
 import type { SlideData, TickerItem } from '../types'
+import { SlideDataSchema, TickerItemSchema } from '../types'
 
 export function useCarousel({
   apiBase,
