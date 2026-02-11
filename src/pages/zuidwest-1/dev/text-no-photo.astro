@@ -1,0 +1,32 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { Frame } from '../../../components/zuidwest/Frame'
+import { TextSlide } from '../../../components/zuidwest/TextSlide'
+import { Ticker } from '../../../components/zuidwest/Ticker'
+import { DevOverlay } from '../../../components/zuidwest/DevOverlay'
+---
+
+<Layout title="Dev - ZuidWest Text (no photo)">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react" theme="green">
+      <TextSlide
+        client:only="react"
+        theme="green"
+        content={{
+          type: 'text',
+          duration: 10000,
+          title: 'Nieuwe mijlpaal werkzaamheden Fort Sabina: gevelrestauratie afgerond',
+          body: '<p>HEIJNINGEN - Een feestelijk moment bij Fort Sabina, want de gevel van het eeuwenoude gebouw is helemaal opgeknapt. Begin dit jaar startten de restauratiewerkzaamheden. In oktober zijn de werkzaamheden afgerond. Een mijlpaal om bij stil te staan, en bij vooruit te blikken. Het stond al zeker vijf jaar op de planning om de gevel van het imposante fort aan te pakken.</p><p>Hiervoor waren maarliefst veertig duizend stenen nodig. Door corona vertraagde de renovatie, maar het is nu helemaal af. Het volgende project is de renovatie van de Botenloods.</p>',
+          image: '',
+        }}
+      />
+      <Ticker
+        client:only="react"
+        theme="green"
+        items={[{ message: 'Morgen op TV: Tijd voor Senioren - Zundert' }]}
+        currentIndex={0}
+      />
+    </Frame>
+    <DevOverlay client:only="react" src="/dev/text-no-photo-green.png" />
+  </div>
+</Layout>

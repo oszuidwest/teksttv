@@ -1,0 +1,23 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { ImageSlide } from '../../../components/rucphen/ImageSlide'
+import { Ticker } from '../../../components/rucphen/Ticker'
+---
+
+<Layout title="Dev - Rucphen Image">
+  <div class="relative h-[1080px] w-[1920px]">
+    <ImageSlide
+      client:only="react"
+      content={{
+        type: 'image',
+        duration: 10000,
+        url: 'https://cms.tv-krant.nl/wp-content/uploads/2024/10/colofon_pagina1.jpg',
+      }}
+    />
+    <Ticker
+      client:only="react"
+      items={[{ message: 'Bezoek onze website: rucphenrtv.nl' }]}
+      currentIndex={0}
+    />
+  </div>
+</Layout>

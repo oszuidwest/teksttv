@@ -25,3 +25,6 @@ dist-ssr
 *.sw?
 
 *.tsbuildinfo
+
+# Dev overlay design PNGs
+public/dev/

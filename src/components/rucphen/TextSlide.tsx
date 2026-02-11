@@ -1,6 +1,12 @@
-import type { TextSlideData } from '../types'
+import type { TextSlideData } from '../../types'
 
-export const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
+export const TextSlide = ({
+  content,
+  children,
+}: {
+  content: TextSlideData
+  children?: React.ReactNode
+}) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
       <img src={content.image} alt="" className="inset-0 h-full object-cover" />
@@ -52,5 +58,6 @@ export const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
         />
       </div>
     </div>
+    {children}
   </div>
 )

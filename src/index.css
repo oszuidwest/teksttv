@@ -1,7 +1,11 @@
 @import "tailwindcss";
+@import "@fontsource/nunito/400.css";
+@import "@fontsource/nunito/700.css";
+@import "@fontsource/nunito/900.css";
 
 @theme {
   --font-tahoma: Tahoma, sans-serif;
+  --font-nunito: "Nunito", sans-serif;
 }
 
 .sidebar {

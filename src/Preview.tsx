@@ -1,8 +1,7 @@
+import type { ComponentType } from 'react'
 import { useEffect, useRef } from 'react'
 import { z } from 'zod'
-import { ImageSlideComponent } from './components/ImageSlideComponent'
-import { TextSlideComponent } from './components/TextSlideComponent'
-import { Ticker } from './components/Ticker'
+import type { ImageSlideData, TextSlideData, TickerItem } from './types'
 import { SlideDataSchema } from './types'
 
 function base64ToBytes(base64: string) {
@@ -10,7 +9,19 @@ function base64ToBytes(base64: string) {
   return Uint8Array.from(binString, (m) => m.codePointAt(0) || 0)
 }
 
-export default function Preview({ apiBase: _apiBase }: { apiBase: string }) {
+interface SlideComponents {
+  text: ComponentType<{ content: TextSlideData }>
+  image: ComponentType<{ content: ImageSlideData }>
+}
+
+interface PreviewProps {
+  apiBase: string
+  slides: SlideComponents
+  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
+  Frame?: ComponentType<{ children: React.ReactNode }>
+}
+
+export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
   const encodedData = new URLSearchParams(window.location.search).get('data')
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -18,13 +29,12 @@ export default function Preview({ apiBase: _apiBase }: { apiBase: string }) {
     function resizeViewport() {
       if (containerRef.current) {
         const parentWidth = window.innerWidth
-        const scaleFactor = Math.min(parentWidth / 1920, 1) // Limit scale to 1
+        const scaleFactor = Math.min(parentWidth / 1920, 1)
         containerRef.current.style.transform = `scale(${scaleFactor})`
         containerRef.current.style.transformOrigin = 'top left'
         containerRef.current.style.width = '1920px'
         containerRef.current.style.height = '1080px'
 
-        // Inform the parent window of the new height
         const newHeight = 1080 * scaleFactor
         window.parent.postMessage({ type: 'resize', height: newHeight }, '*')
       }
@@ -48,17 +58,26 @@ export default function Preview({ apiBase: _apiBase }: { apiBase: string }) {
     const parsedData = JSON.parse(decodedData)
     const validatedData = SlideDataSchema.parse(parsedData)
 
-    return (
-      <div ref={containerRef} className="relative h-[1080px] w-[1920px]">
+    const TextSlide = slides.text
+    const ImageSlide = slides.image
+
+    const content = (
+      <>
         {validatedData.type === 'image' ? (
-          <ImageSlideComponent content={validatedData} />
+          <ImageSlide content={validatedData} />
         ) : (
-          <TextSlideComponent content={validatedData} />
+          <TextSlide content={validatedData} />
         )}
         <Ticker
           items={[{ message: 'Dit is een preview slide' }]}
           currentIndex={0}
         />
+      </>
+    )
+
+    return (
+      <div ref={containerRef} className="relative h-[1080px] w-[1920px]">
+        {Frame ? <Frame>{content}</Frame> : content}
       </div>
     )
   } catch (error) {

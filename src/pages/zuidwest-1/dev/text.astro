@@ -1,0 +1,33 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { Frame } from '../../../components/zuidwest/Frame'
+import { TextSlide } from '../../../components/zuidwest/TextSlide'
+import { Ticker } from '../../../components/zuidwest/Ticker'
+import { DevOverlay } from '../../../components/zuidwest/DevOverlay'
+---
+
+<Layout title="Dev - ZuidWest Text (with photo)">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react" theme="green">
+      <TextSlide
+        client:only="react"
+        theme="green"
+        content={{
+          type: 'text',
+          duration: 10000,
+          title: 'In dit boskantoor kunnen boswachters mobiel werken',
+          body: '<p>ZUNDERT - Anno 2024 zit de boswachter niet de hele dag in het bos, maar ook op kantoor. Daar is iets voor bedacht, namelijk een mobiel boskantoor. Als aanhangwagen, gekoppeld aan de pick-uptruck, kunnen boswachters van Staatsbosbeheer ook in het bos met de laptop aan de slag. Met de mobiele werkplek kunnen boswachters zowel administratieve als fysieke werkzaamheden in het bos verrichten.</p>',
+          image: '/dev/sample-photo.png',
+        }}
+      >
+        <Ticker
+          client:only="react"
+          theme="green"
+          items={[{ message: 'Morgen op TV: Verborgen Parels' }]}
+          currentIndex={0}
+        />
+      </TextSlide>
+    </Frame>
+    <DevOverlay client:only="react" src="/dev/text-with-photo-green.png" />
+  </div>
+</Layout>
