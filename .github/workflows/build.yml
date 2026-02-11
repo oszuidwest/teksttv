@@ -1,18 +1,31 @@
-name: Manual build and release
+name: Release
 
 on:
   workflow_dispatch:
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Check
+        run: bun run check
+
   build:
     runs-on: ubuntu-latest
+    needs: quality
     outputs:
-      version: ${{ steps.read_version.outputs.version }}
-      is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
-      zip_name: ${{ steps.zip_project.outputs.zip_name }}
-      release_needed: ${{ steps.compare_versions.outputs.release_needed }}
+      version: ${{ steps.meta.outputs.version }}
+      project_name: ${{ steps.meta.outputs.project_name }}
+      is_prerelease: ${{ steps.meta.outputs.is_prerelease }}
+      release_needed: ${{ steps.meta.outputs.release_needed }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -20,108 +33,69 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install dependencies and Build
-        run: |
-          bun install --frozen-lockfile
-          bun run build
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: Read version and project name from package.json
-        id: read_version
+      - name: Build
+        run: bun run build
+
+      - name: Extract metadata
+        id: meta
         run: |
           VERSION=$(jq -r '.version' < package.json)
           PROJECT_NAME=$(jq -r '.name' < package.json)
-          echo "Version is $VERSION"
-          echo "Project name is $PROJECT_NAME"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
 
-      - name: Check if version is a pre-release
-        id: check_prerelease
-        run: |
-          VERSION="${{ steps.read_version.outputs.version }}"
+          # Check if prerelease
           if [[ "$VERSION" == *"beta"* || "$VERSION" == *"alpha"* || "$VERSION" == *"rc"* ]]; then
-            echo "This is a pre-release"
             echo "is_prerelease=true" >> $GITHUB_OUTPUT
           else
-            echo "This is not a pre-release"
             echo "is_prerelease=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Fetch latest tag
-        id: fetch_latest_tag
-        run: |
-          if git rev-list --tags --max-count=1 >/dev/null 2>&1; then
-            LATEST_TAG=$(git describe --tags "$(git rev-list --tags --max-count=1)")
-          else
-            LATEST_TAG="none"
-          fi
-          echo "Latest tag: $LATEST_TAG"
-          echo "LATEST_TAG=$LATEST_TAG" >> $GITHUB_ENV
-
-      - name: Compare versions and decide if a new tag is needed
-        id: compare_versions
-        run: |
-          VERSION="${{ steps.read_version.outputs.version }}"
-          LATEST_TAG="$LATEST_TAG"  # Retrieved from GITHUB_ENV
-          if [ "$LATEST_TAG" = "none" ]; then
-            echo "No previous tag found. Proceeding with new tag and release."
-            echo "release_needed=true" >> $GITHUB_OUTPUT
-          elif [ "$(printf '%s\n' "$VERSION" "$LATEST_TAG" | sort -V | head -n1)" != "$VERSION" ]; then
-            echo "New version detected. Proceeding with new tag and release."
+          # Check if release needed
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
+          if [ "$LATEST_TAG" = "none" ] || [ "$VERSION" != "$LATEST_TAG" ]; then
             echo "release_needed=true" >> $GITHUB_OUTPUT
           else
-            echo "No new version. Skipping release."
             echo "release_needed=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Zip the contents of the dist directory with project name and version
-        id: zip_project
+      - name: Create artifact
         run: |
-          ZIP_NAME="${{ steps.read_version.outputs.project_name }}-${{ steps.read_version.outputs.version }}.zip"
           cd dist
-          zip -r "../$ZIP_NAME" .
-          cd ..
-          echo "zip_name=$ZIP_NAME" >> $GITHUB_OUTPUT
+          zip -r "../${{ steps.meta.outputs.project_name }}-${{ steps.meta.outputs.version }}.zip" .
 
-      - name: Upload the zip file as an artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
-          name: dist-zip
-          path: ${{ steps.zip_project.outputs.zip_name }}
+          name: dist
+          path: ${{ steps.meta.outputs.project_name }}-${{ steps.meta.outputs.version }}.zip
 
   release:
     runs-on: ubuntu-latest
     needs: build
     if: needs.build.outputs.release_needed == 'true'
+    permissions:
+      contents: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - name: Download artifact
+        uses: actions/download-artifact@v6
         with:
-          fetch-depth: 0
+          name: dist
 
-      - name: Download dist.zip artifact
-        uses: actions/download-artifact@v7
-        with:
-          name: dist-zip
-          path: ./
-
-      - name: Create new Git tag
+      - name: Create release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          git tag "${{ needs.build.outputs.version }}"
-          git push origin "${{ needs.build.outputs.version }}"
-
-      - name: Create GitHub Release and upload compressed file
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Uploading ${{ needs.build.outputs.zip_name }} to GitHub release..."
+          ZIP_NAME="${{ needs.build.outputs.project_name }}-${{ needs.build.outputs.version }}.zip"
           PRERELEASE_FLAG=""
-          if [ "${{ needs.build.outputs.is_prerelease }}" == "true" ]; then
+          if [ "${{ needs.build.outputs.is_prerelease }}" = "true" ]; then
             PRERELEASE_FLAG="--prerelease"
           fi
-          gh release create "${{ needs.build.outputs.version }}" "${{ needs.build.outputs.zip_name }}" \
+          gh release create "${{ needs.build.outputs.version }}" "$ZIP_NAME" \
             --title "${{ needs.build.outputs.version }}" \
-            --notes "Automated release for version ${{ needs.build.outputs.version }}" \
+            --notes "Release ${{ needs.build.outputs.version }}" \
             $PRERELEASE_FLAG
