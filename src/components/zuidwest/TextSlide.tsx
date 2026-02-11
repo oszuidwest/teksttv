@@ -26,7 +26,9 @@ export function TextSlide({
       >
         {/* Card (fills remaining space) */}
         <div
-          className={"ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] px-[56px] pt-[32px] font-nunito"}
+          className={
+            'ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] px-[56px] pt-[32px] font-nunito'
+          }
         >
           <div className="h-full overflow-hidden">
             {/* Float spacer for photo area */}
