@@ -200,7 +200,10 @@ export function WeatherSlide({
               </div>
 
               {/* Right: min avg + rest — colored by low temp */}
-              <div className="flex flex-1 items-center" style={tempStyle(avgMin)}>
+              <div
+                className="flex flex-1 items-center"
+                style={tempStyle(avgMin)}
+              >
                 <div
                   className={`${colMin} flex items-center justify-center text-[44px]`}
                 >
