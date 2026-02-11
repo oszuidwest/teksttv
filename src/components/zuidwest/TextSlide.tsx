@@ -21,11 +21,13 @@ export function TextSlide({
     <>
       {/* Green accent flex container — height determined by top/bottom */}
       <div
-        className="absolute top-[160px] bottom-[112px] left-[134px] flex flex-col gap-[2px] rounded-tl-[42px] rounded-bl-[42px] pb-[2px]"
+        className="absolute top-[160px] bottom-[112px] left-[134px] flex flex-col gap-[2px] rounded-tl-[42px] rounded-tr-[80px] rounded-bl-[42px] pb-[2px]"
         style={{ backgroundColor: c.border, width: '1650px' }}
       >
         {/* Card (fills remaining space) */}
-        <div className="ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] bg-[#e9e9e9] px-[56px] pt-[32px] font-nunito">
+        <div
+          className={"ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] px-[56px] pt-[32px] font-nunito"}
+        >
           <div className="h-full overflow-hidden">
             {/* Float spacer for photo area */}
             {hasImage && (
@@ -37,7 +39,7 @@ export function TextSlide({
 
             {/* Title (renders HTML entities) */}
             <h1
-              className="mb-[40px] font-black text-[#1d1d1b] text-[58px] leading-[59px]"
+              className="mb-[44px] font-black text-[#1d1d1b] text-[58px] leading-[59px]"
               dangerouslySetInnerHTML={{ __html: content.title }}
             />
 

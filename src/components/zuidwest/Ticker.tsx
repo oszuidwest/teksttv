@@ -35,7 +35,7 @@ export function Ticker({
       className="flex h-[68px] items-center rounded-bl-[40px] font-nunito"
       style={{ backgroundColor: c.tickerBg }}
     >
-      <div className="flex items-center gap-[12px] pl-[56px]">
+      <div className="flex items-center pl-[56px]">
         {label && (
           <span className="font-black text-[40px] text-black leading-none">
             {label}
@@ -44,7 +44,7 @@ export function Ticker({
 
         {label && (
           <svg
-            className="h-[30px] w-[36px]"
+            className="mx-[12px] h-[30px] w-[36px]"
             viewBox="0 0 36 30"
             fill="none"
             stroke={c.arrow}

@@ -35,8 +35,9 @@ export function Background({
         viewBox="0 0 1920 1080"
         preserveAspectRatio="none"
       >
-        {/* Green band — full width, top 600px */}
-        <rect x="0" y="0" width="1920" height="600" fill={c.topBand} />
+        {/* Green band — top 600px, right 640px is dark */}
+        <rect x="0" y="0" width="1280" height="600" fill={c.topBand} />
+        <rect x="1280" y="0" width="640" height="600" fill={c.topBandDark} />
         {/* Top-left corner triangles */}
         <polygon points="0,0 0,320 160,0" fill={c.triLarge} />
         <polygon points="0,0 0,192 96,0" fill={c.triSmall} />
