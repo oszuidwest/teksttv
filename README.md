@@ -7,6 +7,7 @@ Built with Astro, React, TypeScript, and Tailwind CSS 4. Output is 1920x1080, de
 ## Table of Contents
 
 - [Architecture](#architecture)
+- [Development](#development)
 - [Slide Types](#slide-types)
 - [Ticker](#ticker)
 - [Auto-Refresh](#auto-refresh)
@@ -22,6 +23,38 @@ The app supports multiple channels with different visual themes:
 - **ZuidWest TV1** (`/zuidwest-1/`) — green theme
 - **ZuidWest TV2** (`/zuidwest-2/`) — blue theme
 - **Rucphen RTV** (`/rucphen/`) — custom theme
+
+## Development
+
+This project uses [Bun](https://bun.sh/) as its package manager and runtime.
+
+### Commands
+
+```bash
+bun install      # Install dependencies
+bun run dev      # Start development server
+bun run build    # Production build
+bun run preview  # Preview production build
+bun run check    # Run all CI checks locally (TypeScript + Biome)
+bun run fix      # Auto-fix linting and formatting issues
+```
+
+### Code Quality
+
+The project uses [Biome](https://biomejs.dev/) for linting and formatting, and TypeScript for type checking.
+
+Before committing, run `bun run check` to verify your changes pass CI. If there are issues, run `bun run fix` to auto-fix what can be fixed automatically.
+
+### CI/CD
+
+Two GitHub Actions workflows handle automation:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **Quality** | Push, PR | Runs `bun run check` (TypeScript + Biome) |
+| **Release** | Manual | Runs quality checks, builds, and creates a GitHub release |
+
+The Release workflow only creates a new release if the version in `package.json` differs from the latest Git tag. Pre-release versions (containing `alpha`, `beta`, or `rc`) are marked accordingly.
 
 ## Slide Types
 
