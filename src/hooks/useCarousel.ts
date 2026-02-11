@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  ChannelPayloadSchema,
-  SlideDataListSchema,
-  TickerItemsSchema,
+  SlideDataSchema,
+  TickerItemSchema,
 } from '../types'
 import type { SlideData, TickerItem } from '../types'
 
@@ -20,13 +19,56 @@ export function useCarousel({
   const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
   const [tickerIndex, setTickerIndex] = useState(0)
   const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
-  const [fetchError, setFetchError] = useState<string | null>(null)
+
+  const getValidSlides = useCallback(
+    (value: unknown, source: string) => {
+      if (!Array.isArray(value)) {
+        console.error(`Invalid slides payload from ${source}: expected array`)
+        return []
+      }
+
+      return value.flatMap((entry, index) => {
+        const parsed = SlideDataSchema.safeParse(entry)
+        if (!parsed.success) {
+          console.error(
+            `Skipping invalid slide ${index} from ${source}`,
+            parsed.error.issues,
+          )
+          return []
+        }
+        return [parsed.data]
+      })
+    },
+    [],
+  )
+
+  const getValidTickerItems = useCallback(
+    (value: unknown, source: string) => {
+      if (!Array.isArray(value)) {
+        console.error(`Invalid ticker payload from ${source}: expected array`)
+        return []
+      }
+
+      return value.flatMap((entry, index) => {
+        const parsed = TickerItemSchema.safeParse(entry)
+        if (!parsed.success) {
+          console.error(
+            `Skipping invalid ticker item ${index} from ${source}`,
+            parsed.error.issues,
+          )
+          return []
+        }
+        return [parsed.data]
+      })
+    },
+    [],
+  )
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
       try {
-        let newSlides: SlideData[]
-        let newTickerItems: TickerItem[]
+        let slidesData: unknown
+        let tickerData: unknown
 
         if (channel) {
           const response = await fetch(`${apiBase}/teksttv?channel=${channel}`)
@@ -35,9 +77,12 @@ export function useCarousel({
               `Unable to fetch channel feed (status ${response.status})`,
             )
           }
-          const data = ChannelPayloadSchema.parse(await response.json())
-          newSlides = data.slides
-          newTickerItems = data.ticker
+          const data = (await response.json()) as {
+            slides?: unknown
+            ticker?: unknown
+          }
+          slidesData = data.slides
+          tickerData = data.ticker
         } else {
           const [slidesResponse, tickerResponse] = await Promise.all([
             fetch(`${apiBase}/teksttv-slides`),
@@ -48,16 +93,25 @@ export function useCarousel({
               `Unable to fetch feed (slides ${slidesResponse.status}, ticker ${tickerResponse.status})`,
             )
           }
-          const [slidesData, tickerData] = await Promise.all([
+          const [rawSlidesData, rawTickerData] = await Promise.all([
             slidesResponse.json(),
             tickerResponse.json(),
           ])
-          newSlides = SlideDataListSchema.parse(slidesData)
-          newTickerItems = TickerItemsSchema.parse(tickerData)
+          slidesData = rawSlidesData
+          tickerData = rawTickerData
         }
 
+        const newSlides = getValidSlides(
+          slidesData,
+          channel ? `channel ${channel}` : 'slides endpoint',
+        )
+        const newTickerItems = getValidTickerItems(
+          tickerData,
+          channel ? `channel ${channel}` : 'ticker endpoint',
+        )
+
         if (newSlides.length === 0) {
-          throw new Error('Feed returned no slides')
+          throw new Error('Feed returned no valid slides')
         }
 
         const imageUrls = [
@@ -90,15 +144,11 @@ export function useCarousel({
             ...new Set([...prevUrls, ...imageUrls]),
           ])
         }
-        setFetchError(null)
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Unknown fetch error'
-        setFetchError(`Feed update failed: ${message}`)
         console.error('Error fetching data:', error)
       }
     },
-    [apiBase, channel],
+    [apiBase, channel, getValidSlides, getValidTickerItems],
   )
 
   useEffect(() => {
@@ -185,6 +235,5 @@ export function useCarousel({
     tickerItems,
     tickerIndex,
     imagesToPreload,
-    fetchError,
   }
 }
