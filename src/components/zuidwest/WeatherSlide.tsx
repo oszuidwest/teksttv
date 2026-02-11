@@ -73,6 +73,13 @@ export function WeatherSlide({
   const c = themes[theme]
   const days = content.days.slice(0, 5)
 
+  const avgMax = Math.round(
+    days.reduce((sum, d) => sum + d.temp_max, 0) / days.length,
+  )
+  const avgMin = Math.round(
+    days.reduce((sum, d) => sum + d.temp_min, 0) / days.length,
+  )
+
   // Column widths (must stay consistent between day rows and klimaatgemiddelde)
   const colDay = 'w-[264px]'
   const colIcon = 'w-[120px]'
@@ -178,7 +185,7 @@ export function WeatherSlide({
               <div
                 className="flex items-center"
                 style={{
-                  ...tempStyle(6),
+                  ...tempStyle(avgMax),
                   width: `calc(264px + 120px + 40px + 136px)`,
                 }}
               >
@@ -188,16 +195,16 @@ export function WeatherSlide({
                 <div
                   className={`${colMax} ml-auto flex items-center justify-center font-[800] text-[44px]`}
                 >
-                  6°
+                  {avgMax}°
                 </div>
               </div>
 
               {/* Right: min avg + rest — colored by low temp */}
-              <div className="flex flex-1 items-center" style={tempStyle(1)}>
+              <div className="flex flex-1 items-center" style={tempStyle(avgMin)}>
                 <div
                   className={`${colMin} flex items-center justify-center text-[44px]`}
                 >
-                  1°
+                  {avgMin}°
                 </div>
               </div>
             </div>

@@ -37,9 +37,10 @@ export function Ticker({
     >
       <div className="flex items-center pl-[56px]">
         {label && (
-          <span className="font-black text-[40px] text-black leading-none">
-            {label}
-          </span>
+          <span
+            className="font-black text-[40px] text-black leading-none"
+            dangerouslySetInnerHTML={{ __html: label }}
+          />
         )}
 
         {label && (
@@ -57,9 +58,10 @@ export function Ticker({
           </svg>
         )}
 
-        <span className="text-[#1d1d1b] text-[40px] leading-none">
-          {content}
-        </span>
+        <span
+          className="text-[#1d1d1b] text-[40px] leading-none"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
       </div>
     </div>
   )
