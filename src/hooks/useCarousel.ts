@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import {
-  SlideDataSchema,
-  TickerItemSchema,
-} from '../types'
+import { SlideDataSchema, TickerItemSchema } from '../types'
 import type { SlideData, TickerItem } from '../types'
 
 export function useCarousel({
@@ -20,49 +17,43 @@ export function useCarousel({
   const [tickerIndex, setTickerIndex] = useState(0)
   const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
 
-  const getValidSlides = useCallback(
-    (value: unknown, source: string) => {
-      if (!Array.isArray(value)) {
-        console.error(`Invalid slides payload from ${source}: expected array`)
+  const getValidSlides = useCallback((value: unknown, source: string) => {
+    if (!Array.isArray(value)) {
+      console.error(`Invalid slides payload from ${source}: expected array`)
+      return []
+    }
+
+    return value.flatMap((entry, index) => {
+      const parsed = SlideDataSchema.safeParse(entry)
+      if (!parsed.success) {
+        console.error(
+          `Skipping invalid slide ${index} from ${source}`,
+          parsed.error.issues,
+        )
         return []
       }
+      return [parsed.data]
+    })
+  }, [])
 
-      return value.flatMap((entry, index) => {
-        const parsed = SlideDataSchema.safeParse(entry)
-        if (!parsed.success) {
-          console.error(
-            `Skipping invalid slide ${index} from ${source}`,
-            parsed.error.issues,
-          )
-          return []
-        }
-        return [parsed.data]
-      })
-    },
-    [],
-  )
+  const getValidTickerItems = useCallback((value: unknown, source: string) => {
+    if (!Array.isArray(value)) {
+      console.error(`Invalid ticker payload from ${source}: expected array`)
+      return []
+    }
 
-  const getValidTickerItems = useCallback(
-    (value: unknown, source: string) => {
-      if (!Array.isArray(value)) {
-        console.error(`Invalid ticker payload from ${source}: expected array`)
+    return value.flatMap((entry, index) => {
+      const parsed = TickerItemSchema.safeParse(entry)
+      if (!parsed.success) {
+        console.error(
+          `Skipping invalid ticker item ${index} from ${source}`,
+          parsed.error.issues,
+        )
         return []
       }
-
-      return value.flatMap((entry, index) => {
-        const parsed = TickerItemSchema.safeParse(entry)
-        if (!parsed.success) {
-          console.error(
-            `Skipping invalid ticker item ${index} from ${source}`,
-            parsed.error.issues,
-          )
-          return []
-        }
-        return [parsed.data]
-      })
-    },
-    [],
-  )
+      return [parsed.data]
+    })
+  }, [])
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
@@ -168,7 +159,8 @@ export function useCarousel({
 
   useEffect(() => {
     if (slides.length === 0) return
-    const currentDuration = slides[currentSlide]?.duration ?? slides[0]?.duration
+    const currentDuration =
+      slides[currentSlide]?.duration ?? slides[0]?.duration
     if (!currentDuration) return
 
     const timer = setInterval(() => {
