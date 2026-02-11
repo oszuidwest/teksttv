@@ -74,7 +74,7 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
     } else if (validatedData.type === 'weather' && WeatherSlide) {
       slide = <WeatherSlide content={validatedData} />
     } else {
-      slide = <ImageSlide content={validatedData} />
+      slide = <ImageSlide content={validatedData as FullScreenSlideData} />
     }
 
     const content = (

@@ -67,7 +67,10 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     )
   } else {
     slide = (
-      <ImageSlide key={currentSlide} content={currentSlideData}>
+      <ImageSlide
+        key={currentSlide}
+        content={currentSlideData as FullScreenSlideData}
+      >
         {tickerElement}
       </ImageSlide>
     )
