@@ -34,16 +34,20 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    fetchError,
   } = useCarousel({ apiBase, channel })
 
   if (slideData.length === 0) {
-    return <div>Loading...</div>
+    return <div>{fetchError ?? 'Loading...'}</div>
   }
 
   const TextSlide = slides.text
   const ImageSlide = slides.image
   const WeatherSlide = slides.weather
-  const currentSlideData = slideData[currentSlide]
+  const currentSlideData = slideData[currentSlide] ?? slideData[0]
+  if (!currentSlideData) {
+    return <div>{fetchError ?? 'Loading...'}</div>
+  }
 
   const tickerElement = (
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
@@ -82,6 +86,11 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
   return (
     <div className="relative h-[1080px] w-[1920px]">
       {Frame ? <Frame>{content}</Frame> : content}
+      {fetchError && (
+        <div className="absolute top-4 left-4 z-50 rounded bg-black/75 px-4 py-2 text-sm text-white">
+          {fetchError}
+        </div>
+      )}
     </div>
   )
 }

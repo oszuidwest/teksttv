@@ -2,17 +2,36 @@ import { z } from 'zod'
 
 export const ImageSlideDataSchema = z.object({
   type: z.literal('image'),
-  duration: z.number(),
+  duration: z.number().positive(),
   url: z.string().url(),
 })
 
 export const TextSlideDataSchema = z.object({
   type: z.literal('text'),
-  duration: z.number(),
+  duration: z.number().positive(),
   title: z.string(),
   body: z.string(),
   image: z.string(),
 })
+
+const windDirections = [
+  'N',
+  'NNO',
+  'NO',
+  'ONO',
+  'O',
+  'OZO',
+  'ZO',
+  'ZZO',
+  'Z',
+  'ZZW',
+  'ZW',
+  'WZW',
+  'W',
+  'WNW',
+  'NW',
+  'NNW',
+] as const
 
 export const WeatherDaySchema = z.object({
   date: z.string(),
@@ -22,13 +41,13 @@ export const WeatherDaySchema = z.object({
   weather_id: z.number(),
   description: z.string(),
   icon: z.string(),
-  wind_direction: z.string(),
-  wind_beaufort: z.number(),
+  wind_direction: z.enum(windDirections),
+  wind_beaufort: z.number().int().min(0).max(12),
 })
 
 export const WeatherSlideDataSchema = z.object({
   type: z.literal('weather'),
-  duration: z.number(),
+  duration: z.number().positive(),
   title: z.string(),
   location: z.string(),
   days: z.array(WeatherDaySchema),
@@ -36,13 +55,13 @@ export const WeatherSlideDataSchema = z.object({
 
 export const CommercialSlideDataSchema = z.object({
   type: z.literal('commercial'),
-  duration: z.number(),
+  duration: z.number().positive(),
   url: z.string().url(),
 })
 
 export const CommercialTransitionSlideDataSchema = z.object({
   type: z.literal('commercial_transition'),
-  duration: z.number(),
+  duration: z.number().positive(),
   url: z.string().url(),
 })
 
@@ -56,6 +75,13 @@ export const SlideDataSchema = z.discriminatedUnion('type', [
 
 export const TickerItemSchema = z.object({
   message: z.string(),
+})
+
+export const SlideDataListSchema = z.array(SlideDataSchema)
+export const TickerItemsSchema = z.array(TickerItemSchema)
+export const ChannelPayloadSchema = z.object({
+  slides: SlideDataListSchema,
+  ticker: TickerItemsSchema,
 })
 
 // Type inference

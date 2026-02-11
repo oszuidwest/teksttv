@@ -6,12 +6,9 @@ const themes = {
   blue: { border: '#009fe3' },
 } as const
 
-// Resolve OWM icon code to local SVG path, with fallback chain:
-// exact match (e.g. 09d) → base code (e.g. 09) → generic cloud
+// Resolve OWM icon code to local SVG path. Fallback is handled in onError.
 function weatherIconSrc(icon: string): string {
-  const base = `/icons/weather/${icon}.svg`
-  const fallback = `/icons/weather/${icon.replace(/[dn]$/, '')}.svg`
-  return base !== fallback ? base : fallback
+  return `/icons/weather/${icon}.svg`
 }
 
 function WindArrow({ direction }: { direction: string }) {
@@ -72,6 +69,7 @@ export function WeatherSlide({
 }) {
   const c = themes[theme]
   const days = content.days.slice(0, 5)
+  if (days.length === 0) return null
 
   const avgMax = Math.round(
     days.reduce((sum, d) => sum + d.temp_max, 0) / days.length,
@@ -146,7 +144,22 @@ export function WeatherSlide({
                     onError={(e) => {
                       const img = e.currentTarget
                       const fallback = `/icons/weather/${day.icon.replace(/[dn]$/, '')}.svg`
-                      if (img.src !== fallback) img.src = fallback
+                      const currentSrc = img.getAttribute('src')
+                      if (
+                        img.dataset.fallbackApplied === 'true' ||
+                        currentSrc === fallback
+                      ) {
+                        console.error(
+                          `Weather icon failed to load, including fallback: ${fallback}`,
+                        )
+                        img.dataset.fallbackApplied = 'true'
+                        return
+                      }
+                      console.warn(
+                        `Weather icon failed to load: ${currentSrc}. Falling back to ${fallback}`,
+                      )
+                      img.dataset.fallbackApplied = 'true'
+                      img.src = fallback
                     }}
                   />
                 </div>

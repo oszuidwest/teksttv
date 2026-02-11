@@ -1,4 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
+import {
+  ChannelPayloadSchema,
+  SlideDataListSchema,
+  TickerItemsSchema,
+} from '../types'
 import type { SlideData, TickerItem } from '../types'
 
 export function useCarousel({
@@ -15,6 +20,7 @@ export function useCarousel({
   const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
   const [tickerIndex, setTickerIndex] = useState(0)
   const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
@@ -24,7 +30,12 @@ export function useCarousel({
 
         if (channel) {
           const response = await fetch(`${apiBase}/teksttv?channel=${channel}`)
-          const data = await response.json()
+          if (!response.ok) {
+            throw new Error(
+              `Unable to fetch channel feed (status ${response.status})`,
+            )
+          }
+          const data = ChannelPayloadSchema.parse(await response.json())
           newSlides = data.slides
           newTickerItems = data.ticker
         } else {
@@ -32,8 +43,21 @@ export function useCarousel({
             fetch(`${apiBase}/teksttv-slides`),
             fetch(`${apiBase}/teksttv-ticker`),
           ])
-          newSlides = await slidesResponse.json()
-          newTickerItems = await tickerResponse.json()
+          if (!slidesResponse.ok || !tickerResponse.ok) {
+            throw new Error(
+              `Unable to fetch feed (slides ${slidesResponse.status}, ticker ${tickerResponse.status})`,
+            )
+          }
+          const [slidesData, tickerData] = await Promise.all([
+            slidesResponse.json(),
+            tickerResponse.json(),
+          ])
+          newSlides = SlideDataListSchema.parse(slidesData)
+          newTickerItems = TickerItemsSchema.parse(tickerData)
+        }
+
+        if (newSlides.length === 0) {
+          throw new Error('Feed returned no slides')
         }
 
         const imageUrls = [
@@ -66,7 +90,11 @@ export function useCarousel({
             ...new Set([...prevUrls, ...imageUrls]),
           ])
         }
+        setFetchError(null)
       } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown fetch error'
+        setFetchError(`Feed update failed: ${message}`)
         console.error('Error fetching data:', error)
       }
     },
@@ -90,10 +118,13 @@ export function useCarousel({
 
   useEffect(() => {
     if (slides.length === 0) return
+    const currentDuration = slides[currentSlide]?.duration ?? slides[0]?.duration
+    if (!currentDuration) return
 
     const timer = setInterval(() => {
       const advance = () => {
         setCurrentSlide((prevSlide) => {
+          if (slides.length === 0) return 0
           const nextSlide = (prevSlide + 1) % slides.length
           if (nextSlide === 0 && nextSlides.length > 0) {
             setSlides(nextSlides)
@@ -121,6 +152,13 @@ export function useCarousel({
         })
 
         setTickerIndex((prevIndex) => {
+          if (tickerItems.length === 0) {
+            if (nextTickerItems.length > 0) {
+              setTickerItems(nextTickerItems)
+              setNextTickerItems([])
+            }
+            return 0
+          }
           const nextIndex = (prevIndex + 1) % tickerItems.length
           if (nextIndex === 0 && nextTickerItems.length > 0) {
             setTickerItems(nextTickerItems)
@@ -136,7 +174,7 @@ export function useCarousel({
       } else {
         advance()
       }
-    }, slides[currentSlide].duration)
+    }, currentDuration)
 
     return () => clearInterval(timer)
   }, [slides, currentSlide, nextSlides, tickerItems, nextTickerItems])
@@ -147,5 +185,6 @@ export function useCarousel({
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    fetchError,
   }
 }

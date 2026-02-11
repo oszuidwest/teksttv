@@ -30,7 +30,7 @@ export const TextSlide = ({
       <rect width="100%" height="100%" fill="url(#slantedGradient)" />
     </svg>
 
-    <div className="absolute absolute inset-0 flex flex-col">
+    <div className="absolute inset-0 flex flex-col">
       <div className="z-20 mt-[92px] w-full bg-[#626671] px-[116px] py-[14px]">
         <h1 className="font-bold text-[51px] text-shadow text-white uppercase tracking-wide">
           {content.title}
