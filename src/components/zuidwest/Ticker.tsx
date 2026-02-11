@@ -44,7 +44,7 @@ export function Ticker({
 
         {label && (
           <svg
-            className="mx-[12px] h-[30px] w-[36px]"
+            className="mx-[24px] h-[30px] w-[36px]"
             viewBox="0 0 36 30"
             fill="none"
             stroke={c.arrow}
