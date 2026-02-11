@@ -45,13 +45,13 @@ export function Ticker({
 
         {label && (
           <svg
-            className="mx-[24px] h-[30px] w-[36px]"
-            viewBox="0 0 36 30"
+            className="mx-[21px] h-[36px] w-[42px]"
+            viewBox="-3 -3 42 36"
             fill="none"
             stroke={c.arrow}
             strokeWidth="4"
             strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeLinejoin="miter"
           >
             <line x1="0" y1="15" x2="36" y2="15" />
             <polyline points="21,0.4 36,15 21,29.6" />
