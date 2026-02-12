@@ -37,6 +37,7 @@ bun run build    # Production build
 bun run preview  # Preview production build
 bun run check    # Run all CI checks locally (TypeScript + Biome)
 bun run fix      # Auto-fix linting and formatting issues
+bun run fix:unsafe  # Auto-fix including unsafe fixes (e.g. Tailwind class sorting)
 ```
 
 ### Code Quality
