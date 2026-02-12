@@ -1,7 +1,7 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const ImageSlideDataSchema = z.object({
-  type: z.literal("image"),
+  type: z.literal('image'),
   duration: z.number().positive(),
   url: z.string().url(),
 })
