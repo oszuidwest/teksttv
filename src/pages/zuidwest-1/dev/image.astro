@@ -1,0 +1,28 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { Frame } from '../../../components/zuidwest/Frame'
+import { ImageSlide } from '../../../components/zuidwest/ImageSlide'
+import { Ticker } from '../../../components/zuidwest/Ticker'
+---
+
+<Layout title="Dev - ZuidWest Image">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react" theme="green">
+      <ImageSlide
+        client:only="react"
+        content={{
+          type: 'image',
+          duration: 10000,
+          url: 'https://picsum.photos/1920/1080',
+        }}
+      >
+        <Ticker
+          client:only="react"
+          theme="green"
+          items={[{ message: 'Morgen op TV: Tijd voor Senioren - Zundert' }]}
+          currentIndex={0}
+        />
+      </ImageSlide>
+    </Frame>
+  </div>
+</Layout>

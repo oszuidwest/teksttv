@@ -1,104 +1,116 @@
-# Tekst TV Applicatie
+# Tekst TV
 
-Deze repository bevat de broncode van een eenvoudige Tekst TV applicatie die slides toont voor de kabelkranten van ZuidWest TV en Rucphen RTV. De slides bevatten tekst of afbeeldingen, met een doorlopende tickerbalk onderaan. De applicatie haalt regelmatig nieuwe content op via een API.
+A lightweight playout application for cable TV text channels (kabelkranten). Displays slides with text, images, weather forecasts, and commercials, with a ticker bar at the bottom. Content is fetched from external APIs.
 
-Het geheel is gebouwd met React, TypeScript en Vite. Voor de opmaak wordt Tailwind CSS 4 gebruikt. Het eindproduct wordt in een full-screen browser afgespeeld.
+Built with Astro, React, TypeScript, and Tailwind CSS 4. Output is 1920x1080, designed for full-screen browser playback.
 
-⚠️ Dit project is in actieve ontwikkeling. Veel is nog hardcoded. ⚠️
+## Table of Contents
 
-## Inhoud
-
-- [Architectuur](#architectuur)
-- [Slide types](#slide-types)
+- [Architecture](#architecture)
+- [Development](#development)
+- [Slide Types](#slide-types)
 - [Ticker](#ticker)
-- [Automatisch vernieuwen](#automatisch-vernieuwen)
-- [Slide schema](#slide-schema)
-- [Ticker schema](#ticker-schema)
-- [Previews maken](#previews-maken)
-- [Licentie](#licentie)
+- [Auto-Refresh](#auto-refresh)
+- [Schema](#schema)
+- [Previews](#previews)
+- [License](#license)
 
-## Architectuur
+## Architecture
 
-Deze applicatie is bewust als 'domme playout' ontworpen. Het speelt slechts een playlist die als JSON is gedefinieerd af. Alle logica voor het generen van deze playlist zit in een externe applicatie. Dit maakt het flexibel: elk CMS dat een compatibel JSON-schema genereert, kan de slides aanleveren.
+This application is intentionally designed as a "dumb playout" system. It simply plays a playlist defined as JSON. All logic for generating the playlist resides in an external application. This makes it flexible: any CMS that generates a compatible JSON schema can supply the slides.
 
-## Slide types
+The app supports multiple channels with different visual themes:
+- **ZuidWest TV1** (`/zuidwest-1/`) — green theme
+- **ZuidWest TV2** (`/zuidwest-2/`) — blue theme
+- **Rucphen RTV** (`/rucphen/`) — custom theme
 
-Alle slides zijn 1920x1080 pixels.
+## Development
 
-### 1. **Tekstslide**
-   - **Type**: `text`
-   - Bevat een **titel** en **inhoud**, met een zijbalkafbeelding.
-   - **Afbeelding**: Wordt links getoond. We moeten dit waarschijnlijk in de toekomst opsplitsen in een decoratieve afbeelding en een 'editorial afbeelding' (beter woord nodig).
+This project uses [Bun](https://bun.sh/) as its package manager and runtime.
 
-### 2. **Afbeeldingsslide**
-   - **Type**: `image`
-   - Toont een volledige afbeelding zonder tekst.
+### Commands
 
-Alle slides hebben een **duur** die bepaalt hoe lang ze worden weergegeven.
+```bash
+bun install      # Install dependencies
+bun run dev      # Start development server
+bun run build    # Production build
+bun run preview  # Preview production build
+bun run check    # Run all CI checks locally (TypeScript + Biome)
+bun run fix      # Auto-fix linting and formatting issues
+bun run fix:unsafe  # Auto-fix including unsafe fixes (e.g. Tailwind class sorting)
+```
+
+### Code Quality
+
+The project uses [Biome](https://biomejs.dev/) for linting and formatting, and TypeScript for type checking.
+
+Before committing, run `bun run check` to verify your changes pass CI. If there are issues, run `bun run fix` to auto-fix what can be fixed automatically.
+
+### CI/CD
+
+Two GitHub Actions workflows handle automation:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **Quality** | Push, PR | Runs `bun run check` (TypeScript + Biome) |
+| **Release** | Manual | Runs quality checks, builds, and creates a GitHub release |
+
+The Release workflow only creates a new release if the version in `package.json` differs from the latest Git tag. Pre-release versions (containing `alpha`, `beta`, or `rc`) are marked accordingly.
+
+## Slide Types
+
+All slides are 1920x1080 pixels. Each slide has a `duration` (in milliseconds) that determines how long it is displayed.
+
+### Text Slide
+- **Type**: `text`
+- Displays a title and body text with an optional sidebar image.
+- Supports HTML in title and body fields.
+
+### Image Slide
+- **Type**: `image`
+- Displays a full-screen image.
+
+### Weather Slide
+- **Type**: `weather`
+- Shows a multi-day weather forecast with temperature color coding.
+- Displays location, date, temperature range, wind info, and weather icons.
+
+### Commercial Slides
+- **Type**: `commercial` or `commercial_transition`
+- Full-screen images for advertisements.
+- Rendered identically to image slides.
 
 ## Ticker
 
-Onderaan het scherm is een **ticker** die berichten en een klok toont. Berichten worden opgehaald via een API. De ticker wordt automatisch afgebroken om het kapot maken van de template met een te lange ticker te voorkomen.
+A ticker bar at the bottom displays rotating messages. Messages support HTML and can include a label prefix (text before a colon is displayed in bold).
 
-## Automatisch vernieuwen
+## Auto-Refresh
 
-De app haalt bij het opstarten en elke 5 minuten nieuwe content op. Huidige slides blijven afspelen terwijl nieuwe worden geladen.
+The app fetches new content on startup and every 5 minutes. Current slides continue playing while new content loads in the background. New slides are swapped in at the end of the current playlist cycle.
 
-Als de internetverbinding wegvalt, zal de app blijven werken met de reeds opgehaalde slides en ticker-items. Als er geen internetverbinding is, probeert de app elke 60 seconden opnieuw data op te halen, totdat dit succesvol is. Op deze manier kan de app blijven draaien en inhoud tonen, zelfs als de internetverbinding tijdelijk wegvalt.
+If the internet connection drops, the app continues with cached slides and ticker items. It retries fetching every 60 seconds until successful.
 
-Daarnaast zorgt een meta-refresh ervoor dat de pagina elke dag rond 3 uur in de nacht volledig opnieuw wordt geladen. Dit gebeurt door een script dat de tijd berekent tot 3 uur 's nachts de volgende dag. Deze dagelijkse herstart voorkomt cacheproblemen. Gedurende de rest van de dag wordt de inhoud via JavaScript-updates ververst, zonder dat de pagina opnieuw hoeft te laden.
+A meta-refresh reloads the page daily at 3 AM to prevent cache issues.
 
-## Slide schema
+## Schema
 
-Een voorbeeld van een slide-schema:
+See [`src/types.ts`](src/types.ts) for the Zod schemas defining all slide types and ticker items, and [`src/types.examples.ts`](src/types.examples.ts) for example data.
 
-```json
-[
-  {
-    "type": "image",
-    "duration": 10000,
-    "url": "https://voorbeeld.com/afbeelding.jpg"
-  },
-  {
-    "type": "text",
-    "duration": 15000,
-    "title": "Nieuws van de dag",
-    "body": "Dit is een nieuwsbericht.",
-    "image": "https://voorbeeld.com/afbeelding2.jpg"
-  }
-]
-```
+## Previews
 
-## Ticker schema
+Preview individual slides at `/{channel}/preview?data={base64}`. Encode a single slide's JSON as base64 and pass it as the `data` parameter. The preview is responsive while maintaining a 16:9 aspect ratio.
 
-Voorbeeld ticker-schema:
-```json
-[
-  {
-    "message": "Nu op de radio: Victor in het Weekend"
-  },
-  {
-    "message": "Straks: NonStop"
-  }
-]
-```
+## License
 
-## Previews maken
-Het is mogelijk om previews te tonen van slides. Previews draaien op de route `/preview?data={{base64data}}`. Je kunt een preview genereren door de schema van een van de slides als base64 encoded data aan te leveren. De preview-weergave is responsive maar altijd 16x9.
+This project is licensed under the Mozilla Public License 2.0 (MPL-2.0).
 
-## Licentie
+You may:
+- Use the software for any purpose
+- Modify and distribute changes
+- Include it in larger projects under different licenses
 
-Dit project valt onder de Mozilla Public License, versie 2.0 (MPL-2.0). De MPL is een vrije en open softwarelicentie die het mogelijk maakt om code te hergebruiken en te delen, zowel in open-source als in commerciële projecten, zolang wijzigingen aan de oorspronkelijke code teruggegeven worden aan de gemeenschap onder de MPL.
+If you modify files, you must:
+- Make the source code of those changes available
+- Publish modifications under the MPL license
 
-Je mag:
-
-- De software gebruiken voor elk doel.
-- De software aanpassen en wijzigingen verspreiden.
-- De software opnemen in grotere projecten, die mogelijk onder een andere licentie kunnen vallen.
-
-Echter, als je bestanden aanpast, moet je:
-
-- De broncode van die wijzigingen beschikbaar stellen.
-- De wijzigingen onder de MPL licentie publiceren.
-
-Voor meer informatie, zie de volledige [LICENSE](LICENSE).
+See the full [LICENSE](LICENSE) for details.

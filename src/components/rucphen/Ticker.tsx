@@ -1,5 +1,5 @@
-import type { TickerItem } from '../types'
-import { Clock } from './Clock'
+import type { TickerItem } from '../../types'
+import { Clock } from '../Clock'
 
 export const Ticker = ({
   items,

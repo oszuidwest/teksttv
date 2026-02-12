@@ -1,0 +1,42 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { Frame } from '../../../components/zuidwest/Frame'
+import { WeatherSlide } from '../../../components/zuidwest/WeatherSlide'
+import { Ticker } from '../../../components/zuidwest/Ticker'
+import { DevOverlay } from '../../../components/zuidwest/DevOverlay'
+---
+
+<Layout title="Dev - ZuidWest Weather">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react" theme="green">
+      <WeatherSlide
+        client:only="react"
+        theme="green"
+        content={{
+          type: 'weather',
+          duration: 15000,
+          title: 'Weerstation Woensdrecht',
+          location: 'Woensdrecht',
+          days: [
+            { date: 'donderdag 6 feb', day_short: 'do', temp_min: 0, temp_max: 7, weather_id: 802, description: 'Half bewolkt', icon: '03d', wind_direction: 'NO', wind_beaufort: 3 },
+            { date: 'vrijdag 7 feb', day_short: 'vr', temp_min: 0, temp_max: 4, weather_id: 500, description: 'Lichte regen', icon: '10d', wind_direction: 'O', wind_beaufort: 3 },
+            { date: 'zaterdag 8 feb', day_short: 'za', temp_min: 1, temp_max: 6, weather_id: 804, description: 'Bewolkt', icon: '04d', wind_direction: 'OZO', wind_beaufort: 2 },
+            { date: 'zondag 9 feb', day_short: 'zo', temp_min: -1, temp_max: 5, weather_id: 500, description: 'Lichte regen', icon: '10d', wind_direction: 'NO', wind_beaufort: 2 },
+            { date: 'maandag 10 feb', day_short: 'ma', temp_min: -1, temp_max: 5, weather_id: 500, description: 'Lichte regen', icon: '10d', wind_direction: 'NO', wind_beaufort: 2 },
+            { date: 'dinsdag 11 feb', day_short: 'di', temp_min: 3, temp_max: 8, weather_id: 501, description: 'Matige regen', icon: '10d', wind_direction: 'W', wind_beaufort: 5 },
+            { date: 'woensdag 12 feb', day_short: 'wo', temp_min: 5, temp_max: 10, weather_id: 501, description: 'Matige regen', icon: '10d', wind_direction: 'WZW', wind_beaufort: 5 },
+            { date: 'donderdag 13 feb', day_short: 'do', temp_min: 4, temp_max: 9, weather_id: 500, description: 'Lichte regen', icon: '10d', wind_direction: 'WZW', wind_beaufort: 4 },
+          ],
+        }}
+      >
+        <Ticker
+          client:only="react"
+          theme="green"
+          items={[{ message: 'Morgen op TV: Talkshow M\u00B2' }]}
+          currentIndex={0}
+        />
+      </WeatherSlide>
+    </Frame>
+    <DevOverlay client:only="react" src="/dev/weather-green.png" />
+  </div>
+</Layout>

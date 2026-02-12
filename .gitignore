@@ -25,3 +25,11 @@ dist-ssr
 *.sw?
 
 *.tsbuildinfo
+
+# Dev overlay design PNGs
+public/dev/
+
+# Markdown files (except documentation)
+*.md
+!README.md
+!CLAUDE.md

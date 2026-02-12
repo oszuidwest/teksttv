@@ -1,196 +1,93 @@
-import { useCallback, useEffect, useState } from 'react'
-import { ImageSlideComponent } from './components/ImageSlideComponent'
-import { TextSlideComponent } from './components/TextSlideComponent'
-import { Ticker } from './components/Ticker'
+import type { ComponentType } from 'react'
+import { useCarousel } from './hooks/useCarousel'
 import type {
-  ImageSlideData,
-  SlideData,
+  FullScreenSlideData,
   TextSlideData,
   TickerItem,
+  WeatherSlideData,
 } from './types'
 
-function App({ apiBase, channel }: { apiBase: string; channel?: string }) {
-  const [slides, setSlides] = useState<SlideData[]>([])
-  const [nextSlides, setNextSlides] = useState<SlideData[]>([])
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [tickerItems, setTickerItems] = useState<TickerItem[]>([])
-  const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
-  const [tickerIndex, setTickerIndex] = useState(0)
-  const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
+interface SlideComponents {
+  text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
+  image: ComponentType<{
+    content: FullScreenSlideData
+    children?: React.ReactNode
+  }>
+  weather?: ComponentType<{
+    content: WeatherSlideData
+    children?: React.ReactNode
+  }>
+}
 
-  const fetchData = useCallback(
-    async (isInitialLoad: boolean) => {
-      try {
-        let newSlides: SlideData[]
-        let newTickerItems: TickerItem[]
+interface AppProps {
+  apiBase: string
+  channel?: string
+  slides: SlideComponents
+  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
+  Frame?: ComponentType<{ children: React.ReactNode }>
+}
 
-        if (channel) {
-          const response = await fetch(`${apiBase}/teksttv?channel=${channel}`)
-          const data = await response.json()
-          newSlides = data.slides
-          newTickerItems = data.ticker
-        } else {
-          const [slidesResponse, tickerResponse] = await Promise.all([
-            fetch(`${apiBase}/teksttv-slides`),
-            fetch(`${apiBase}/teksttv-ticker`),
-          ])
-          newSlides = await slidesResponse.json()
-          newTickerItems = await tickerResponse.json()
-        }
+function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
+  const {
+    slides: slideData,
+    currentSlide,
+    tickerItems,
+    tickerIndex,
+    imagesToPreload,
+  } = useCarousel({ apiBase, channel })
 
-        const imageUrls = [
-          ...new Set(
-            newSlides
-              .flatMap((slide: SlideData) => {
-                if (slide.type === 'text') {
-                  return slide.image
-                }
-                if (slide.type === 'image') {
-                  return slide.url
-                }
-                return undefined
-              })
-              .filter(Boolean),
-          ),
-        ] as string[]
-
-        if (isInitialLoad) {
-          setSlides(newSlides)
-          setTickerItems(newTickerItems)
-          setImagesToPreload(imageUrls)
-        } else {
-          setNextSlides(newSlides)
-          setNextTickerItems(newTickerItems)
-          setImagesToPreload((prevUrls) => [
-            ...new Set([...prevUrls, ...imageUrls]),
-          ])
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error)
-      }
-    },
-    [apiBase, channel],
-  )
-
-  useEffect(() => {
-    fetchData(true)
-  }, [fetchData])
-
-  useEffect(() => {
-    const fetchInterval = setInterval(
-      () => {
-        fetchData(false)
-      },
-      slides.length > 0 ? 5 * 60 * 1000 : 60 * 1000,
-    )
-
-    return () => clearInterval(fetchInterval)
-  }, [fetchData, slides.length])
-
-  useEffect(() => {
-    if (slides.length === 0) return
-
-    const timer = setInterval(() => {
-      if (document.startViewTransition) {
-        document.startViewTransition(() => {
-          setCurrentSlide((prevSlide) => {
-            const nextSlide = (prevSlide + 1) % slides.length
-            if (nextSlide === 0 && nextSlides.length > 0) {
-              setSlides(nextSlides)
-              setNextSlides([])
-              setImagesToPreload((prevUrls) => {
-                // Remove images that are no longer in the new slides
-                const newImageUrls = nextSlides
-                  .flatMap((slide) => {
-                    if (slide.type === 'text') {
-                      return slide.image
-                    }
-                    if (slide.type === 'image') {
-                      return slide.url
-                    }
-                    return []
-                  })
-                  .filter(Boolean)
-                return prevUrls.filter((url) => newImageUrls.includes(url))
-              })
-              return 0
-            }
-            return nextSlide
-          })
-
-          setTickerIndex((prevIndex) => {
-            const nextIndex = (prevIndex + 1) % tickerItems.length
-            if (nextIndex === 0 && nextTickerItems.length > 0) {
-              setTickerItems(nextTickerItems)
-              setNextTickerItems([])
-              return 0
-            }
-            return nextIndex
-          })
-        })
-      } else {
-        // Fallback for browsers that don't support startViewTransition
-        setCurrentSlide((prevSlide) => {
-          const nextSlide = (prevSlide + 1) % slides.length
-          if (nextSlide === 0 && nextSlides.length > 0) {
-            setSlides(nextSlides)
-            setNextSlides([])
-            setImagesToPreload((prevUrls) => {
-              // Remove images that are no longer in the new slides
-              const newImageUrls = nextSlides
-                .flatMap((slide) => {
-                  if (slide.type === 'text') {
-                    return slide.image
-                  }
-                  if (slide.type === 'image') {
-                    return slide.url
-                  }
-                  return []
-                })
-                .filter(Boolean)
-              return prevUrls.filter((url) => newImageUrls.includes(url))
-            })
-            return 0
-          }
-          return nextSlide
-        })
-
-        setTickerIndex((prevIndex) => {
-          const nextIndex = (prevIndex + 1) % tickerItems.length
-          if (nextIndex === 0 && nextTickerItems.length > 0) {
-            setTickerItems(nextTickerItems)
-            setNextTickerItems([])
-            return 0
-          }
-          return nextIndex
-        })
-      }
-    }, slides[currentSlide].duration)
-
-    return () => clearInterval(timer)
-  }, [slides, currentSlide, nextSlides, tickerItems, nextTickerItems])
-
-  if (slides.length === 0) {
+  if (slideData.length === 0) {
     return <div>Loading...</div>
   }
 
-  return (
-    <div className="relative h-[1080px] w-[1920px]">
+  const TextSlide = slides.text
+  const ImageSlide = slides.image
+  const WeatherSlide = slides.weather
+  const currentSlideData = slideData[currentSlide] ?? slideData[0]
+  if (!currentSlideData) {
+    return <div>Loading...</div>
+  }
+
+  const tickerElement = (
+    <Ticker items={tickerItems} currentIndex={tickerIndex} />
+  )
+
+  let slide: React.ReactNode
+  if (currentSlideData.type === 'text') {
+    slide = (
+      <TextSlide key={currentSlide} content={currentSlideData}>
+        {tickerElement}
+      </TextSlide>
+    )
+  } else if (currentSlideData.type === 'weather' && WeatherSlide) {
+    slide = (
+      <WeatherSlide key={currentSlide} content={currentSlideData}>
+        {tickerElement}
+      </WeatherSlide>
+    )
+  } else {
+    slide = (
+      <ImageSlide
+        key={currentSlide}
+        content={currentSlideData as FullScreenSlideData}
+      >
+        {tickerElement}
+      </ImageSlide>
+    )
+  }
+
+  const content = (
+    <>
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {slides[currentSlide].type === 'image' ? (
-        <ImageSlideComponent
-          key={currentSlide}
-          content={slides[currentSlide] as ImageSlideData}
-        />
-      ) : (
-        <TextSlideComponent
-          key={currentSlide}
-          content={slides[currentSlide] as TextSlideData}
-        />
-      )}
-      <Ticker items={tickerItems} currentIndex={tickerIndex} />
+      {slide}
+    </>
+  )
+
+  return (
+    <div className="relative h-[1080px] w-[1920px]">
+      {Frame ? <Frame>{content}</Frame> : content}
     </div>
   )
 }

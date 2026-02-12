@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro'
-import App from '../../App.tsx'
+import ZuidWestApp from '../../ZuidWestApp.tsx'
 ---
 
 <Layout title="TekstTV - ZuidWest TV2">
-  <App client:only="react" apiBase="https://www.zuidwestupdate.nl/wp-json/zw/v1" channel="tv2" />
+  <ZuidWestApp client:only="react" apiBase="https://www.zuidwestupdate.nl/wp-json/zw/v1" channel="tv2" />
 </Layout>

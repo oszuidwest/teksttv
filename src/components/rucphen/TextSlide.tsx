@@ -1,6 +1,12 @@
-import type { TextSlideData } from '../types'
+import type { TextSlideData } from '../../types'
 
-export const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
+export const TextSlide = ({
+  content,
+  children,
+}: {
+  content: TextSlideData
+  children?: React.ReactNode
+}) => (
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
       <img src={content.image} alt="" className="inset-0 h-full object-cover" />
@@ -24,7 +30,7 @@ export const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
       <rect width="100%" height="100%" fill="url(#slantedGradient)" />
     </svg>
 
-    <div className="absolute absolute inset-0 flex flex-col">
+    <div className="absolute inset-0 flex flex-col">
       <div className="z-20 mt-[92px] w-full bg-[#626671] px-[116px] py-[14px]">
         <h1 className="font-bold text-[51px] text-shadow text-white uppercase tracking-wide">
           {content.title}
@@ -52,5 +58,6 @@ export const TextSlideComponent = ({ content }: { content: TextSlideData }) => (
         />
       </div>
     </div>
+    {children}
   </div>
 )

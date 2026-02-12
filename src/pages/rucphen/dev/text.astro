@@ -1,0 +1,26 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { TextSlide } from '../../../components/rucphen/TextSlide'
+import { Ticker } from '../../../components/rucphen/Ticker'
+---
+
+<Layout title="Dev - Rucphen Text (with photo)">
+  <div class="relative h-[1080px] w-[1920px]">
+    <TextSlide
+      client:only="react"
+      content={{
+        type: 'text',
+        duration: 20000,
+        title: 'LIVE PROGRAMMERING WOENSDAG',
+        body: '<p>Informatie met muziek. Dat is het fundament waar Radio Rucphen succesvol mee is.</p><p>We beginnen \'s morgens met de actualiteiten die een lokaal gekleurd tintje hebben.<br />\'s Avonds wordt de week doormidden gebroken met lokale info en vervolgens gaan de Goudzoekers op pad. Met muziek en spelletjes voor de meespelende luisteraar.</p><p>(1/1)</p>',
+        image: 'https://cms.tv-krant.nl/wp-content/uploads/2024/10/Informatie-2.png',
+      }}
+    >
+      <Ticker
+        client:only="react"
+        items={[{ message: 'Nu op Radio Rucphen: Non-Stop' }]}
+        currentIndex={0}
+      />
+    </TextSlide>
+  </div>
+</Layout>
