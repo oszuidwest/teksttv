@@ -94,7 +94,7 @@ A meta-refresh reloads the page daily at 3 AM to prevent cache issues.
 
 ## Schema
 
-See [SCHEMA.md](SCHEMA.md) for the complete JSON schema reference with examples for all slide types and ticker items.
+See [`src/types.ts`](src/types.ts) for the Zod schemas defining all slide types and ticker items.
 
 ## Previews
 

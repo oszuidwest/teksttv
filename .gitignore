@@ -32,5 +32,4 @@ public/dev/
 # Markdown files (except documentation)
 *.md
 !README.md
-!SCHEMA.md
 !CLAUDE.md
