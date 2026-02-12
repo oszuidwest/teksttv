@@ -3,15 +3,26 @@ name: Quality
 on:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
       - name: Install dependencies
         run: bun install --frozen-lockfile
+      - name: Auto-fix
+        run: bun run fix
+      - name: Commit fixes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: 'style: auto-fix linting and formatting'
       - name: Check
         run: bun run check
