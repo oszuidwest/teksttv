@@ -17,7 +17,7 @@ export const TextSlideDataSchema = BaseSlideSchema.extend({
 })
 
 export const WeatherDaySchema = z.object({
-  date: z.string().describe('Date in YYYY-MM-DD format'),
+  date: z.string().describe('Human-readable date, e.g. "donderdag 12 feb"'),
   day_short: z.string().describe('Short day name (ma, di, etc.)'),
   temp_min: z.number().describe('Minimum temperature in °C'),
   temp_max: z.number().describe('Maximum temperature in °C'),
