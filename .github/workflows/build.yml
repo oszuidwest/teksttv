@@ -68,7 +68,7 @@ jobs:
           zip -r "../${{ steps.meta.outputs.project_name }}-${{ steps.meta.outputs.version }}.zip" .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: ${{ steps.meta.outputs.project_name }}-${{ steps.meta.outputs.version }}.zip
