@@ -2,8 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
 
-const navEnabled =
-  import.meta.env.DEV || new URLSearchParams(window.location.search).has('nav')
+const navEnabled = (() => {
+  if (import.meta.env.DEV) return true
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).has('nav')
+})()
 
 export function useCarousel({
   apiBase,
