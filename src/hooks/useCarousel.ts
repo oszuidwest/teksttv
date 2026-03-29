@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { SlideData, TickerItem } from '../types'
-import { SlideDataSchema, TickerItemSchema } from '../types'
+import { resolveImageUrl, SlideDataSchema, TickerItemSchema } from '../types'
 
 export function useCarousel({
   apiBase,
@@ -31,6 +31,14 @@ export function useCarousel({
           parsed.error.issues,
         )
         return []
+      }
+      if (
+        parsed.data.type === 'text' &&
+        typeof parsed.data.image === 'string'
+      ) {
+        console.warn(
+          `Slide ${index} from ${source}: "image" as a plain string is deprecated. Use { url, caption?, attribution? } instead.`,
+        )
       }
       return [parsed.data]
     })
@@ -111,7 +119,7 @@ export function useCarousel({
               .flatMap((slide: SlideData) => {
                 switch (slide.type) {
                   case 'text':
-                    return slide.image || undefined
+                    return resolveImageUrl(slide.image)
                   case 'image':
                   case 'commercial':
                   case 'commercial_transition':
