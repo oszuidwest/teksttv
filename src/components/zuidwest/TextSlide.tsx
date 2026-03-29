@@ -1,4 +1,4 @@
-import type { TextSlideData } from '../../types'
+import { resolveImageUrl, type TextSlideData } from '../../types'
 
 const themes = {
   green: { border: '#82ba26' },
@@ -15,7 +15,8 @@ export function TextSlide({
   children?: React.ReactNode
 }) {
   const c = themes[theme]
-  const hasImage = content.image && content.image.length > 0
+  const imageUrl = resolveImageUrl(content.image)
+  const hasImage = !!imageUrl
 
   return (
     <>
@@ -59,7 +60,7 @@ export function TextSlide({
       {/* Photo (outside card so it extends behind overlay stripes) */}
       {hasImage && (
         <img
-          src={content.image}
+          src={imageUrl}
           alt=""
           className="absolute top-[160px] right-0 z-10 h-[440px] w-[640px] object-cover"
           style={{ borderBottomLeftRadius: '64px' }}

@@ -4,16 +4,28 @@ const BaseSlideSchema = z.object({
   duration: z.number().positive().describe('Display duration in milliseconds'),
 })
 
+export const ImageDataSchema = z.object({
+  url: z.string().url(),
+  caption: z.string().optional(),
+  attribution: z.string().optional(),
+})
+
+const ImageFieldSchema = z.union([z.string().url(), ImageDataSchema])
+
 export const ImageSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('image'),
   url: z.string().url(),
+  caption: z.string().optional(),
+  attribution: z.string().optional(),
 })
 
 export const TextSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('text'),
   title: z.string().describe('Slide title (HTML supported)'),
   body: z.string().describe('Main content (HTML supported)'),
-  image: z.string().describe('Optional sidebar image URL'),
+  image: ImageFieldSchema.describe(
+    'Sidebar image: URL string (legacy) or image object',
+  ),
 })
 
 export const WeatherDaySchema = z.object({
@@ -93,6 +105,7 @@ export const ChannelPayloadSchema = z.object({
 })
 
 // Type inference
+export type ImageData = z.infer<typeof ImageDataSchema>
 export type ImageSlideData = z.infer<typeof ImageSlideDataSchema>
 export type TextSlideData = z.infer<typeof TextSlideDataSchema>
 export type WeatherDay = z.infer<typeof WeatherDaySchema>
@@ -109,3 +122,11 @@ export type FullScreenSlideData =
   | ImageSlideData
   | CommercialSlideData
   | CommercialTransitionSlideData
+
+/** Extracts the URL from an image field that can be a plain string or an ImageData object */
+export function resolveImageUrl(
+  image: string | ImageData | undefined,
+): string | undefined {
+  if (!image) return undefined
+  return typeof image === 'string' ? image : image.url
+}
