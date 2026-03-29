@@ -97,5 +97,5 @@ jobs:
           fi
           gh release create "${{ needs.build.outputs.version }}" "$ZIP_NAME" \
             --title "${{ needs.build.outputs.version }}" \
-            --notes "Release ${{ needs.build.outputs.version }}" \
+            --generate-notes \
             $PRERELEASE_FLAG
