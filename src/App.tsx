@@ -34,6 +34,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    paused,
+    navEnabled,
   } = useCarousel({ apiBase, channel })
 
   if (slideData.length === 0) {
@@ -88,6 +90,11 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
   return (
     <div className="relative h-[1080px] w-[1920px]">
       {Frame ? <Frame>{content}</Frame> : content}
+      {navEnabled && (
+        <div className="absolute top-2 right-2 z-50 rounded bg-black/70 px-3 py-1.5 font-mono text-white text-xs">
+          {paused ? '⏸' : '▶'} {currentSlide + 1}/{slideData.length}
+        </div>
+      )}
     </div>
   )
 }

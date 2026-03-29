@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "tsc --noEmit && biome ci .",
+    "check": "astro sync && tsc --noEmit && biome ci .",
     "fix": "biome check --write .",
     "fix:unsafe": "biome check --write --unsafe ."
   },
