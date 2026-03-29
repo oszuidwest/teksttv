@@ -59,7 +59,7 @@ export function Ticker({
         )}
 
         <span
-          className="text-[#1d1d1b] text-[40px] leading-none"
+          className="font-[500] text-[#1d1d1b] text-[40px] leading-none"
           dangerouslySetInnerHTML={{ __html: content }}
         />
       </div>
