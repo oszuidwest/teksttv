@@ -8,6 +8,7 @@ Built with Astro, React, TypeScript, and Tailwind CSS 4. Output is 1920x1080, de
 
 - [Architecture](#architecture)
 - [Development](#development)
+- [Dev Navigation Mode](#dev-navigation-mode)
 - [Slide Types](#slide-types)
 - [Ticker](#ticker)
 - [Auto-Refresh](#auto-refresh)
@@ -39,6 +40,18 @@ bun run check    # Run all CI checks locally (TypeScript + Biome)
 bun run fix      # Auto-fix linting and formatting issues
 bun run fix:unsafe  # Auto-fix including unsafe fixes (e.g. Tailwind class sorting)
 ```
+
+### Dev Navigation Mode
+
+When running the development server (`bun run dev`), you can manually navigate through slides using keyboard shortcuts:
+
+| Key | Action |
+|-----|--------|
+| `Space` | Pause / resume auto-advance |
+| `→` | Next slide |
+| `←` | Previous slide |
+
+A small overlay in the top-right corner shows the current playback state and slide number. This feature is only available in development mode and is disabled in production builds.
 
 ### Code Quality
 
