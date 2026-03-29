@@ -46,7 +46,7 @@ export function TextSlide({
             />
 
             {/* Body */}
-            <div className="text-[#1d1d1b] text-[44px] leading-[61px]">
+            <div className="text-[#1d1d1b] text-[42px] leading-[58px]">
               <div dangerouslySetInnerHTML={{ __html: content.body }} />
             </div>
           </div>
