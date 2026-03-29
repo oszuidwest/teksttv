@@ -2,6 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
 
+const navEnabled =
+  import.meta.env.DEV || new URLSearchParams(window.location.search).has('nav')
+
 export function useCarousel({
   apiBase,
   channel,
@@ -159,7 +162,7 @@ export function useCarousel({
   }, [fetchData, slides.length])
 
   useEffect(() => {
-    if (!import.meta.env.DEV) return
+    if (!navEnabled) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (slides.length === 0) return
@@ -250,5 +253,6 @@ export function useCarousel({
     tickerIndex,
     imagesToPreload,
     paused,
+    navEnabled,
   }
 }
