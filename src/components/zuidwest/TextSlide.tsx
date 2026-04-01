@@ -1,4 +1,4 @@
-import { resolveImageUrl, type TextSlideData } from '../../types'
+import type { TextSlideData } from '../../types'
 
 const themes = {
   green: { border: '#82ba26' },
@@ -15,7 +15,7 @@ export function TextSlide({
   children?: React.ReactNode
 }) {
   const c = themes[theme]
-  const imageUrl = resolveImageUrl(content.image)
+  const imageUrl = content.image?.url
   const hasImage = !!imageUrl
 
   return (

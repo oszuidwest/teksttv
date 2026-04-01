@@ -1,4 +1,4 @@
-import { resolveImageUrl, type TextSlideData } from '../../types'
+import type { TextSlideData } from '../../types'
 
 export const TextSlide = ({
   content,
@@ -10,7 +10,7 @@ export const TextSlide = ({
   <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
     <div className="sidebar absolute inset-0 inset-y-0 left-0 z-10 w-[604px] bg-[#F7BF19]">
       <img
-        src={resolveImageUrl(content.image)}
+        src={content.image?.url}
         alt=""
         className="inset-0 h-full object-cover"
       />

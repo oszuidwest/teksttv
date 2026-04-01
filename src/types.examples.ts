@@ -17,7 +17,7 @@ export const textSlide = {
   duration: 15000,
   title: 'News of the Day',
   body: 'This is a news article with <strong>HTML</strong> support.',
-  image: 'https://example.com/sidebar.jpg',
+  image: { url: 'https://example.com/sidebar.jpg' },
 } satisfies TextSlideData
 
 export const textSlideWithImageData = {
