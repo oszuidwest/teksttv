@@ -7,11 +7,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "tsc --noEmit && biome ci .",
+    "check": "astro check && tsc --noEmit && biome ci .",
     "fix": "biome check --write .",
     "fix:unsafe": "biome check --write --unsafe ."
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.8",
     "@astrojs/react": "^4.4.2",
     "@fontsource/nunito": "^5.2.7",
     "@tailwindcss/vite": "^4.2.2",

@@ -2,6 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
 
+const navEnabled = (() => {
+  if (import.meta.env.DEV) return true
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).has('nav')
+})()
+
 export function useCarousel({
   apiBase,
   channel,
@@ -16,6 +22,7 @@ export function useCarousel({
   const [nextTickerItems, setNextTickerItems] = useState<TickerItem[]>([])
   const [tickerIndex, setTickerIndex] = useState(0)
   const [imagesToPreload, setImagesToPreload] = useState<string[]>([])
+  const [paused, setPaused] = useState(false)
 
   const getValidSlides = useCallback((value: unknown, source: string) => {
     if (!Array.isArray(value)) {
@@ -158,7 +165,28 @@ export function useCarousel({
   }, [fetchData, slides.length])
 
   useEffect(() => {
+    if (!navEnabled) return
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (slides.length === 0) return
+
+      if (e.key === ' ') {
+        e.preventDefault()
+        setPaused((p) => !p)
+      } else if (e.key === 'ArrowRight') {
+        setCurrentSlide((prev) => (prev + 1) % slides.length)
+      } else if (e.key === 'ArrowLeft') {
+        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [slides.length])
+
+  useEffect(() => {
     if (slides.length === 0) return
+    if (paused) return
     const currentDuration =
       slides[currentSlide]?.duration ?? slides[0]?.duration
     if (!currentDuration) return
@@ -219,7 +247,7 @@ export function useCarousel({
     }, currentDuration)
 
     return () => clearInterval(timer)
-  }, [slides, currentSlide, nextSlides, tickerItems, nextTickerItems])
+  }, [slides, currentSlide, nextSlides, tickerItems, nextTickerItems, paused])
 
   return {
     slides,
@@ -227,5 +255,7 @@ export function useCarousel({
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    paused,
+    navEnabled,
   }
 }
