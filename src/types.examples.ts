@@ -17,13 +17,33 @@ export const textSlide = {
   duration: 15000,
   title: 'News of the Day',
   body: 'This is a news article with <strong>HTML</strong> support.',
-  image: 'https://example.com/sidebar.jpg',
+  image: { url: 'https://example.com/sidebar.jpg' },
+} satisfies TextSlideData
+
+export const textSlideWithImageData = {
+  type: 'text',
+  duration: 15000,
+  title: 'News with Attribution',
+  body: 'This article has an image with caption and attribution.',
+  image: {
+    url: 'https://example.com/sidebar.jpg',
+    caption: 'A beautiful sunset',
+    attribution: 'Photo by Jane Doe',
+  },
 } satisfies TextSlideData
 
 export const imageSlide = {
   type: 'image',
   duration: 10000,
   url: 'https://example.com/image.jpg',
+} satisfies ImageSlideData
+
+export const imageSlideWithMeta = {
+  type: 'image',
+  duration: 10000,
+  url: 'https://example.com/image.jpg',
+  caption: 'Town hall during sunset',
+  attribution: 'Photo by John Smith',
 } satisfies ImageSlideData
 
 export const weatherSlide = {

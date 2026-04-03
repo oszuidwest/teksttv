@@ -80,10 +80,12 @@ All slides are 1920x1080 pixels. Each slide has a `duration` (in milliseconds) t
 - **Type**: `text`
 - Displays a title and body text with an optional sidebar image.
 - Supports HTML in title and body fields.
+- The `image` field is an object with `url`, optional `caption`, and optional `attribution`.
 
 ### Image Slide
 - **Type**: `image`
 - Displays a full-screen image.
+- Supports optional `caption` and `attribution` fields.
 
 ### Weather Slide
 - **Type**: `weather`

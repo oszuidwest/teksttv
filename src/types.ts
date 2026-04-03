@@ -4,16 +4,24 @@ const BaseSlideSchema = z.object({
   duration: z.number().positive().describe('Display duration in milliseconds'),
 })
 
+export const ImageDataSchema = z.object({
+  url: z.string().url(),
+  caption: z.string().optional(),
+  attribution: z.string().optional(),
+})
+
 export const ImageSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('image'),
   url: z.string().url(),
+  caption: z.string().optional(),
+  attribution: z.string().optional(),
 })
 
 export const TextSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('text'),
   title: z.string().describe('Slide title (HTML supported)'),
   body: z.string().describe('Main content (HTML supported)'),
-  image: z.string().describe('Optional sidebar image URL'),
+  image: ImageDataSchema.describe('Sidebar image').optional(),
 })
 
 export const WeatherDaySchema = z.object({
@@ -93,6 +101,7 @@ export const ChannelPayloadSchema = z.object({
 })
 
 // Type inference
+export type ImageData = z.infer<typeof ImageDataSchema>
 export type ImageSlideData = z.infer<typeof ImageSlideDataSchema>
 export type TextSlideData = z.infer<typeof TextSlideDataSchema>
 export type WeatherDay = z.infer<typeof WeatherDaySchema>
