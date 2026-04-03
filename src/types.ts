@@ -21,7 +21,7 @@ export const TextSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('text'),
   title: z.string().describe('Slide title (HTML supported)'),
   body: z.string().describe('Main content (HTML supported)'),
-  image: ImageDataSchema.describe('Sidebar image'),
+  image: ImageDataSchema.describe('Sidebar image').optional(),
 })
 
 export const WeatherDaySchema = z.object({
