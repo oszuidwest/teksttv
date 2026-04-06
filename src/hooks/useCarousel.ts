@@ -118,7 +118,7 @@ export function useCarousel({
               .flatMap((slide: SlideData) => {
                 switch (slide.type) {
                   case 'text':
-                    return slide.image || undefined
+                    return slide.image?.url
                   case 'image':
                   case 'commercial':
                   case 'commercial_transition':
@@ -204,7 +204,7 @@ export function useCarousel({
                 .flatMap((slide) => {
                   switch (slide.type) {
                     case 'text':
-                      return slide.image || undefined
+                      return slide.image?.url
                     case 'image':
                     case 'commercial':
                     case 'commercial_transition':
