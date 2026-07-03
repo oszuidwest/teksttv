@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react'
 
+const timeFormatter = new Intl.DateTimeFormat('nl-NL', {
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
 export const Clock = () => {
-  const [time, setTime] = useState(new Date())
+  // Store the formatted string, not the Date: identical strings let React
+  // bail out of the 59 re-renders per minute that change nothing on screen.
+  const [time, setTime] = useState(() => timeFormatter.format(new Date()))
 
   useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000)
+    const timer = setInterval(
+      () => setTime(timeFormatter.format(new Date())),
+      1000,
+    )
     return () => clearInterval(timer)
   }, [])
 
-  const formatTime = (date: Date) => {
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-  }
-
-  return <span>{formatTime(time)}</span>
+  return <span>{time}</span>
 }

@@ -29,34 +29,6 @@ describe('TextSlideDataSchema image normalization', () => {
     expect(parsed.image).toBeUndefined()
   })
 
-  test('accepts an image object with a URL', () => {
-    const parsed = TextSlideDataSchema.parse({
-      ...baseTextSlide,
-      image: { url: 'https://example.com/sidebar.jpg' },
-    })
-
-    expect(parsed.image).toEqual({
-      url: 'https://example.com/sidebar.jpg',
-    })
-  })
-
-  test('keeps caption and attribution on valid image data', () => {
-    const parsed = TextSlideDataSchema.parse({
-      ...baseTextSlide,
-      image: {
-        url: 'https://example.com/sidebar.jpg',
-        caption: 'Caption',
-        attribution: 'Credit',
-      },
-    })
-
-    expect(parsed.image).toEqual({
-      url: 'https://example.com/sidebar.jpg',
-      caption: 'Caption',
-      attribution: 'Credit',
-    })
-  })
-
   test('rejects an image object with an invalid URL', () => {
     expect(() =>
       TextSlideDataSchema.parse({
@@ -76,35 +48,9 @@ describe('TextSlideDataSchema image normalization', () => {
   })
 })
 
+// Happy-path acceptance is covered by types.examples.test.ts; this file keeps
+// the normalization and rejection cases.
 describe('ImageSlideDataSchema', () => {
-  test('accepts a full-screen image slide with a URL', () => {
-    const parsed = ImageSlideDataSchema.parse({
-      ...baseImageSlide,
-      url: 'https://example.com/image.jpg',
-    })
-
-    expect(parsed).toEqual({
-      ...baseImageSlide,
-      url: 'https://example.com/image.jpg',
-    })
-  })
-
-  test('keeps caption and attribution on full-screen image slides', () => {
-    const parsed = ImageSlideDataSchema.parse({
-      ...baseImageSlide,
-      url: 'https://example.com/image.jpg',
-      caption: 'Caption',
-      attribution: 'Credit',
-    })
-
-    expect(parsed).toEqual({
-      ...baseImageSlide,
-      url: 'https://example.com/image.jpg',
-      caption: 'Caption',
-      attribution: 'Credit',
-    })
-  })
-
   test('rejects a full-screen image slide without a URL', () => {
     expect(() => ImageSlideDataSchema.parse(baseImageSlide)).toThrow()
   })

@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useReducer } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import type { z } from 'zod'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
+
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+// Poll faster until the first successful load.
+const INITIAL_RETRY_INTERVAL_MS = 60 * 1000
 
 const navEnabled = (() => {
   if (import.meta.env.DEV) return true
@@ -15,23 +20,12 @@ interface State {
   tickerItems: TickerItem[]
   nextTickerItems: TickerItem[]
   tickerIndex: number
-  imagesToPreload: string[]
   paused: boolean
 }
 
 type Action =
-  | {
-      type: 'LOAD_INITIAL'
-      slides: SlideData[]
-      ticker: TickerItem[]
-      imageUrls: string[]
-    }
-  | {
-      type: 'LOAD_NEXT'
-      slides: SlideData[]
-      ticker: TickerItem[]
-      imageUrls: string[]
-    }
+  | { type: 'LOAD_INITIAL'; slides: SlideData[]; ticker: TickerItem[] }
+  | { type: 'LOAD_NEXT'; slides: SlideData[]; ticker: TickerItem[] }
   | { type: 'TICK' }
   | { type: 'NAV_PREV' }
   | { type: 'NAV_NEXT' }
@@ -44,7 +38,6 @@ const initialState: State = {
   tickerItems: [],
   nextTickerItems: [],
   tickerIndex: 0,
-  imagesToPreload: [],
   paused: false,
 }
 
@@ -63,36 +56,24 @@ function imageUrlsFor(slides: SlideData[]): string[] {
   })
 }
 
-function getValidSlides(value: unknown, source: string): SlideData[] {
+// Per-item validation at the trust boundary: one malformed entry is skipped
+// (and logged) instead of rejecting the whole feed.
+function getValidItems<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  source: string,
+  kind: string,
+): T[] {
   if (!Array.isArray(value)) {
-    console.error(`Invalid slides payload from ${source}: expected array`)
+    console.error(`Invalid ${kind} payload from ${source}: expected array`)
     return []
   }
 
   return value.flatMap((entry, index) => {
-    const parsed = SlideDataSchema.safeParse(entry)
+    const parsed = schema.safeParse(entry)
     if (!parsed.success) {
       console.error(
-        `Skipping invalid slide ${index} from ${source}`,
-        parsed.error.issues,
-      )
-      return []
-    }
-    return [parsed.data]
-  })
-}
-
-function getValidTickerItems(value: unknown, source: string): TickerItem[] {
-  if (!Array.isArray(value)) {
-    console.error(`Invalid ticker payload from ${source}: expected array`)
-    return []
-  }
-
-  return value.flatMap((entry, index) => {
-    const parsed = TickerItemSchema.safeParse(entry)
-    if (!parsed.success) {
-      console.error(
-        `Skipping invalid ticker item ${index} from ${source}`,
+        `Skipping invalid ${kind} ${index} from ${source}`,
         parsed.error.issues,
       )
       return []
@@ -104,70 +85,37 @@ function getValidTickerItems(value: unknown, source: string): TickerItem[] {
 function carouselReducer(state: State, action: Action): State {
   switch (action.type) {
     case 'LOAD_INITIAL':
-      return {
-        ...state,
-        slides: action.slides,
-        tickerItems: action.ticker,
-        imagesToPreload: action.imageUrls,
-      }
+      return { ...state, slides: action.slides, tickerItems: action.ticker }
 
     case 'LOAD_NEXT':
       return {
         ...state,
         nextSlides: action.slides,
         nextTickerItems: action.ticker,
-        imagesToPreload: [
-          ...new Set([...state.imagesToPreload, ...action.imageUrls]),
-        ],
       }
 
     case 'TICK': {
       if (state.slides.length === 0) return state
 
+      // Slides and ticker advance independently; each swaps in its pending
+      // "next" set when its own cycle wraps around.
       const candidate = (state.currentSlide + 1) % state.slides.length
       const swapSlides = candidate === 0 && state.nextSlides.length > 0
 
-      const slides = swapSlides ? state.nextSlides : state.slides
-      const nextSlides = swapSlides ? [] : state.nextSlides
-      const currentSlide = swapSlides ? 0 : candidate
-      // At a slide-set boundary, drop preloaded URLs that the new set doesn't need.
-      const imagesToPreload = swapSlides
-        ? state.imagesToPreload.filter((url) =>
-            imageUrlsFor(state.nextSlides).includes(url),
-          )
-        : state.imagesToPreload
-
-      let tickerItems = state.tickerItems
-      let nextTickerItems = state.nextTickerItems
-      let tickerIndex: number
-
-      if (state.tickerItems.length === 0) {
-        if (state.nextTickerItems.length > 0) {
-          tickerItems = state.nextTickerItems
-          nextTickerItems = []
-        }
-        tickerIndex = 0
-      } else {
-        const tickerCandidate =
-          (state.tickerIndex + 1) % state.tickerItems.length
-        if (tickerCandidate === 0 && state.nextTickerItems.length > 0) {
-          tickerItems = state.nextTickerItems
-          nextTickerItems = []
-          tickerIndex = 0
-        } else {
-          tickerIndex = tickerCandidate
-        }
-      }
+      const tickerLen = state.tickerItems.length
+      const tickerCandidate =
+        tickerLen === 0 ? 0 : (state.tickerIndex + 1) % tickerLen
+      const swapTicker =
+        tickerCandidate === 0 && state.nextTickerItems.length > 0
 
       return {
         ...state,
-        slides,
-        nextSlides,
-        currentSlide,
-        imagesToPreload,
-        tickerItems,
-        nextTickerItems,
-        tickerIndex,
+        slides: swapSlides ? state.nextSlides : state.slides,
+        nextSlides: swapSlides ? [] : state.nextSlides,
+        currentSlide: swapSlides ? 0 : candidate,
+        tickerItems: swapTicker ? state.nextTickerItems : state.tickerItems,
+        nextTickerItems: swapTicker ? [] : state.nextTickerItems,
+        tickerIndex: swapTicker ? 0 : tickerCandidate,
       }
     }
 
@@ -199,10 +147,12 @@ export function useCarousel({
   channel?: string
 }) {
   const [state, dispatch] = useReducer(carouselReducer, initialState)
+  const lastPayloadRef = useRef<string | null>(null)
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
       try {
+        let payloadText: string
         let slidesData: unknown
         let tickerData: unknown
 
@@ -213,7 +163,8 @@ export function useCarousel({
               `Unable to fetch channel feed (status ${response.status})`,
             )
           }
-          const data = (await response.json()) as {
+          payloadText = await response.text()
+          const data = JSON.parse(payloadText) as {
             slides?: unknown
             ticker?: unknown
           }
@@ -229,29 +180,42 @@ export function useCarousel({
               `Unable to fetch feed (slides ${slidesResponse.status}, ticker ${tickerResponse.status})`,
             )
           }
-          const [rawSlidesData, rawTickerData] = await Promise.all([
-            slidesResponse.json(),
-            tickerResponse.json(),
+          const [slidesText, tickerText] = await Promise.all([
+            slidesResponse.text(),
+            tickerResponse.text(),
           ])
-          slidesData = rawSlidesData
-          tickerData = rawTickerData
+          payloadText = `${slidesText}\n${tickerText}`
+          slidesData = JSON.parse(slidesText)
+          tickerData = JSON.parse(tickerText)
         }
 
+        // Feeds change a few times a day at most; skip the parse/dispatch/
+        // re-render churn when the payload is byte-identical.
+        if (!isInitialLoad && payloadText === lastPayloadRef.current) return
+
         const source = channel ? `channel ${channel}` : 'feed'
-        const newSlides = getValidSlides(slidesData, source)
-        const newTickerItems = getValidTickerItems(tickerData, source)
+        const newSlides = getValidItems(
+          SlideDataSchema,
+          slidesData,
+          source,
+          'slide',
+        )
+        const newTickerItems = getValidItems(
+          TickerItemSchema,
+          tickerData,
+          source,
+          'ticker item',
+        )
 
         if (newSlides.length === 0) {
           throw new Error('Feed returned no valid slides')
         }
 
-        const imageUrls = [...new Set(imageUrlsFor(newSlides))]
-
+        lastPayloadRef.current = payloadText
         dispatch({
           type: isInitialLoad ? 'LOAD_INITIAL' : 'LOAD_NEXT',
           slides: newSlides,
           ticker: newTickerItems,
-          imageUrls,
         })
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -264,23 +228,24 @@ export function useCarousel({
     fetchData(true)
   }, [fetchData])
 
+  const hasSlides = state.slides.length > 0
+
   useEffect(() => {
     const fetchInterval = setInterval(
       () => {
         fetchData(false)
       },
-      state.slides.length > 0 ? 5 * 60 * 1000 : 60 * 1000,
+      hasSlides ? REFRESH_INTERVAL_MS : INITIAL_RETRY_INTERVAL_MS,
     )
 
     return () => clearInterval(fetchInterval)
-  }, [fetchData, state.slides.length])
+  }, [fetchData, hasSlides])
 
   useEffect(() => {
     if (!navEnabled) return
 
+    // The reducer already no-ops NAV actions on an empty deck.
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (state.slides.length === 0) return
-
       if (e.key === ' ') {
         e.preventDefault()
         dispatch({ type: 'TOGGLE_PAUSE' })
@@ -293,14 +258,12 @@ export function useCarousel({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [state.slides.length])
+  }, [])
 
   useEffect(() => {
     if (state.slides.length === 0) return
     if (state.paused) return
-    const currentDuration =
-      state.slides[state.currentSlide]?.duration ?? state.slides[0]?.duration
-    if (!currentDuration) return
+    const currentDuration = state.slides[state.currentSlide].duration
 
     const timer = setInterval(() => {
       const tick = () => dispatch({ type: 'TICK' })
@@ -314,12 +277,18 @@ export function useCarousel({
     return () => clearInterval(timer)
   }, [state.slides, state.currentSlide, state.paused])
 
+  // Derived, not stored: everything the current and pending slide sets need.
+  const imagesToPreload = useMemo(
+    () => [...new Set(imageUrlsFor([...state.slides, ...state.nextSlides]))],
+    [state.slides, state.nextSlides],
+  )
+
   return {
     slides: state.slides,
     currentSlide: state.currentSlide,
     tickerItems: state.tickerItems,
     tickerIndex: state.tickerIndex,
-    imagesToPreload: state.imagesToPreload,
+    imagesToPreload,
     paused: state.paused,
     navEnabled,
   }

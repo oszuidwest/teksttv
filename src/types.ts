@@ -105,15 +105,14 @@ export const TickerItemSchema = z.object({
     ),
 })
 
-export const SlideDataListSchema = z.array(SlideDataSchema)
-export const TickerItemsSchema = z.array(TickerItemSchema)
+// Documents the full channel payload shape; the app itself validates
+// per-item (see useCarousel) so one bad entry doesn't reject the feed.
 export const ChannelPayloadSchema = z.object({
-  slides: SlideDataListSchema,
-  ticker: TickerItemsSchema,
+  slides: z.array(SlideDataSchema),
+  ticker: z.array(TickerItemSchema),
 })
 
 // Type inference
-export type ImageData = z.infer<typeof ImageDataSchema>
 export type ImageSlideData = z.infer<typeof ImageSlideDataSchema>
 export type TextSlideData = z.infer<typeof TextSlideDataSchema>
 export type WeatherDay = z.infer<typeof WeatherDaySchema>

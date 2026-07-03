@@ -1,27 +1,18 @@
 import { Clock } from '../Clock'
+import { type ThemeName, themes } from './theme'
 
-const themes = {
-  green: {
-    pillBg: '#003500',
-    clockStroke: '#42ab33',
-  },
-  blue: {
-    pillBg: '#000035',
-    clockStroke: '#0064d7',
-  },
-} as const
+const dateFormatter = new Intl.DateTimeFormat('nl-NL', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+})
 
 function DateDisplay() {
-  const now = new Date()
-  const formatted = now.toLocaleDateString('nl-NL', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  })
+  const formatted = dateFormatter.format(new Date())
   return <span>{formatted.charAt(0).toUpperCase() + formatted.slice(1)}</span>
 }
 
-export function Header({ theme }: { theme: 'green' | 'blue' }) {
+export function Header({ theme }: { theme: ThemeName }) {
   const c = themes[theme]
 
   return (
@@ -36,13 +27,13 @@ export function Header({ theme }: { theme: 'green' | 'blue' }) {
       {/* Time pill (dark filled) with clock icon */}
       <div
         className="absolute top-[72px] left-[192px] flex h-[56px] items-center rounded-full pr-[28px] pl-[10px]"
-        style={{ backgroundColor: c.pillBg }}
+        style={{ backgroundColor: c.accentDark }}
       >
         <svg
           className="mr-[10px] size-[36px]"
           viewBox="0 0 40 40"
           fill="none"
-          stroke={c.clockStroke}
+          stroke={c.accentMid}
           strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"

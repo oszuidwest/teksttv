@@ -1,0 +1,36 @@
+import type {
+  FrameComponent,
+  SlideComponents,
+  TickerComponent,
+} from '../../SlideRenderer'
+import { Frame } from './Frame'
+import { ImageSlide } from './ImageSlide'
+import { TextSlide } from './TextSlide'
+import { Ticker } from './Ticker'
+import type { ThemeName } from './theme'
+import { WeatherSlide } from './WeatherSlide'
+
+export interface ZuidWestKit {
+  slides: SlideComponents
+  Ticker: TickerComponent
+  Frame: FrameComponent
+}
+
+function makeKit(theme: ThemeName): ZuidWestKit {
+  return {
+    slides: {
+      text: (p) => <TextSlide {...p} theme={theme} />,
+      image: ImageSlide,
+      weather: (p) => <WeatherSlide {...p} theme={theme} />,
+    },
+    Ticker: (p) => <Ticker {...p} theme={theme} />,
+    Frame: (p) => <Frame {...p} theme={theme} />,
+  }
+}
+
+// Built once at module scope so component identities stay stable across
+// renders; both the live app and the preview consume the same kit.
+export const kits: Record<ThemeName, ZuidWestKit> = {
+  green: makeKit('green'),
+  blue: makeKit('blue'),
+}

@@ -1,9 +1,5 @@
 import type { TickerItem } from '../../types'
-
-const themes = {
-  green: { arrow: '#82ba26', tickerBg: '#e0eec9' },
-  blue: { arrow: '#009fe3', tickerBg: '#bfe7f8' },
-} as const
+import { type ThemeName, themes } from './theme'
 
 function parseTicker(message: string) {
   const colonIndex = message.indexOf(': ')
@@ -23,7 +19,7 @@ export function Ticker({
 }: {
   items: TickerItem[]
   currentIndex: number
-  theme?: 'green' | 'blue'
+  theme?: ThemeName
 }) {
   if (items.length === 0) return null
 
@@ -48,7 +44,7 @@ export function Ticker({
             className="mx-[21px] h-[36px] w-[42px]"
             viewBox="-3 -3 42 36"
             fill="none"
-            stroke={c.arrow}
+            stroke={c.accent}
             strokeWidth="4"
             strokeLinecap="round"
             strokeLinejoin="miter"

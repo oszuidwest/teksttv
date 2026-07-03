@@ -2,7 +2,6 @@
 import Layout from '../../../layouts/Layout.astro'
 import { Frame } from '../../../components/zuidwest/Frame'
 import { ImageSlide } from '../../../components/zuidwest/ImageSlide'
-import { Ticker } from '../../../components/zuidwest/Ticker'
 ---
 
 <Layout title="Dev - ZuidWest Image">
@@ -15,14 +14,7 @@ import { Ticker } from '../../../components/zuidwest/Ticker'
           duration: 10000,
           url: 'https://picsum.photos/1920/1080',
         }}
-      >
-        <Ticker
-          client:only="react"
-          theme="green"
-          items={[{ message: 'Morgen op TV: Tijd voor Senioren - Zundert' }]}
-          currentIndex={0}
-        />
-      </ImageSlide>
+      />
     </Frame>
   </div>
 </Layout>
