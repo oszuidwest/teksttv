@@ -57,14 +57,18 @@ In development mode (`bun run dev`), navigation is always enabled. In production
 
 ### Feed Override
 
-Any channel page can be pointed at an arbitrary feed via query parameters, keeping that page's theme.
+Any channel page can be pointed at an arbitrary feed via query parameters, keeping that page's theme. The app has two fetch modes:
 
 | Parameter | Effect |
 |-----------|--------|
-| `?feed=<url>` | Overrides the feed endpoint URL for this page |
-| `?channel=<slug>` | Overrides the channel; fetched as `<feed>?channel=<slug>` |
+| `?feed=<url>` | Overrides this page's feed endpoint or API prefix |
+| `?channel=<slug>` | Enables channel-payload mode and fetches `<feed>?channel=<slug>` |
 
-Example: `/zuidwest-1/?feed=https://example.com/wp-json/teksttv/v1/slides&channel=intern`. When omitted, the page's built-in feed and channel are used.
+Pages with a built-in channel, such as `/zuidwest-1/` and `/zuidwest-2/`, use channel-payload mode by default. Their `apiBase` is the full payload endpoint and the app fetches `{ slides, ticker }` from `<feed>?channel=<slug>`.
+
+Pages without a built-in channel, such as `/rucphen/`, use split-endpoint mode by default. Their `apiBase` is an API prefix and the app fetches slides from `<feed>/teksttv-slides` and ticker items from `<feed>/teksttv-ticker`. Adding `?channel=<slug>` to these pages switches them to channel-payload mode, so the feed must return `{ slides, ticker }`.
+
+Example: `/zuidwest-1/?feed=https://example.com/wp-json/teksttv/v1/slides&channel=intern`. When omitted, the page's built-in feed and channel are used. Feed URLs may include their own query string; the channel parameter is appended safely.
 
 ### Code Quality
 
