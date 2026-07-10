@@ -24,6 +24,7 @@ The app supports multiple channels with different visual themes:
 - **ZuidWest TV1** (`/zuidwest-1/`) — green theme
 - **ZuidWest TV2** (`/zuidwest-2/`) — blue theme
 - **Rucphen RTV** (`/rucphen/`) — custom theme
+- **BredaNu** (`/bredanu/`) — yellow theme
 
 ## Development
 
@@ -91,7 +92,7 @@ The Release workflow only creates a new release if the version in `package.json`
 
 All slides are 1920x1080 pixels. Each slide has a `duration` (in milliseconds) that determines how long it is displayed.
 
-> **Note:** The `caption` and `attribution` fields on text and image slides are accepted by the schema but currently rendered only by **BredaNu** (onboarding in progress). The ZuidWest and Rucphen templates ignore these fields, so they will not appear on screen there.
+> **Note:** The `caption` and `attribution` fields on text and image slides are rendered only by **BredaNu**. The ZuidWest and Rucphen templates ignore these fields, so they will not appear on screen there.
 
 ### Text Slide
 - **Type**: `text`
