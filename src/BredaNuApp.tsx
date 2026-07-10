@@ -1,5 +1,6 @@
 import App from './App'
 import { Frame } from './components/bredanu/Frame'
+import { IframeSlide } from './components/bredanu/IframeSlide'
 import { ImageSlide } from './components/bredanu/ImageSlide'
 import { TextSlide } from './components/bredanu/TextSlide'
 import { Ticker } from './components/bredanu/Ticker'
@@ -13,7 +14,12 @@ export default function BredaNuApp(props: {
     <App
       {...props}
       channel={props.channel ?? 'bredanu'}
-      slides={{ text: TextSlide, image: ImageSlide, weather: WeatherSlide }}
+      slides={{
+        text: TextSlide,
+        image: ImageSlide,
+        weather: WeatherSlide,
+        iframe: IframeSlide,
+      }}
       Ticker={Ticker}
       Frame={Frame}
     />

@@ -1,0 +1,10 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { IframeSlide } from '../../../components/bredanu/IframeSlide'
+---
+
+<Layout title="Dev - BredaNu Iframe">
+  <div class="relative h-[1080px] w-[1920px]">
+    <IframeSlide client:only="react" active={true} url="https://example.com/" />
+  </div>
+</Layout>

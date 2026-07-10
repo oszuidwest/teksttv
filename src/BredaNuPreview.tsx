@@ -1,4 +1,5 @@
 import { Frame } from './components/bredanu/Frame'
+import { IframeSlide } from './components/bredanu/IframeSlide'
 import { ImageSlide } from './components/bredanu/ImageSlide'
 import { TextSlide } from './components/bredanu/TextSlide'
 import { Ticker } from './components/bredanu/Ticker'
@@ -11,7 +12,7 @@ export default function BredaNuPreview(props: {
   return (
     <Preview
       {...props}
-      slides={{ text: TextSlide, image: ImageSlide }}
+      slides={{ text: TextSlide, image: ImageSlide, iframe: IframeSlide }}
       Ticker={Ticker}
       Frame={Frame}
     />
