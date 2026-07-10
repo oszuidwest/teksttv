@@ -1,33 +1,13 @@
 import type { ComponentType } from 'react'
 import { useEffect, useRef } from 'react'
 import { z } from 'zod'
-import type {
-  FullScreenSlideData,
-  TextSlideData,
-  TickerItem,
-  WeatherSlideData,
-} from './types'
+import type { SlideComponents } from './App'
+import type { FullScreenSlideData, TickerItem } from './types'
 import { SlideDataSchema } from './types'
 
 function base64ToBytes(base64: string) {
   const binString = atob(base64)
   return Uint8Array.from(binString, (m) => m.codePointAt(0) || 0)
-}
-
-interface SlideComponents {
-  text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
-  image: ComponentType<{
-    content: FullScreenSlideData
-    children?: React.ReactNode
-  }>
-  weather?: ComponentType<{
-    content: WeatherSlideData
-    children?: React.ReactNode
-  }>
-  iframe?: ComponentType<{
-    url: string
-    active: boolean
-  }>
 }
 
 interface PreviewProps {
@@ -86,16 +66,12 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
       />
     )
 
-    if (validatedData.type === 'iframe' && IframeSlide) {
-      return (
-        <div ref={containerRef} className="relative h-[1080px] w-[1920px]">
-          <IframeSlide url={validatedData.url} active={true} />
-        </div>
-      )
-    }
-
     let slide: React.ReactNode
-    if (validatedData.type === 'text') {
+    if (validatedData.type === 'iframe') {
+      slide = IframeSlide ? (
+        <IframeSlide url={validatedData.url} active />
+      ) : null
+    } else if (validatedData.type === 'text') {
       slide = <TextSlide content={validatedData}>{tickerElement}</TextSlide>
     } else if (validatedData.type === 'weather' && WeatherSlide) {
       slide = (

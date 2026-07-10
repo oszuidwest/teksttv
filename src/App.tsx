@@ -7,7 +7,7 @@ import type {
   WeatherSlideData,
 } from './types'
 
-interface SlideComponents {
+export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
   image: ComponentType<{
     content: FullScreenSlideData
@@ -17,6 +17,10 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: React.ReactNode
   }>
+  // One instance per distinct URL stays mounted so the embed loads once and
+  // stays warm. The component must fill the canvas above the frame chrome
+  // (z-40, like full-screen image slides) while active, and render hidden
+  // and non-interactive - not unmount - while inactive.
   iframe?: ComponentType<{
     url: string
     active: boolean
@@ -79,8 +83,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
   const activeIframeUrl =
     currentSlideData.type === 'iframe' ? currentSlideData.url : null
 
-  // Persistent, keyed-by-url layer above the frame so preloaded embeds don't
-  // reload when they reappear, and cover the logo/ticker while active.
+  // Persistent keyed-by-url layer: embeds stay mounted across slide changes
+  // so they don't reload when they reappear.
   const iframeLayer = IframeSlide
     ? iframeUrls.map((url) => (
         <IframeSlide key={url} url={url} active={url === activeIframeUrl} />
@@ -89,7 +93,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
 
   let slide: React.ReactNode
   if (currentSlideData.type === 'iframe') {
-    // Rendered by the persistent iframe layer above.
+    // Rendered by the persistent iframe layer.
     slide = null
   } else if (currentSlideData.type === 'text') {
     slide = (
@@ -120,13 +124,13 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
         <link key={url} rel="preload" as="image" href={url} />
       ))}
       {slide}
+      {iframeLayer}
     </>
   )
 
   return (
     <div className="relative h-[1080px] w-[1920px]">
       {Frame ? <Frame>{content}</Frame> : content}
-      {iframeLayer}
       {navEnabled && (
         <div className="absolute top-2 right-2 z-50 rounded bg-black/70 px-3 py-1.5 font-mono text-white text-xs">
           {paused ? '⏸' : '▶'} {currentSlide + 1}/{slideData.length}
