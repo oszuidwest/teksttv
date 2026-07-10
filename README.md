@@ -36,7 +36,7 @@ bun install      # Install dependencies
 bun run dev      # Start development server
 bun run build    # Production build
 bun run preview  # Preview production build
-bun run check    # Run all CI checks locally (TypeScript + Biome)
+bun run check    # Run all CI checks locally (Astro, TypeScript, tests, Biome)
 bun run fix      # Auto-fix linting and formatting issues
 bun run fix:unsafe  # Auto-fix including unsafe fixes (e.g. Tailwind class sorting)
 ```
@@ -66,7 +66,7 @@ Any channel page can be pointed at an arbitrary feed via query parameters, keepi
 
 Pages with a built-in channel, such as `/zuidwest-1/` and `/zuidwest-2/`, use channel-payload mode by default. Their `apiBase` is the full payload endpoint and the app fetches `{ slides, ticker }` from `<feed>?channel=<slug>`.
 
-Pages without a built-in channel, such as `/rucphen/`, use split-endpoint mode by default. Their `apiBase` is an API prefix and the app fetches slides from `<feed>/teksttv-slides` and ticker items from `<feed>/teksttv-ticker`. Adding `?channel=<slug>` to these pages switches them to channel-payload mode, so the feed must return `{ slides, ticker }`.
+Pages without a built-in channel, such as `/rucphen/`, use split-endpoint mode by default. Their `apiBase` is an API prefix and the app fetches slides from `<feed>/teksttv-slides` and ticker items from `<feed>/teksttv-ticker`. Adding `?channel=<slug>` to these pages switches them to channel-payload mode, so combine it with a `?feed=<url>` that points at a payload endpoint returning `{ slides, ticker }`.
 
 Example: `/zuidwest-1/?feed=https://example.com/wp-json/teksttv/v1/slides&channel=intern`. When omitted, the page's built-in feed and channel are used. Feed URLs may include their own query string; the channel parameter is appended safely.
 
@@ -82,7 +82,7 @@ Two GitHub Actions workflows handle automation:
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| **Quality** | Push, PR | Runs `bun run check` (TypeScript + Biome) |
+| **Quality** | Push, PR | Auto-fixes style issues, then runs `bun run check` (Astro, TypeScript, tests, Biome) |
 | **Release** | Manual | Runs quality checks, builds, and creates a GitHub release |
 
 The Release workflow only creates a new release if the version in `package.json` differs from the latest Git tag. Pre-release versions (containing `alpha`, `beta`, or `rc`) are marked accordingly.
@@ -120,9 +120,9 @@ A ticker bar at the bottom displays rotating messages. Messages support HTML and
 
 ## Auto-Refresh
 
-The app fetches new content on startup and every 5 minutes. Current slides continue playing while new content loads in the background. New slides are swapped in at the end of the current playlist cycle.
+The app fetches new content on startup and every 5 minutes. Fetches time out after 30 seconds. Current slides continue playing while new content loads in the background. New slides are swapped in at the end of the current playlist cycle.
 
-If the internet connection drops, the app continues with cached slides and ticker items. It retries fetching every 60 seconds until successful.
+If the internet connection drops, the app continues with cached slides and ticker items and keeps retrying every 5 minutes. While no slides are loaded at all (for example after a failed startup), it retries every 60 seconds and shows an error panel with the failing URL instead of content.
 
 A meta-refresh reloads the page daily at 3 AM to prevent cache issues.
 
