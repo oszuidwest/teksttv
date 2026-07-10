@@ -61,6 +61,25 @@ export const initialCarouselState: CarouselState = {
   error: null,
 }
 
+// Iframes are too heavy to preload as a hint, so they stay mounted (and warm)
+// while within this many slides ahead of the active one, bounding memory.
+const IFRAME_PRELOAD_AHEAD = 2
+
+function iframeUrlWindow(slides: SlideData[], currentSlide: number): string[] {
+  const urls: string[] = []
+  for (
+    let i = 0;
+    i < slides.length && urls.length <= IFRAME_PRELOAD_AHEAD;
+    i++
+  ) {
+    const slide = slides[(currentSlide + i) % slides.length]
+    if (slide?.type === 'iframe' && !urls.includes(slide.url)) {
+      urls.push(slide.url)
+    }
+  }
+  return urls
+}
+
 function imageUrlsFor(slides: SlideData[]): string[] {
   return slides.flatMap((slide) => {
     switch (slide.type) {
@@ -397,6 +416,7 @@ export function useCarousel({
     tickerItems: state.tickerItems,
     tickerIndex: state.tickerIndex,
     imagesToPreload: state.imagesToPreload,
+    iframeUrls: iframeUrlWindow(state.slides, state.currentSlide),
     paused: state.paused,
     error: state.error,
     navEnabled,

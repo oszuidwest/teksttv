@@ -24,6 +24,10 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: React.ReactNode
   }>
+  iframe?: ComponentType<{
+    url: string
+    active: boolean
+  }>
 }
 
 interface PreviewProps {
@@ -73,6 +77,7 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
     const TextSlide = slides.text
     const ImageSlide = slides.image
     const WeatherSlide = slides.weather
+    const IframeSlide = slides.iframe
 
     const tickerElement = (
       <Ticker
@@ -80,6 +85,14 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
         currentIndex={0}
       />
     )
+
+    if (validatedData.type === 'iframe' && IframeSlide) {
+      return (
+        <div ref={containerRef} className="relative h-[1080px] w-[1920px]">
+          <IframeSlide url={validatedData.url} active={true} />
+        </div>
+      )
+    }
 
     let slide: React.ReactNode
     if (validatedData.type === 'text') {

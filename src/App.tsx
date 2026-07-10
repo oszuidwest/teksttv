@@ -17,6 +17,10 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: React.ReactNode
   }>
+  iframe?: ComponentType<{
+    url: string
+    active: boolean
+  }>
 }
 
 interface AppProps {
@@ -34,6 +38,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    iframeUrls,
     paused,
     error,
     navEnabled,
@@ -61,6 +66,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
   const TextSlide = slides.text
   const ImageSlide = slides.image
   const WeatherSlide = slides.weather
+  const IframeSlide = slides.iframe
   const currentSlideData = slideData[currentSlide] ?? slideData[0]
   if (!currentSlideData) {
     return <div>Loading...</div>
@@ -70,8 +76,22 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
+  const activeIframeUrl =
+    currentSlideData.type === 'iframe' ? currentSlideData.url : null
+
+  // Persistent, keyed-by-url layer above the frame so preloaded embeds don't
+  // reload when they reappear, and cover the logo/ticker while active.
+  const iframeLayer = IframeSlide
+    ? iframeUrls.map((url) => (
+        <IframeSlide key={url} url={url} active={url === activeIframeUrl} />
+      ))
+    : null
+
   let slide: React.ReactNode
-  if (currentSlideData.type === 'text') {
+  if (currentSlideData.type === 'iframe') {
+    // Rendered by the persistent iframe layer above.
+    slide = null
+  } else if (currentSlideData.type === 'text') {
     slide = (
       <TextSlide key={currentSlide} content={currentSlideData}>
         {tickerElement}
@@ -106,6 +126,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
   return (
     <div className="relative h-[1080px] w-[1920px]">
       {Frame ? <Frame>{content}</Frame> : content}
+      {iframeLayer}
       {navEnabled && (
         <div className="absolute top-2 right-2 z-50 rounded bg-black/70 px-3 py-1.5 font-mono text-white text-xs">
           {paused ? '⏸' : '▶'} {currentSlide + 1}/{slideData.length}
