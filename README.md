@@ -55,6 +55,17 @@ A small overlay in the top-right corner shows the current playback state and sli
 
 In development mode (`bun run dev`), navigation is always enabled. In production, add the `?nav` query parameter to the URL to activate it.
 
+### Feed Override
+
+Any channel page can be pointed at an arbitrary feed via query parameters, keeping that page's theme.
+
+| Parameter | Effect |
+|-----------|--------|
+| `?feed=<url>` | Overrides the feed endpoint URL for this page |
+| `?channel=<slug>` | Overrides the channel; fetched as `<feed>?channel=<slug>` |
+
+Example: `/zuidwest-1/?feed=https://example.com/wp-json/teksttv/v1/slides&channel=intern`. When omitted, the page's built-in feed and channel are used.
+
 ### Code Quality
 
 The project uses [Biome](https://biomejs.dev/) for linting and formatting, and TypeScript for type checking.
