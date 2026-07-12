@@ -32,15 +32,18 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let lastScale = -1
     function resizeViewport() {
-      if (containerRef.current) {
-        const scaleFactor = Math.min(window.innerWidth / 1920, 1)
-        containerRef.current.style.transform = `scale(${scaleFactor})`
-        window.parent.postMessage(
-          { type: 'resize', height: 1080 * scaleFactor },
-          '*',
-        )
+      const scaleFactor = Math.min(window.innerWidth / 1920, 1)
+      if (scaleFactor === lastScale || !containerRef.current) {
+        return
       }
+      lastScale = scaleFactor
+      containerRef.current.style.transform = `scale(${scaleFactor})`
+      window.parent.postMessage(
+        { type: 'resize', height: 1080 * scaleFactor },
+        '*',
+      )
     }
 
     resizeViewport()

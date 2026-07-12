@@ -103,15 +103,19 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       ))
     : null
 
+  // Iframe slides render through the persistent layer; without an iframe
+  // component the live app intentionally has no slide output.
+  const slideElement =
+    currentSlideData.type === 'iframe'
+      ? null
+      : renderSlide(slides, currentSlideData, tickerElement, currentSlide)
+
   const content = (
     <>
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {/* Iframe slides render only through iframeLayer. */}
-      {currentSlideData.type === 'iframe'
-        ? null
-        : renderSlide(slides, currentSlideData, tickerElement, currentSlide)}
+      {slideElement}
       {iframeLayer}
     </>
   )
