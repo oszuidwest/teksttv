@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { ImageSlideDataSchema, TextSlideDataSchema } from './types'
+import {
+  IframeSlideDataSchema,
+  ImageSlideDataSchema,
+  TextSlideDataSchema,
+} from './types'
 
 const baseTextSlide = {
   type: 'text',
@@ -60,6 +64,50 @@ describe('ImageSlideDataSchema', () => {
       ImageSlideDataSchema.parse({
         ...baseImageSlide,
         url: 'not-a-url',
+      }),
+    ).toThrow()
+  })
+})
+
+describe('IframeSlideDataSchema', () => {
+  const baseIframeSlide = {
+    type: 'iframe',
+    duration: 1000,
+  } as const
+
+  test('accepts an iframe slide with a URL', () => {
+    const parsed = IframeSlideDataSchema.parse({
+      ...baseIframeSlide,
+      url: 'https://example.com/embed',
+    })
+
+    expect(parsed).toEqual({
+      ...baseIframeSlide,
+      url: 'https://example.com/embed',
+    })
+  })
+
+  test('rejects an iframe slide without a URL', () => {
+    expect(() => IframeSlideDataSchema.parse(baseIframeSlide)).toThrow()
+  })
+
+  test('rejects an iframe slide with an invalid URL', () => {
+    expect(() =>
+      IframeSlideDataSchema.parse({
+        ...baseIframeSlide,
+        url: 'not-a-url',
+      }),
+    ).toThrow()
+  })
+
+  test.each([
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('rejects an iframe slide with unsafe URL scheme %#', (url) => {
+    expect(() =>
+      IframeSlideDataSchema.parse({
+        ...baseIframeSlide,
+        url,
       }),
     ).toThrow()
   })

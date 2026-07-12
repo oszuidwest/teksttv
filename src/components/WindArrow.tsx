@@ -1,23 +1,4 @@
-// Arrow points where the wind blows *to*, so each compass direction maps to
-// its opposite bearing (N wind → arrow pointing south = 180°).
-const DIR_ROTATION: Record<string, number> = {
-  N: 180,
-  NNO: 202.5,
-  NO: 225,
-  ONO: 247.5,
-  O: 270,
-  OZO: 292.5,
-  ZO: 315,
-  ZZO: 337.5,
-  Z: 0,
-  ZZW: 22.5,
-  ZW: 45,
-  WZW: 67.5,
-  W: 90,
-  WNW: 112.5,
-  NW: 135,
-  NNW: 157.5,
-}
+import { windRotation } from '../utils/windDirection'
 
 export function WindArrow({
   direction,
@@ -28,7 +9,7 @@ export function WindArrow({
   stroke: string
   className?: string
 }) {
-  const rotation = DIR_ROTATION[direction] ?? 0
+  const rotation = windRotation(direction)
 
   return (
     <svg

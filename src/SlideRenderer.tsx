@@ -10,8 +10,17 @@ import type {
 export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
-  weather: ComponentType<{ content: WeatherSlideData; children?: ReactNode }>
+  weather?: ComponentType<{
+    content: WeatherSlideData
+    children?: ReactNode
+  }>
+  iframe?: IframeSlideComponent
 }
+
+export type IframeSlideComponent = ComponentType<{
+  url: string
+  active: boolean
+}>
 
 export type TickerComponent = ComponentType<{
   items: TickerItem[]
@@ -28,6 +37,8 @@ export function renderSlide(
   ticker: ReactNode,
   key?: number,
 ): ReactNode {
+  const IframeSlide = slides.iframe
+
   switch (content.type) {
     case 'text':
       return (
@@ -36,10 +47,22 @@ export function renderSlide(
         </slides.text>
       )
     case 'weather':
+      if (!slides.weather) {
+        return <div>Weerslides worden niet ondersteund door dit thema</div>
+      }
       return (
         <slides.weather key={key} content={content}>
           {ticker}
         </slides.weather>
+      )
+    case 'iframe':
+      if (!IframeSlide) {
+        return <div>Iframe slides worden niet ondersteund door dit thema</div>
+      }
+      return (
+        <div key={key} className="pointer-events-none">
+          <IframeSlide url={content.url} active />
+        </div>
       )
     case 'image':
     case 'commercial':

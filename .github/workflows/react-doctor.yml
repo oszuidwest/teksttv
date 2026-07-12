@@ -1,0 +1,35 @@
+# React Doctor — finds security, performance, correctness, accessibility,
+# bundle-size, and architecture issues in React codebases.
+#
+# Advisory by default: reports findings on every PR (sticky summary comment,
+# inline review comments, commit status) but never fails the check.
+# Options & gating: https://www.react.doctor/ci
+
+name: React Doctor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
+
+concurrency:
+  group: react-doctor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  react-doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Full history so PR runs can diff against the merge base.
+          fetch-depth: 0
+
+      - uses: millionco/react-doctor@v2

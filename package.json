@@ -10,21 +10,22 @@
     "test": "bun test",
     "check": "astro check && tsc --noEmit && bun test && biome ci .",
     "fix": "biome check --write .",
-    "fix:unsafe": "biome check --write --unsafe ."
+    "fix:unsafe": "biome check --write --unsafe .",
+    "doctor": "bunx react-doctor"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
     "@astrojs/react": "^4.4.2",
     "@fontsource/nunito": "^5.2.7",
-    "@tailwindcss/vite": "^4.3.1",
+    "@tailwindcss/vite": "^4.3.2",
     "astro": "^5.18.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "tailwindcss": "^4.3.1",
+    "tailwindcss": "^4.3.2",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.1",
+    "@biomejs/biome": "^2.5.2",
     "@types/bun": "^1.3.14",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
