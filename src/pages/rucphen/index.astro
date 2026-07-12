@@ -1,8 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro'
 import RucphenApp from '../../RucphenApp.tsx'
+import { RUCPHEN_API_BASE } from '../../stations'
 ---
 
 <Layout title="TekstTV - Rucphen">
-  <RucphenApp client:only="react" apiBase="https://cms.tv-krant.nl/wp-json/zw/v1" />
+  <RucphenApp client:only="react" apiBase={RUCPHEN_API_BASE} />
 </Layout>
