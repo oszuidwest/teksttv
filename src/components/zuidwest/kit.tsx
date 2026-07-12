@@ -1,8 +1,4 @@
-import type {
-  FrameComponent,
-  SlideComponents,
-  TickerComponent,
-} from '../../SlideRenderer'
+import type { SlideKit } from '../../SlideRenderer'
 import { Frame } from './Frame'
 import { ImageSlide } from './ImageSlide'
 import { TextSlide } from './TextSlide'
@@ -10,13 +6,7 @@ import { Ticker } from './Ticker'
 import type { ThemeName } from './theme'
 import { WeatherSlide } from './WeatherSlide'
 
-export interface ZuidWestKit {
-  slides: SlideComponents
-  Ticker: TickerComponent
-  Frame: FrameComponent
-}
-
-function makeKit(theme: ThemeName): ZuidWestKit {
+function makeKit(theme: ThemeName): SlideKit {
   return {
     slides: {
       text: (p) => <TextSlide {...p} theme={theme} />,
@@ -30,7 +20,7 @@ function makeKit(theme: ThemeName): ZuidWestKit {
 
 // Built once at module scope so component identities stay stable across
 // renders; both the live app and the preview consume the same kit.
-export const kits: Record<ThemeName, ZuidWestKit> = {
+export const kits: Record<ThemeName, SlideKit> = {
   green: makeKit('green'),
   blue: makeKit('blue'),
 }

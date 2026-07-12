@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useCarousel } from './hooks/useCarousel'
 import {
-  type FrameComponent,
   type IframeSlideComponent,
   renderSlide,
-  type SlideComponents,
-  type TickerComponent,
+  type SlideKit,
 } from './SlideRenderer'
 
 const INACTIVE_IFRAME_REFRESH_MS = 5 * 60 * 1000
@@ -42,12 +40,9 @@ function PersistentIframeSlide({
   )
 }
 
-interface AppProps {
+interface AppProps extends SlideKit {
   apiBase: string
   channel?: string
-  slides: SlideComponents
-  Ticker: TickerComponent
-  Frame?: FrameComponent
 }
 
 function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
@@ -115,7 +110,9 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {currentSlideData.type === 'iframe' && IframeSlide
+      {/* iframe slides render via the persistent layer only (blank on air
+          when the kit has no iframe component) */}
+      {currentSlideData.type === 'iframe'
         ? null
         : renderSlide(slides, currentSlideData, tickerElement, currentSlide)}
       {iframeLayer}

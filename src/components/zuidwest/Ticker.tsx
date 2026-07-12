@@ -15,11 +15,11 @@ function parseTicker(message: string) {
 export function Ticker({
   items,
   currentIndex,
-  theme = 'green',
+  theme,
 }: {
   items: TickerItem[]
   currentIndex: number
-  theme?: ThemeName
+  theme: ThemeName
 }) {
   if (items.length === 0) return null
 

@@ -4,11 +4,11 @@ import type { ThemeName } from './theme'
 
 export function TextSlide({
   content,
-  theme = 'green',
+  theme,
   children,
 }: {
   content: TextSlideData
-  theme?: ThemeName
+  theme: ThemeName
   children?: React.ReactNode
 }) {
   const imageUrl = content.image?.url
@@ -17,27 +17,24 @@ export function TextSlide({
   return (
     <>
       <SlideShell theme={theme} ticker={children}>
-        {/* Card (fills remaining space) */}
-        <div className="ml-[2px] flex-1 overflow-hidden rounded-tl-[40px] rounded-tr-[40px] bg-[#e9e9e9] font-nunito">
-          <div className="h-full overflow-hidden px-[56px] pt-[32px]">
-            {/* Float spacer for photo area */}
-            {hasImage && (
-              <div
-                className="float-right ml-[20px]"
-                style={{ width: '448px', height: '408px' }}
-              />
-            )}
-
-            {/* Title (renders HTML entities) */}
-            <h1
-              className="mb-[44px] font-black text-[#1d1d1b] text-[58px] leading-[59px]"
-              dangerouslySetInnerHTML={{ __html: content.title }}
+        <div className="h-full overflow-hidden px-[56px] pt-[32px]">
+          {/* Float spacer for photo area */}
+          {hasImage && (
+            <div
+              className="float-right ml-[20px]"
+              style={{ width: '448px', height: '408px' }}
             />
+          )}
 
-            {/* Body */}
-            <div className="font-[500] text-[#1d1d1b] text-[42px] leading-[58px]">
-              <div dangerouslySetInnerHTML={{ __html: content.body }} />
-            </div>
+          {/* Title (renders HTML entities) */}
+          <h1
+            className="mb-[44px] font-black text-[#1d1d1b] text-[58px] leading-[59px]"
+            dangerouslySetInnerHTML={{ __html: content.title }}
+          />
+
+          {/* Body */}
+          <div className="font-[500] text-[#1d1d1b] text-[42px] leading-[58px]">
+            <div dangerouslySetInnerHTML={{ __html: content.body }} />
           </div>
         </div>
       </SlideShell>

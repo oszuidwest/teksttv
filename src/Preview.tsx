@@ -1,11 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { z } from 'zod'
-import {
-  type FrameComponent,
-  renderSlide,
-  type SlideComponents,
-  type TickerComponent,
-} from './SlideRenderer'
+import { renderSlide, type SlideKit } from './SlideRenderer'
 import type { SlideData } from './types'
 import { SlideDataSchema } from './types'
 
@@ -32,13 +27,7 @@ function decodeSlide(
   }
 }
 
-interface PreviewProps {
-  slides: SlideComponents
-  Ticker: TickerComponent
-  Frame?: FrameComponent
-}
-
-export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
+export default function Preview({ slides, Ticker, Frame }: SlideKit) {
   const encodedData = new URLSearchParams(window.location.search).get('data')
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -83,8 +72,7 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
   return (
     <div
       ref={containerRef}
-      className="relative h-[1080px] w-[1920px]"
-      style={{ transformOrigin: 'top left' }}
+      className="relative h-[1080px] w-[1920px] origin-top-left"
     >
       {Frame ? <Frame>{content}</Frame> : content}
     </div>

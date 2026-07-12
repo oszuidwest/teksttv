@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import type { z } from 'zod'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
@@ -272,7 +272,6 @@ export function useCarousel({
   channel?: string
 }) {
   const [state, dispatch] = useReducer(carouselReducer, initialCarouselState)
-  const lastPayloadRef = useRef<string | null>(null)
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
@@ -327,13 +326,6 @@ export function useCarousel({
           tickerData = rawTickerData
         }
 
-        // Feeds change only a few times a day; avoid validation and rendering
-        // churn when the parsed payload is unchanged.
-        const payloadFingerprint = JSON.stringify([slidesData, tickerData])
-        if (!isInitialLoad && payloadFingerprint === lastPayloadRef.current) {
-          return
-        }
-
         const source = channel ? `channel ${channel}` : 'feed'
         const newSlides = getValidItems(
           SlideDataSchema,
@@ -354,7 +346,6 @@ export function useCarousel({
           )
         }
 
-        lastPayloadRef.current = payloadFingerprint
         dispatch({
           type: isInitialLoad ? 'LOAD_INITIAL' : 'LOAD_NEXT',
           slides: newSlides,

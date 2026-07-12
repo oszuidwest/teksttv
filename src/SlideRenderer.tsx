@@ -10,10 +10,17 @@ import type {
 export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
-  weather?: ComponentType<{
+  weather: ComponentType<{
     content: WeatherSlideData
     children?: ReactNode
   }>
+  // The App host keeps one instance per distinct URL mounted so embeds load
+  // once and stay warm; it hides inactive instances, disables pointer
+  // interaction, and may remount inactive instances on a slow interval to
+  // recover from transient load failures. Preview renders one active
+  // instance directly. The component must fill the canvas above the frame
+  // chrome (z-40, like full-screen image slides) and must render the frame
+  // regardless of `active` — the host handles hiding.
   iframe?: IframeSlideComponent
 }
 
@@ -29,6 +36,14 @@ export type TickerComponent = ComponentType<{
 
 export type FrameComponent = ComponentType<{ children: ReactNode }>
 
+// Everything App and Preview need to render a station: its slide components,
+// ticker, and optional frame chrome. Station kits implement this shape.
+export interface SlideKit {
+  slides: SlideComponents
+  Ticker: TickerComponent
+  Frame?: FrameComponent
+}
+
 // Single dispatch shared by live playout (App) and Preview so the two can
 // never drift. Full-screen slides (image/commercial) play without a ticker.
 export function renderSlide(
@@ -37,8 +52,6 @@ export function renderSlide(
   ticker: ReactNode,
   key?: number,
 ): ReactNode {
-  const IframeSlide = slides.iframe
-
   switch (content.type) {
     case 'text':
       return (
@@ -47,15 +60,15 @@ export function renderSlide(
         </slides.text>
       )
     case 'weather':
-      if (!slides.weather) {
-        return <div>Weerslides worden niet ondersteund door dit thema</div>
-      }
       return (
         <slides.weather key={key} content={content}>
           {ticker}
         </slides.weather>
       )
-    case 'iframe':
+    case 'iframe': {
+      // Aliased because biome's useIframeTitle mistakes <slides.iframe> for a
+      // raw <iframe> element.
+      const IframeSlide = slides.iframe
       if (!IframeSlide) {
         return <div>Iframe slides worden niet ondersteund door dit thema</div>
       }
@@ -64,6 +77,7 @@ export function renderSlide(
           <IframeSlide url={content.url} active />
         </div>
       )
+    }
     case 'image':
     case 'commercial':
     case 'commercial_transition':
