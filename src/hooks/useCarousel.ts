@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer } from 'react'
+import { useCallback, useEffect, useReducer } from 'react'
 import type { z } from 'zod'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
@@ -419,10 +419,9 @@ export function useCarousel({
   }, [state.slides, state.currentSlide, state.paused])
 
   // Derived, not stored: everything the current and pending slide sets need.
-  const imagesToPreload = useMemo(
-    () => [...new Set(imageUrlsFor([...state.slides, ...state.nextSlides]))],
-    [state.slides, state.nextSlides],
-  )
+  const imagesToPreload = [
+    ...new Set(imageUrlsFor([...state.slides, ...state.nextSlides])),
+  ]
 
   return {
     slides: state.slides,
