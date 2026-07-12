@@ -222,6 +222,7 @@ export function carouselReducer(
       }
 
     case 'TOGGLE_PAUSE':
+      if (state.slides.length === 0) return state
       return { ...state, paused: !state.paused }
 
     case 'LOAD_ERROR':
@@ -382,7 +383,7 @@ export function useCarousel({
   useEffect(() => {
     if (!navEnabled) return
 
-    // The reducer already no-ops NAV actions on an empty deck.
+    // The reducer already no-ops NAV and pause actions on an empty deck.
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === ' ') {
         e.preventDefault()

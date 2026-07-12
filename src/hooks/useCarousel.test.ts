@@ -129,6 +129,16 @@ describe('carousel reducer initial retry behavior', () => {
     expect(tickedState.nextSlides).toEqual([slide])
   })
 
+  test('TOGGLE_PAUSE is ignored while the deck is empty', () => {
+    // A pause on the loading/error screen must not freeze playout once
+    // slides arrive.
+    const pausedState = carouselReducer(initialCarouselState, {
+      type: 'TOGGLE_PAUSE',
+    })
+
+    expect(pausedState.paused).toBe(false)
+  })
+
   test('LOAD_INITIAL replaces an initial error with visible slides', () => {
     const errorState = carouselReducer(initialCarouselState, {
       type: 'LOAD_ERROR',
