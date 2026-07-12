@@ -10,7 +10,8 @@
     "test": "bun test",
     "check": "astro check && tsc --noEmit && bun test && biome ci .",
     "fix": "biome check --write .",
-    "fix:unsafe": "biome check --write --unsafe ."
+    "fix:unsafe": "biome check --write --unsafe .",
+    "doctor": "bunx react-doctor"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
