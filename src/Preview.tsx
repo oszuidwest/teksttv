@@ -60,9 +60,8 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  // Iframe slides are host-managed (see SlideKit); the preview host renders
-  // one active instance directly. Aliased because biome's useIframeTitle
-  // mistakes <slides.iframe> for a raw <iframe> element.
+  // Preview renders iframe slides directly; App keeps them warm separately.
+  // The PascalCase alias prevents Biome from treating it as a raw <iframe>.
   const IframeSlide = slides.iframe
   const content =
     result.slide.type === 'iframe' ? (

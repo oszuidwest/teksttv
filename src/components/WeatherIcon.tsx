@@ -1,6 +1,7 @@
-// Resolves an OWM icon code to a local SVG. If the day/night variant is
-// missing, falls back once to the generic icon; the src check prevents an
-// endless error→retry loop when the fallback is missing too.
+/**
+ * Maps an OpenWeatherMap icon code to local SVG and falls back once from
+ * day/night variants to generic icons; checking src prevents error loops.
+ */
 export function WeatherIcon({
   icon,
   alt,

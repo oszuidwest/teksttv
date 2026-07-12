@@ -18,8 +18,7 @@ function makeKit(theme: ThemeName): SlideKit {
   }
 }
 
-// Built once at module scope so component identities stay stable across
-// renders; both the live app and the preview consume the same kit.
+// Module-scope kits keep component identities stable for app and preview.
 const kits: Record<ThemeName, SlideKit> = {
   green: makeKit('green'),
   blue: makeKit('blue'),

@@ -18,7 +18,7 @@ export function TextSlide({
     <>
       <SlideShell theme={theme} ticker={children}>
         <div className="h-full overflow-hidden px-[56px] pt-[32px]">
-          {/* Float spacer for photo area */}
+          {/* Reserve wrapped text space for the overlaid photo. */}
           {hasImage && (
             <div
               className="float-right ml-[20px]"
@@ -26,20 +26,18 @@ export function TextSlide({
             />
           )}
 
-          {/* Title (renders HTML entities) */}
           <h1
             className="mb-[44px] font-black text-[#1d1d1b] text-[58px] leading-[59px]"
             dangerouslySetInnerHTML={{ __html: content.title }}
           />
 
-          {/* Body */}
           <div className="font-[500] text-[#1d1d1b] text-[42px] leading-[58px]">
             <div dangerouslySetInnerHTML={{ __html: content.body }} />
           </div>
         </div>
       </SlideShell>
 
-      {/* Photo (outside card so it extends behind overlay stripes) */}
+      {/* Outside the card so overlay stripes cross the photo. */}
       {hasImage && (
         <img
           src={imageUrl}
