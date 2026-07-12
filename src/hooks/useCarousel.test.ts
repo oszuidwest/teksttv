@@ -15,14 +15,14 @@ const slide: SlideData = {
 
 const ticker: TickerItem = { message: 'Ticker' }
 
+const iframeSlide = (url: string): SlideData => ({
+  type: 'iframe',
+  duration: 1000,
+  url,
+})
+
 describe('iframeUrlsFor', () => {
   test('returns distinct iframe URLs in first-occurrence playlist order', () => {
-    const iframeSlide = (url: string): SlideData => ({
-      type: 'iframe',
-      duration: 1000,
-      url,
-    })
-
     // Order must follow the playlist, never the current slide: reordering
     // keyed iframes moves their DOM nodes, which reloads the embed.
     expect(
@@ -37,6 +37,88 @@ describe('iframeUrlsFor', () => {
 
   test('returns no URLs for a playlist without iframe slides', () => {
     expect(iframeUrlsFor([slide])).toEqual([])
+  })
+})
+
+describe('carousel reducer iframe warm-mount list', () => {
+  test('LOAD_NEXT appends new embed URLs without moving existing ones', () => {
+    const loadedState = carouselReducer(initialCarouselState, {
+      type: 'LOAD_INITIAL',
+      slides: [iframeSlide('https://example.com/a'), slide],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    const nextState = carouselReducer(loadedState, {
+      type: 'LOAD_NEXT',
+      slides: [
+        iframeSlide('https://example.com/b'),
+        iframeSlide('https://example.com/a'),
+      ],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    // Upcoming embeds warm-mount before the swap; /a keeps its position so
+    // its keyed iframe never moves (a moved iframe reloads its document).
+    expect(nextState.iframeUrls).toEqual([
+      'https://example.com/a',
+      'https://example.com/b',
+    ])
+  })
+
+  test('LOAD_NEXT drops URLs only referenced by a superseded next set', () => {
+    const loadedState = carouselReducer(initialCarouselState, {
+      type: 'LOAD_INITIAL',
+      slides: [iframeSlide('https://example.com/a')],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    const firstNextState = carouselReducer(loadedState, {
+      type: 'LOAD_NEXT',
+      slides: [iframeSlide('https://example.com/b')],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    const secondNextState = carouselReducer(firstNextState, {
+      type: 'LOAD_NEXT',
+      slides: [iframeSlide('https://example.com/c')],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    // /b was never shown and is no longer upcoming, so it should not stay
+    // warm until the swap; /a (current) keeps its position.
+    expect(secondNextState.iframeUrls).toEqual([
+      'https://example.com/a',
+      'https://example.com/c',
+    ])
+  })
+
+  test('TICK prunes dropped embed URLs at the slide-set swap boundary', () => {
+    const loadedState = carouselReducer(initialCarouselState, {
+      type: 'LOAD_INITIAL',
+      slides: [iframeSlide('https://example.com/a')],
+      ticker: [],
+      imageUrls: [],
+    })
+
+    const nextState = carouselReducer(loadedState, {
+      type: 'LOAD_NEXT',
+      slides: [iframeSlide('https://example.com/b')],
+      ticker: [],
+      imageUrls: [],
+    })
+    expect(nextState.iframeUrls).toEqual([
+      'https://example.com/a',
+      'https://example.com/b',
+    ])
+
+    const swappedState = carouselReducer(nextState, { type: 'TICK' })
+    expect(swappedState.slides).toEqual([iframeSlide('https://example.com/b')])
+    expect(swappedState.iframeUrls).toEqual(['https://example.com/b'])
   })
 })
 

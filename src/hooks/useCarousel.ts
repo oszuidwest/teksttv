@@ -26,6 +26,7 @@ export interface CarouselState {
   nextTickerItems: TickerItem[]
   tickerIndex: number
   imagesToPreload: string[]
+  iframeUrls: string[]
   paused: boolean
   error: string | null
 }
@@ -57,14 +58,16 @@ export const initialCarouselState: CarouselState = {
   nextTickerItems: [],
   tickerIndex: 0,
   imagesToPreload: [],
+  iframeUrls: [],
   paused: false,
   error: null,
 }
 
-// Distinct embed URLs in playlist order. The order must not depend on the
-// current slide: reordering keyed iframes moves their DOM nodes, and a moved
-// iframe reloads its document — exactly the reload that keeping them mounted
-// is meant to avoid.
+// Distinct embed URLs in playlist order. The mounted list must stay stable:
+// reordering keyed iframes moves their DOM nodes, and a moved iframe reloads
+// its document — exactly the reload that keeping them mounted is meant to
+// avoid. The reducer therefore only appends (LOAD_NEXT) or filters (LOAD_NEXT
+// for superseded next sets, TICK at the swap boundary) — it never reorders.
 export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(
@@ -137,10 +140,13 @@ export function carouselReducer(
         slides: action.slides,
         tickerItems: action.ticker,
         imagesToPreload: action.imageUrls,
+        iframeUrls: iframeUrlsFor(action.slides),
         error: null,
       }
 
-    case 'LOAD_NEXT':
+    case 'LOAD_NEXT': {
+      const currentIframeUrls = iframeUrlsFor(state.slides)
+      const nextIframeUrls = iframeUrlsFor(action.slides)
       return {
         ...state,
         nextSlides: action.slides,
@@ -148,7 +154,20 @@ export function carouselReducer(
         imagesToPreload: [
           ...new Set([...state.imagesToPreload, ...action.imageUrls]),
         ],
+        // Upcoming embeds warm-mount before the swap. Surviving URLs keep
+        // their positions; URLs only referenced by a superseded next set are
+        // dropped right away instead of staying warm until the swap.
+        iframeUrls: [
+          ...new Set([
+            ...state.iframeUrls.filter(
+              (url) =>
+                currentIframeUrls.includes(url) || nextIframeUrls.includes(url),
+            ),
+            ...nextIframeUrls,
+          ]),
+        ],
       }
+    }
 
     case 'TICK': {
       if (state.slides.length === 0) return state
@@ -165,6 +184,12 @@ export function carouselReducer(
             imageUrlsFor(state.nextSlides).includes(url),
           )
         : state.imagesToPreload
+      // Pruning by filter keeps surviving embeds in their existing positions.
+      const iframeUrls = swapSlides
+        ? state.iframeUrls.filter((url) =>
+            iframeUrlsFor(state.nextSlides).includes(url),
+          )
+        : state.iframeUrls
 
       let tickerItems = state.tickerItems
       let nextTickerItems = state.nextTickerItems
@@ -194,6 +219,7 @@ export function carouselReducer(
         nextSlides,
         currentSlide,
         imagesToPreload,
+        iframeUrls,
         tickerItems,
         nextTickerItems,
         tickerIndex,
@@ -409,7 +435,7 @@ export function useCarousel({
     tickerItems: state.tickerItems,
     tickerIndex: state.tickerIndex,
     imagesToPreload: state.imagesToPreload,
-    iframeUrls: iframeUrlsFor(state.slides),
+    iframeUrls: state.iframeUrls,
     paused: state.paused,
     error: state.error,
     navEnabled,

@@ -4,10 +4,6 @@ const BaseSlideSchema = z.object({
   duration: z.number().positive().describe('Display duration in milliseconds'),
 })
 
-const IframeUrlSchema = z
-  .url({ protocol: /^https?$/ })
-  .describe('HTTP(S) URL of an embeddable page (must allow framing)')
-
 export const ImageDataSchema = z.object({
   url: z.url().describe('Image URL'),
   caption: z.string().optional().describe('Image caption'),
@@ -95,7 +91,9 @@ export const CommercialTransitionSlideDataSchema = BaseSlideSchema.extend({
 
 export const IframeSlideDataSchema = BaseSlideSchema.extend({
   type: z.literal('iframe'),
-  url: IframeUrlSchema,
+  url: z
+    .url({ protocol: /^https?$/ })
+    .describe('HTTP(S) URL of an embeddable page (must allow framing)'),
 })
 
 export const SlideDataSchema = z.discriminatedUnion('type', [

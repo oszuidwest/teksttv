@@ -69,7 +69,9 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
     let slide: React.ReactNode
     if (validatedData.type === 'iframe') {
       slide = IframeSlide ? (
-        <IframeSlide url={validatedData.url} active />
+        <div className="pointer-events-none">
+          <IframeSlide url={validatedData.url} active />
+        </div>
       ) : (
         <div>Iframe slides worden niet ondersteund door dit thema</div>
       )
