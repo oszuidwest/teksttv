@@ -63,11 +63,10 @@ export const initialCarouselState: CarouselState = {
   error: null,
 }
 
-// Distinct embed URLs in playlist order. The mounted list must stay stable:
-// reordering keyed iframes moves their DOM nodes, and a moved iframe reloads
-// its document — exactly the reload that keeping them mounted is meant to
-// avoid. The reducer therefore only appends (LOAD_NEXT) or filters (LOAD_NEXT
-// for superseded next sets, TICK at the swap boundary) — it never reorders.
+/**
+ * Returns distinct embed URLs in playlist order; moving keyed iframes reloads
+ * them.
+ */
 export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(
@@ -159,9 +158,8 @@ export function carouselReducer(
         imagesToPreload: [
           ...new Set([...state.imagesToPreload, ...action.imageUrls]),
         ],
-        // Upcoming embeds warm-mount before the swap. Surviving URLs keep
-        // their positions; URLs only referenced by a superseded next set are
-        // dropped right away instead of staying warm until the swap.
+        // Warm-mount upcoming embeds; keep survivors in place and drop
+        // superseded URLs immediately.
         iframeUrls: [
           ...new Set([
             ...keepOnly(state.iframeUrls, [
@@ -183,7 +181,7 @@ export function carouselReducer(
       const slides = swapSlides ? state.nextSlides : state.slides
       const nextSlides = swapSlides ? [] : state.nextSlides
       const currentSlide = swapSlides ? 0 : candidate
-      // At a slide-set boundary, drop preloaded URLs that the new set doesn't need.
+      // At a slide-set boundary, drop preloads the new set no longer needs.
       const imagesToPreload = swapSlides
         ? keepOnly(state.imagesToPreload, imageUrlsFor(state.nextSlides))
         : state.imagesToPreload

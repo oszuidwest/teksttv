@@ -90,8 +90,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
-  // Keep embeds mounted by URL and refresh only inactive frames, so returning
-  // slides stay warm without disrupting the active frame.
+  // Keep keyed iframe URLs mounted so returning embeds do not reload; inactive
+  // instances refresh periodically without touching the live slide.
   const iframeLayer = IframeSlide
     ? iframeUrls.map((url) => (
         <PersistentIframeSlide
@@ -103,8 +103,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       ))
     : null
 
-  // Iframe slides render through the persistent layer; without an iframe
-  // component the live app intentionally has no slide output.
+  // Iframe slides render through the persistent layer; themes without an
+  // iframe component intentionally leave those slides blank.
   const slideElement =
     currentSlideData.type === 'iframe'
       ? null

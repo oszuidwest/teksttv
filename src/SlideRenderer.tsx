@@ -7,8 +7,7 @@ import type {
   WeatherSlideData,
 } from './types'
 
-/** Components required to render each supported slide variant. */
-export interface SlideComponents {
+interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
   weather: ComponentType<{
@@ -16,29 +15,32 @@ export interface SlideComponents {
     children?: ReactNode
   }>
   /**
-   * Optional iframe renderer. It must fill the slide canvas above frame chrome
-   * and render when inactive; App owns persistence, visibility, and refreshes.
+   * Fills the canvas above frame chrome and renders while inactive; hosts
+   * manage persistence, visibility, and refreshes.
    */
   iframe?: IframeSlideComponent
 }
 
-/** Iframe renderer contract; `active` describes the host visibility state. */
+/** Iframe renderer contract; `active` mirrors host visibility state. */
 export type IframeSlideComponent = ComponentType<{
   url: string
   active: boolean
 }>
 
-/** Station-specific render kit shared by live playout and preview. */
+/** Station kit consumed by both live playout and preview. */
 export interface SlideKit {
   slides: SlideComponents
   Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
   Frame?: ComponentType<{ children: ReactNode }>
 }
 
-/** Renders one slide with a station kit; full-screen slides ignore the ticker. */
+/**
+ * Renders a non-iframe slide; hosts manage iframe lifecycle separately.
+ * Full-screen slides omit the ticker.
+ */
 export function renderSlide(
   slides: SlideComponents,
-  content: SlideData,
+  content: Exclude<SlideData, { type: 'iframe' }>,
   ticker: ReactNode,
   key?: number,
 ): ReactNode {
@@ -55,19 +57,6 @@ export function renderSlide(
           {ticker}
         </slides.weather>
       )
-    case 'iframe': {
-      // App pre-filters iframe slides into its persistent layer; this fallback
-      // is for Preview only.
-      const IframeSlide = slides.iframe
-      if (!IframeSlide) {
-        return <div>Iframe slides worden niet ondersteund door dit thema</div>
-      }
-      return (
-        <div key={key} className="pointer-events-none">
-          <IframeSlide url={content.url} active />
-        </div>
-      )
-    }
     case 'image':
     case 'commercial':
     case 'commercial_transition':

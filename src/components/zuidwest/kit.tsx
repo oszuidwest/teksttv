@@ -3,9 +3,10 @@ import { Frame } from './Frame'
 import { ImageSlide } from './ImageSlide'
 import { TextSlide } from './TextSlide'
 import { Ticker } from './Ticker'
+import { type ThemeName, themeForChannel } from './theme'
 import { WeatherSlide } from './WeatherSlide'
 
-function makeKit(theme: 'green' | 'blue'): SlideKit {
+function makeKit(theme: ThemeName): SlideKit {
   return {
     slides: {
       text: (p) => <TextSlide {...p} theme={theme} />,
@@ -17,12 +18,12 @@ function makeKit(theme: 'green' | 'blue'): SlideKit {
   }
 }
 
-// Module-level kits keep wrapper component identities stable for live and
-// preview renders.
-const greenKit = makeKit('green')
-const blueKit = makeKit('blue')
+// Module-scope kits keep component identities stable for app and preview.
+const kits: Record<ThemeName, SlideKit> = {
+  green: makeKit('green'),
+  blue: makeKit('blue'),
+}
 
-/** Maps `tv1` to the green kit; every other channel uses the blue kit. */
 export function kitForChannel(channel: string): SlideKit {
-  return channel === 'tv1' ? greenKit : blueKit
+  return kits[themeForChannel(channel)]
 }

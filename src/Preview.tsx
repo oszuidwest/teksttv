@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { z } from 'zod'
 import { renderSlide, type SlideKit } from './SlideRenderer'
 import type { SlideData } from './types'
 import { SlideDataSchema } from './types'
@@ -16,12 +17,13 @@ function decodeSlide(
     const decodedData = new TextDecoder().decode(bytes)
     return { slide: SlideDataSchema.parse(JSON.parse(decodedData)) }
   } catch (error) {
-    return {
-      error:
-        error instanceof Error
-          ? error.message
-          : 'Error: Unable to process the provided data',
+    if (error instanceof z.ZodError) {
+      return { error: `Validation Error: ${error.message}` }
     }
+    if (error instanceof SyntaxError) {
+      return { error: `JSON Parsing Error: ${error.message}` }
+    }
+    return { error: 'Error: Unable to process the provided data' }
   }
 }
 
@@ -61,14 +63,28 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  const content = renderSlide(
-    slides,
-    result.slide,
-    <Ticker
-      items={[{ message: 'Dit is een preview slide' }]}
-      currentIndex={0}
-    />,
-  )
+  // Preview renders iframes directly; PascalCase treats the configured renderer
+  // as a component rather than the intrinsic <iframe>.
+  const IframeSlide = slides.iframe
+  const content =
+    result.slide.type === 'iframe' ? (
+      IframeSlide ? (
+        <div className="pointer-events-none">
+          <IframeSlide url={result.slide.url} active />
+        </div>
+      ) : (
+        <div>Iframe slides worden niet ondersteund door dit thema</div>
+      )
+    ) : (
+      renderSlide(
+        slides,
+        result.slide,
+        <Ticker
+          items={[{ message: 'Dit is een preview slide' }]}
+          currentIndex={0}
+        />,
+      )
+    )
 
   return (
     <div
