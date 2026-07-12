@@ -7,7 +7,7 @@ import type {
   WeatherSlideData,
 } from './types'
 
-export interface SlideComponents {
+interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
   weather: ComponentType<{
@@ -29,26 +29,22 @@ export type IframeSlideComponent = ComponentType<{
   active: boolean
 }>
 
-export type TickerComponent = ComponentType<{
-  items: TickerItem[]
-  currentIndex: number
-}>
-
-export type FrameComponent = ComponentType<{ children: ReactNode }>
-
 // Everything App and Preview need to render a station: its slide components,
 // ticker, and optional frame chrome. Station kits implement this shape.
 export interface SlideKit {
   slides: SlideComponents
-  Ticker: TickerComponent
-  Frame?: FrameComponent
+  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
+  Frame?: ComponentType<{ children: ReactNode }>
 }
 
-// Single dispatch shared by live playout (App) and Preview so the two can
-// never drift. Full-screen slides (image/commercial) play without a ticker.
+// Single dispatch for content slides, shared by live playout (App) and
+// Preview so the two can never drift. Iframe slides are host-managed (App
+// keeps them mounted in a persistent layer, Preview renders one directly),
+// so each host handles them itself — the type excludes them here.
+// Full-screen slides (image/commercial) play without a ticker.
 export function renderSlide(
   slides: SlideComponents,
-  content: SlideData,
+  content: Exclude<SlideData, { type: 'iframe' }>,
   ticker: ReactNode,
   key?: number,
 ): ReactNode {
@@ -65,19 +61,6 @@ export function renderSlide(
           {ticker}
         </slides.weather>
       )
-    case 'iframe': {
-      // Aliased because biome's useIframeTitle mistakes <slides.iframe> for a
-      // raw <iframe> element.
-      const IframeSlide = slides.iframe
-      if (!IframeSlide) {
-        return <div>Iframe slides worden niet ondersteund door dit thema</div>
-      }
-      return (
-        <div key={key} className="pointer-events-none">
-          <IframeSlide url={content.url} active />
-        </div>
-      )
-    }
     case 'image':
     case 'commercial':
     case 'commercial_transition':

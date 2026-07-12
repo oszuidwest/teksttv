@@ -60,14 +60,29 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  const content = renderSlide(
-    slides,
-    result.slide,
-    <Ticker
-      items={[{ message: 'Dit is een preview slide' }]}
-      currentIndex={0}
-    />,
-  )
+  // Iframe slides are host-managed (see SlideKit); the preview host renders
+  // one active instance directly. Aliased because biome's useIframeTitle
+  // mistakes <slides.iframe> for a raw <iframe> element.
+  const IframeSlide = slides.iframe
+  const content =
+    result.slide.type === 'iframe' ? (
+      IframeSlide ? (
+        <div className="pointer-events-none">
+          <IframeSlide url={result.slide.url} active />
+        </div>
+      ) : (
+        <div>Iframe slides worden niet ondersteund door dit thema</div>
+      )
+    ) : (
+      renderSlide(
+        slides,
+        result.slide,
+        <Ticker
+          items={[{ message: 'Dit is een preview slide' }]}
+          currentIndex={0}
+        />,
+      )
+    )
 
   return (
     <div
