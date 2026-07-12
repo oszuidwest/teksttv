@@ -56,8 +56,8 @@ const imageSlideWithMeta = {
   attribution: 'Photo by John Smith',
 } satisfies ImageSlideData
 
-// Mirrors production CMS dates: "zaterdag 9 mei", "vandaag" for today, and
-// "ma"/"di"/... for following days.
+// Mirrors CMS output: dates such as `zaterdag 9 mei`, `vandaag` for today,
+// then `ma`, `di`, and so on.
 const weatherSlide = {
   type: 'weather',
   duration: 20000,

@@ -1,6 +1,6 @@
 import { type ThemeName, themes } from './theme'
 
-/** Shared ZuidWest card geometry for text/weather slides; ticker stays outside. */
+/** Renders shared ZuidWest card geometry; the ticker remains outside the card. */
 export function SlideShell({
   theme,
   ticker,

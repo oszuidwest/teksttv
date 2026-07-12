@@ -18,8 +18,8 @@ const dirMap: Record<string, number> = {
 }
 
 /**
- * Rotation for an arrow pointing where wind blows to: Z points up, N points
- * down, and each Dutch compass step adds 22.5 degrees.
+ * Returns the rotation for a downwind arrow: Z points up, N points down, and
+ * each Dutch compass step adds 22.5 degrees.
  */
 export function windRotation(direction: string): number {
   return dirMap[direction] ?? 0

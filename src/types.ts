@@ -133,7 +133,7 @@ export type IframeSlideData = z.infer<typeof IframeSlideDataSchema>
 export type SlideData = z.infer<typeof SlideDataSchema>
 export type TickerItem = z.infer<typeof TickerItemSchema>
 
-/** Full-screen renderer accepts every image-like slide type. */
+/** Image-like slide variants accepted by full-screen renderers. */
 export type FullScreenSlideData =
   | ImageSlideData
   | CommercialSlideData

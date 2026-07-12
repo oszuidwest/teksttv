@@ -14,8 +14,10 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: ReactNode
   }>
-  // Hosts own iframe persistence, visibility, and refreshes. Renderers must
-  // fill the canvas above frame chrome and still render while inactive.
+  /**
+   * Fills the canvas above frame chrome and renders while inactive; hosts
+   * manage persistence, visibility, and refreshes.
+   */
   iframe?: IframeSlideComponent
 }
 
@@ -33,8 +35,8 @@ export interface SlideKit {
 }
 
 /**
- * Shared renderer for non-iframe slides; hosts manage iframe lifecycle
- * separately. Full-screen slides play without a ticker.
+ * Renders a non-iframe slide; hosts manage iframe lifecycle separately.
+ * Full-screen slides omit the ticker.
  */
 export function renderSlide(
   slides: SlideComponents,

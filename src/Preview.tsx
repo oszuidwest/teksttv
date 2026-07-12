@@ -63,8 +63,8 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  // Preview has no persistent iframe layer; aliasing avoids JSX/lint confusion
-  // with the intrinsic <iframe> element.
+  // Preview renders iframes directly; PascalCase treats the configured renderer
+  // as a component rather than the intrinsic <iframe>.
   const IframeSlide = slides.iframe
   const content =
     result.slide.type === 'iframe' ? (

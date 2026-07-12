@@ -24,7 +24,7 @@ export function WeatherSlide({
     days.reduce((sum, d) => sum + d.temp_min, 0) / days.length,
   )
 
-  // Shared by day rows and the klimaatgemiddelde row.
+  // Keep column widths aligned between day and klimaatgemiddelde rows.
   const colDay = 'w-[264px]'
   const colIcon = 'w-[120px]'
   const colMax = 'w-[136px]'
@@ -108,7 +108,7 @@ export function WeatherSlide({
         ))}
 
         <div className="flex flex-1 items-stretch">
-          {/* Avg max spans day, icon/gap, and max columns. */}
+          {/* Average maximum spans the day, icon/gap, and maximum columns. */}
           <div
             className="flex items-center"
             style={{
