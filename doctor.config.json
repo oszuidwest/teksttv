@@ -1,0 +1,7 @@
+{
+  "$schema": "https://react.doctor/schema/config.json",
+  "//": "dangerous-html-sink is off by design: slide/ticker HTML comes from our own CMS feed (types.ts documents 'HTML supported'), a trusted source rendered on a closed playout box.",
+  "rules": {
+    "react-doctor/dangerous-html-sink": "off"
+  }
+}

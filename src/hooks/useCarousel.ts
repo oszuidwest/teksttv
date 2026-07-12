@@ -145,8 +145,11 @@ export function carouselReducer(
       }
 
     case 'LOAD_NEXT': {
-      const currentIframeUrls = iframeUrlsFor(state.slides)
       const nextIframeUrls = iframeUrlsFor(action.slides)
+      const keptIframeUrls = new Set([
+        ...iframeUrlsFor(state.slides),
+        ...nextIframeUrls,
+      ])
       return {
         ...state,
         nextSlides: action.slides,
@@ -159,10 +162,7 @@ export function carouselReducer(
         // dropped right away instead of staying warm until the swap.
         iframeUrls: [
           ...new Set([
-            ...state.iframeUrls.filter(
-              (url) =>
-                currentIframeUrls.includes(url) || nextIframeUrls.includes(url),
-            ),
+            ...state.iframeUrls.filter((url) => keptIframeUrls.has(url)),
             ...nextIframeUrls,
           ]),
         ],
@@ -179,17 +179,17 @@ export function carouselReducer(
       const nextSlides = swapSlides ? [] : state.nextSlides
       const currentSlide = swapSlides ? 0 : candidate
       // At a slide-set boundary, drop preloaded URLs that the new set doesn't need.
-      const imagesToPreload = swapSlides
-        ? state.imagesToPreload.filter((url) =>
-            imageUrlsFor(state.nextSlides).includes(url),
-          )
-        : state.imagesToPreload
+      let imagesToPreload = state.imagesToPreload
       // Pruning by filter keeps surviving embeds in their existing positions.
-      const iframeUrls = swapSlides
-        ? state.iframeUrls.filter((url) =>
-            iframeUrlsFor(state.nextSlides).includes(url),
-          )
-        : state.iframeUrls
+      let iframeUrls = state.iframeUrls
+      if (swapSlides) {
+        const nextImageUrls = new Set(imageUrlsFor(state.nextSlides))
+        imagesToPreload = state.imagesToPreload.filter((url) =>
+          nextImageUrls.has(url),
+        )
+        const nextIframeUrls = new Set(iframeUrlsFor(state.nextSlides))
+        iframeUrls = state.iframeUrls.filter((url) => nextIframeUrls.has(url))
+      }
 
       let tickerItems = state.tickerItems
       let nextTickerItems = state.nextTickerItems
@@ -290,14 +290,14 @@ export function useCarousel({
   apiBase: string
   channel?: string
 }) {
-  // Channel mode expects apiBase to be a complete payload endpoint. Without a
-  // channel, apiBase is a prefix for the split slides/ticker endpoints.
-  const apiBase = feedOverride ?? apiBaseProp
-  const channel = channelOverride ?? channelProp
   const [state, dispatch] = useReducer(carouselReducer, initialCarouselState)
 
   const fetchData = useCallback(
     async (isInitialLoad: boolean) => {
+      // Channel mode expects apiBase to be a complete payload endpoint. Without
+      // a channel, apiBase is a prefix for the split slides/ticker endpoints.
+      const apiBase = feedOverride ?? apiBaseProp
+      const channel = channelOverride ?? channelProp
       try {
         let slidesData: unknown
         let tickerData: unknown
@@ -370,7 +370,7 @@ export function useCarousel({
         }
       }
     },
-    [apiBase, channel],
+    [apiBaseProp, channelProp],
   )
 
   useEffect(() => {
