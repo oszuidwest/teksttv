@@ -46,7 +46,6 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a'), slide],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
@@ -56,7 +55,6 @@ describe('carousel reducer iframe warm-mount list', () => {
         iframeSlide('https://example.com/a'),
       ],
       ticker: [],
-      imageUrls: [],
     })
 
     // Upcoming embeds warm-mount before the swap; /a keeps its position so
@@ -72,21 +70,18 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const firstNextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
 
     const secondNextState = carouselReducer(firstNextState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/c')],
       ticker: [],
-      imageUrls: [],
     })
 
     // /b was never shown and is no longer upcoming, so it should not stay
@@ -102,14 +97,12 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
     expect(nextState.iframeUrls).toEqual([
       'https://example.com/a',
@@ -128,7 +121,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_NEXT',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(nextState.slides).toEqual([])
@@ -150,7 +142,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_INITIAL',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(loadedState.error).toBeNull()
