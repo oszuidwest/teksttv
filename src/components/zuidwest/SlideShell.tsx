@@ -1,8 +1,6 @@
 import { type ThemeName, themes } from './theme'
 
-// Accent container, card surface, and ticker slot shared by the card-style
-// slides (TextSlide, WeatherSlide); children render inside the card. Card
-// geometry changes happen here once.
+/** Renders shared ZuidWest card geometry; the ticker remains outside the card. */
 export function SlideShell({
   theme,
   ticker,

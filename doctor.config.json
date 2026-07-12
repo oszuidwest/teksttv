@@ -1,6 +1,6 @@
 {
   "$schema": "https://react.doctor/schema/config.json",
-  "//": "dangerous-html-sink is suppressed only where slide/ticker HTML from our own CMS feed is rendered (types.ts documents 'HTML supported'), a trusted source on a closed playout box — note ?feed=/?channel= URL overrides make the feed URL selectable, so the trust boundary is whoever controls the box's URL. The rule stays on elsewhere so any new HTML sink still gets flagged.",
+  "//": "dangerous-html-sink is suppressed only for CMS slide/ticker HTML documented in types.ts. URL overrides make the playout URL part of the trust boundary; the rule stays enabled elsewhere.",
   "ignore": {
     "overrides": [
       {

@@ -17,14 +17,12 @@ export function Header({ theme }: { theme: ThemeName }) {
 
   return (
     <div className="absolute top-0 right-0 left-0 z-30 font-nunito">
-      {/* Full-width logo bar (1920x160) */}
       <img
         src="/logos/top-bar.svg"
         alt=""
         className="absolute top-0 left-0 h-[160px] w-[1920px]"
       />
 
-      {/* Time pill (dark filled) with clock icon */}
       <div
         className="absolute top-[72px] left-[192px] flex h-[56px] items-center rounded-full pr-[28px] pl-[10px]"
         style={{ backgroundColor: c.accentDark }}
@@ -46,7 +44,6 @@ export function Header({ theme }: { theme: ThemeName }) {
         </span>
       </div>
 
-      {/* Date pill (white outline) */}
       <div className="absolute top-[73px] left-[393px] flex h-[54px] items-center rounded-full border-2 border-white px-[24px]">
         <span className="font-bold text-[38px] text-white leading-none">
           <DateDisplay />

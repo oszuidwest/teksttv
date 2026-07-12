@@ -3,7 +3,7 @@ import { Frame } from './Frame'
 import { ImageSlide } from './ImageSlide'
 import { TextSlide } from './TextSlide'
 import { Ticker } from './Ticker'
-import type { ThemeName } from './theme'
+import { type ThemeName, themeForChannel } from './theme'
 import { WeatherSlide } from './WeatherSlide'
 
 function makeKit(theme: ThemeName): SlideKit {
@@ -18,9 +18,12 @@ function makeKit(theme: ThemeName): SlideKit {
   }
 }
 
-// Built once at module scope so component identities stay stable across
-// renders; both the live app and the preview consume the same kit.
-export const kits: Record<ThemeName, SlideKit> = {
+// Module-scope kits keep component identities stable for app and preview.
+const kits: Record<ThemeName, SlideKit> = {
   green: makeKit('green'),
   blue: makeKit('blue'),
+}
+
+export function kitForChannel(channel: string): SlideKit {
+  return kits[themeForChannel(channel)]
 }

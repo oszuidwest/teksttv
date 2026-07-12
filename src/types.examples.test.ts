@@ -1,7 +1,5 @@
-// Runtime-validated example payloads for the channel schema.
-// Each example is checked twice: at compile time via `satisfies`, and at
-// runtime via `Schema.parse` so the schema and the documented examples
-// can never silently drift apart.
+// Example payloads use `satisfies` and Zod parsing so documented JSON stays
+// aligned with ChannelPayloadSchema.
 
 import { describe, expect, test } from 'bun:test'
 import type { z } from 'zod'
@@ -58,9 +56,8 @@ const imageSlideWithMeta = {
   attribution: 'Photo by John Smith',
 } satisfies ImageSlideData
 
-// Date strings and day_short follow the Dutch format the production CMS
-// emits ("zaterdag 9 mei", day_short "vandaag" for today and "ma"/"di"/...
-// for following days), as documented on WeatherDaySchema.
+// Mirrors CMS output: dates such as `zaterdag 9 mei`, `vandaag` for today,
+// then `ma`, `di`, and so on.
 const weatherSlide = {
   type: 'weather',
   duration: 20000,

@@ -32,15 +32,18 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let lastScale = -1
     function resizeViewport() {
-      if (containerRef.current) {
-        const scaleFactor = Math.min(window.innerWidth / 1920, 1)
-        containerRef.current.style.transform = `scale(${scaleFactor})`
-        window.parent.postMessage(
-          { type: 'resize', height: 1080 * scaleFactor },
-          '*',
-        )
+      const scaleFactor = Math.min(window.innerWidth / 1920, 1)
+      if (scaleFactor === lastScale || !containerRef.current) {
+        return
       }
+      lastScale = scaleFactor
+      containerRef.current.style.transform = `scale(${scaleFactor})`
+      window.parent.postMessage(
+        { type: 'resize', height: 1080 * scaleFactor },
+        '*',
+      )
     }
 
     resizeViewport()
@@ -60,14 +63,28 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  const content = renderSlide(
-    slides,
-    result.slide,
-    <Ticker
-      items={[{ message: 'Dit is een preview slide' }]}
-      currentIndex={0}
-    />,
-  )
+  // Preview renders iframes directly; PascalCase treats the configured renderer
+  // as a component rather than the intrinsic <iframe>.
+  const IframeSlide = slides.iframe
+  const content =
+    result.slide.type === 'iframe' ? (
+      IframeSlide ? (
+        <div className="pointer-events-none">
+          <IframeSlide url={result.slide.url} active />
+        </div>
+      ) : (
+        <div>Iframe slides worden niet ondersteund door dit thema</div>
+      )
+    ) : (
+      renderSlide(
+        slides,
+        result.slide,
+        <Ticker
+          items={[{ message: 'Dit is een preview slide' }]}
+          currentIndex={0}
+        />,
+      )
+    )
 
   return (
     <div

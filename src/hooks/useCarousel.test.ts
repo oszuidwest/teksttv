@@ -23,8 +23,7 @@ const iframeSlide = (url: string): SlideData => ({
 
 describe('iframeUrlsFor', () => {
   test('returns distinct iframe URLs in first-occurrence playlist order', () => {
-    // Order must follow the playlist, never the current slide: reordering
-    // keyed iframes moves their DOM nodes, which reloads the embed.
+    // Playlist order matters: moving keyed iframes reloads their embeds.
     expect(
       iframeUrlsFor([
         iframeSlide('https://example.com/b'),
@@ -57,8 +56,7 @@ describe('carousel reducer iframe warm-mount list', () => {
       ticker: [],
     })
 
-    // Upcoming embeds warm-mount before the swap; /a keeps its position so
-    // its keyed iframe never moves (a moved iframe reloads its document).
+    // Warm-mount /b before the swap while /a stays put, avoiding reloads.
     expect(nextState.iframeUrls).toEqual([
       'https://example.com/a',
       'https://example.com/b',
@@ -84,8 +82,7 @@ describe('carousel reducer iframe warm-mount list', () => {
       ticker: [],
     })
 
-    // /b was never shown and is no longer upcoming, so it should not stay
-    // warm until the swap; /a (current) keeps its position.
+    // Drop unshown superseded /b immediately; keep current /a in place.
     expect(secondNextState.iframeUrls).toEqual([
       'https://example.com/a',
       'https://example.com/c',

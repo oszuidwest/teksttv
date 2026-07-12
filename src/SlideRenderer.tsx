@@ -7,48 +7,40 @@ import type {
   WeatherSlideData,
 } from './types'
 
-export interface SlideComponents {
+interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
   weather: ComponentType<{
     content: WeatherSlideData
     children?: ReactNode
   }>
-  // The App host keeps one instance per distinct URL mounted so embeds load
-  // once and stay warm; it hides inactive instances, disables pointer
-  // interaction, and may remount inactive instances on a slow interval to
-  // recover from transient load failures. Preview renders one active
-  // instance directly. The component must fill the canvas above the frame
-  // chrome (z-40, like full-screen image slides) and must render the frame
-  // regardless of `active` — the host handles hiding.
+  /**
+   * Fills the canvas above frame chrome and renders while inactive; hosts
+   * manage persistence, visibility, and refreshes.
+   */
   iframe?: IframeSlideComponent
 }
 
+/** Iframe renderer contract; `active` mirrors host visibility state. */
 export type IframeSlideComponent = ComponentType<{
   url: string
   active: boolean
 }>
 
-export type TickerComponent = ComponentType<{
-  items: TickerItem[]
-  currentIndex: number
-}>
-
-export type FrameComponent = ComponentType<{ children: ReactNode }>
-
-// Everything App and Preview need to render a station: its slide components,
-// ticker, and optional frame chrome. Station kits implement this shape.
+/** Station kit consumed by both live playout and preview. */
 export interface SlideKit {
   slides: SlideComponents
-  Ticker: TickerComponent
-  Frame?: FrameComponent
+  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
+  Frame?: ComponentType<{ children: ReactNode }>
 }
 
-// Single dispatch shared by live playout (App) and Preview so the two can
-// never drift. Full-screen slides (image/commercial) play without a ticker.
+/**
+ * Renders a non-iframe slide; hosts manage iframe lifecycle separately.
+ * Full-screen slides omit the ticker.
+ */
 export function renderSlide(
   slides: SlideComponents,
-  content: SlideData,
+  content: Exclude<SlideData, { type: 'iframe' }>,
   ticker: ReactNode,
   key?: number,
 ): ReactNode {
@@ -65,19 +57,6 @@ export function renderSlide(
           {ticker}
         </slides.weather>
       )
-    case 'iframe': {
-      // Aliased because biome's useIframeTitle mistakes <slides.iframe> for a
-      // raw <iframe> element.
-      const IframeSlide = slides.iframe
-      if (!IframeSlide) {
-        return <div>Iframe slides worden niet ondersteund door dit thema</div>
-      }
-      return (
-        <div key={key} className="pointer-events-none">
-          <IframeSlide url={content.url} active />
-        </div>
-      )
-    }
     case 'image':
     case 'commercial':
     case 'commercial_transition':

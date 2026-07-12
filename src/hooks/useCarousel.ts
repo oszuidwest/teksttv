@@ -63,11 +63,10 @@ export const initialCarouselState: CarouselState = {
   error: null,
 }
 
-// Distinct embed URLs in playlist order. The mounted list must stay stable:
-// reordering keyed iframes moves their DOM nodes, and a moved iframe reloads
-// its document — exactly the reload that keeping them mounted is meant to
-// avoid. The reducer therefore only appends (LOAD_NEXT) or filters (LOAD_NEXT
-// for superseded next sets, TICK at the swap boundary) — it never reorders.
+/**
+ * Returns distinct embed URLs in playlist order; moving keyed iframes reloads
+ * them.
+ */
 export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(

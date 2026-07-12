@@ -1,6 +1,6 @@
-// Single source of truth for the ZuidWest channel palettes.
 export type ThemeName = 'green' | 'blue'
 
+/** ZuidWest channel palettes shared by themed components. */
 export const themes = {
   green: {
     accent: '#82ba26',
@@ -18,7 +18,7 @@ export const themes = {
     tickerBg: '#bfe7f8',
     surface: '#e9e9e9',
   },
-} as const satisfies Record<ThemeName, Record<string, string>>
+} as const
 
 export function themeForChannel(channel: string): ThemeName {
   return channel === 'tv1' ? 'green' : 'blue'

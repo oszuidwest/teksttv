@@ -24,7 +24,7 @@ export function WeatherSlide({
     days.reduce((sum, d) => sum + d.temp_min, 0) / days.length,
   )
 
-  // Column widths (must stay consistent between day rows and klimaatgemiddelde)
+  // Keep column widths aligned between day and klimaatgemiddelde rows.
   const colDay = 'w-[264px]'
   const colIcon = 'w-[120px]'
   const colMax = 'w-[136px]'
@@ -32,7 +32,6 @@ export function WeatherSlide({
 
   return (
     <SlideShell theme={theme} ticker={children}>
-      {/* Weerstation pill */}
       <div className="absolute top-[20px] right-[56px] flex items-center rounded-full border-2 border-white px-[31px] py-[18px]">
         <img
           src="/icons/weather/weerstation.svg"
@@ -45,14 +44,12 @@ export function WeatherSlide({
         </span>
       </div>
 
-      {/* Header row */}
       <div className="px-[56px] pt-[36px] pb-[20px]">
         <h1 className="font-black text-[#1d1d1b] text-[58px] leading-[59px]">
           Weer
         </h1>
       </div>
 
-      {/* Weather table */}
       <div className="mx-[56px] mt-[4px] mb-[40px] flex flex-1 flex-col overflow-hidden">
         {days.map((day, i) => (
           <div
@@ -63,7 +60,6 @@ export function WeatherSlide({
               borderBottom: '2px solid white',
             }}
           >
-            {/* Day name */}
             <div
               className={`${colDay} flex items-center font-bold text-[#1d1d1b] text-[42px]`}
             >
@@ -72,7 +68,6 @@ export function WeatherSlide({
                 : day.date.split(' ')[0]}
             </div>
 
-            {/* Weather icon */}
             <div
               className={`${colIcon} mr-[40px] flex items-center justify-center`}
             >
@@ -83,7 +78,6 @@ export function WeatherSlide({
               />
             </div>
 
-            {/* Max temp (green column) */}
             <div
               className={`${colMax} flex items-center justify-center font-[800] text-[44px]`}
               style={tempStyle(day.temp_max)}
@@ -91,7 +85,6 @@ export function WeatherSlide({
               {day.temp_max}°
             </div>
 
-            {/* Min temp (light green column) */}
             <div
               className={`${colMin} flex items-center justify-center text-[44px]`}
               style={tempStyle(day.temp_min)}
@@ -99,7 +92,6 @@ export function WeatherSlide({
               {day.temp_min}°
             </div>
 
-            {/* Wind (blue column) */}
             <div className="flex flex-1 items-center gap-[18px] pl-[35px]">
               <WindArrow
                 direction={day.wind_direction}
@@ -115,9 +107,8 @@ export function WeatherSlide({
           </div>
         ))}
 
-        {/* Klimaatgemiddelde row */}
         <div className="flex flex-1 items-stretch">
-          {/* Left: label + max avg — colored by high temp */}
+          {/* Average maximum spans the day, icon/gap, and maximum columns. */}
           <div
             className="flex items-center"
             style={{
@@ -135,7 +126,6 @@ export function WeatherSlide({
             </div>
           </div>
 
-          {/* Right: min avg + rest — colored by low temp */}
           <div className="flex flex-1 items-center" style={tempStyle(avgMin)}>
             <div
               className={`${colMin} flex items-center justify-center text-[44px]`}
