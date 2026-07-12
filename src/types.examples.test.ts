@@ -11,8 +11,11 @@ import {
   CommercialSlideDataSchema,
   type CommercialTransitionSlideData,
   CommercialTransitionSlideDataSchema,
+  type IframeSlideData,
+  IframeSlideDataSchema,
   type ImageSlideData,
   ImageSlideDataSchema,
+  SlideDataSchema,
   type TextSlideData,
   TextSlideDataSchema,
   type TickerItem,
@@ -101,13 +104,19 @@ const commercialTransitionSlide = {
   url: 'https://example.com/transition.jpg',
 } satisfies CommercialTransitionSlideData
 
+const iframeSlide = {
+  type: 'iframe',
+  duration: 30000,
+  url: 'https://example.com/dashboard',
+} satisfies IframeSlideData
+
 const tickerItems = [
   { message: 'Now on air: Morning Show' },
   { message: 'Breaking: Local news update' },
 ] satisfies TickerItem[]
 
 const fullPayload = {
-  slides: [textSlide, weatherSlide, imageSlide],
+  slides: [textSlide, weatherSlide, imageSlide, iframeSlide],
   ticker: tickerItems,
 } satisfies z.infer<typeof ChannelPayloadSchema>
 
@@ -142,6 +151,14 @@ describe('schema examples accept documented payloads', () => {
     expect(() =>
       CommercialTransitionSlideDataSchema.parse(commercialTransitionSlide),
     ).not.toThrow()
+  })
+
+  test('IframeSlideDataSchema parses iframe slide', () => {
+    expect(() => IframeSlideDataSchema.parse(iframeSlide)).not.toThrow()
+  })
+
+  test('SlideDataSchema parses iframe slide through the union', () => {
+    expect(() => SlideDataSchema.parse(iframeSlide)).not.toThrow()
   })
 
   test.each(tickerItems)('TickerItemSchema parses ticker item #%#', (item) => {

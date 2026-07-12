@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { useEffect, useState } from 'react'
 import { useCarousel } from './hooks/useCarousel'
 import type {
   FullScreenSlideData,
@@ -7,7 +8,46 @@ import type {
   WeatherSlideData,
 } from './types'
 
-interface SlideComponents {
+const INACTIVE_IFRAME_REFRESH_MS = 5 * 60 * 1000
+
+export type IframeSlideComponent = ComponentType<{
+  url: string
+  active: boolean
+}>
+
+function PersistentIframeSlide({
+  component: IframeSlide,
+  url,
+  active,
+}: {
+  component: IframeSlideComponent
+  url: string
+  active: boolean
+}) {
+  const [refreshEpoch, setRefreshEpoch] = useState(0)
+
+  useEffect(() => {
+    if (active) return
+
+    const refreshInterval = setInterval(
+      () => setRefreshEpoch((epoch) => epoch + 1),
+      INACTIVE_IFRAME_REFRESH_MS,
+    )
+
+    return () => clearInterval(refreshInterval)
+  }, [active])
+
+  return (
+    <div
+      className="pointer-events-none"
+      style={{ visibility: active ? 'visible' : 'hidden' }}
+    >
+      <IframeSlide key={refreshEpoch} url={url} active={active} />
+    </div>
+  )
+}
+
+export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
   image: ComponentType<{
     content: FullScreenSlideData
@@ -17,6 +57,14 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: React.ReactNode
   }>
+  // The App host keeps one instance per distinct URL mounted so embeds load
+  // once and stay warm; it hides inactive instances, disables pointer
+  // interaction, and may remount inactive instances on a slow interval to
+  // recover from transient load failures. Preview renders one active
+  // instance directly. The component must fill the canvas above the frame
+  // chrome (z-40, like full-screen image slides) and must render the frame
+  // regardless of `active` — the host handles hiding.
+  iframe?: IframeSlideComponent
 }
 
 interface AppProps {
@@ -34,6 +82,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     tickerItems,
     tickerIndex,
     imagesToPreload,
+    iframeUrls,
     paused,
     error,
     navEnabled,
@@ -58,20 +107,42 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     return <div>Loading...</div>
   }
 
-  const TextSlide = slides.text
-  const ImageSlide = slides.image
-  const WeatherSlide = slides.weather
   const currentSlideData = slideData[currentSlide] ?? slideData[0]
   if (!currentSlideData) {
     return <div>Loading...</div>
   }
 
+  const TextSlide = slides.text
+  const ImageSlide = slides.image
+  const WeatherSlide = slides.weather
+  const IframeSlide = slides.iframe
+  const activeIframeUrl =
+    currentSlideData.type === 'iframe' ? currentSlideData.url : null
+
   const tickerElement = (
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
+  // Persistent keyed-by-url layer: embeds stay mounted across slide changes
+  // so they don't reload when they reappear. The key epoch changes only while
+  // a frame is inactive, giving hidden embeds a recovery path after transient
+  // browser/network load failures without disrupting the active slide.
+  const iframeLayer = IframeSlide
+    ? iframeUrls.map((url) => (
+        <PersistentIframeSlide
+          key={url}
+          component={IframeSlide}
+          url={url}
+          active={url === activeIframeUrl}
+        />
+      ))
+    : null
+
   let slide: React.ReactNode
-  if (currentSlideData.type === 'text') {
+  if (currentSlideData.type === 'iframe') {
+    // Rendered by the persistent iframe layer.
+    slide = null
+  } else if (currentSlideData.type === 'text') {
     slide = (
       <TextSlide key={currentSlide} content={currentSlideData}>
         {tickerElement}
@@ -100,6 +171,7 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
         <link key={url} rel="preload" as="image" href={url} />
       ))}
       {slide}
+      {iframeLayer}
     </>
   )
 

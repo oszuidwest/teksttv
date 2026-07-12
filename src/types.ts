@@ -89,12 +89,20 @@ export const CommercialTransitionSlideDataSchema = BaseSlideSchema.extend({
   url: z.url(),
 })
 
+export const IframeSlideDataSchema = BaseSlideSchema.extend({
+  type: z.literal('iframe'),
+  url: z
+    .url({ protocol: /^https?$/ })
+    .describe('HTTP(S) URL of an embeddable page (must allow framing)'),
+})
+
 export const SlideDataSchema = z.discriminatedUnion('type', [
   ImageSlideDataSchema,
   TextSlideDataSchema,
   WeatherSlideDataSchema,
   CommercialSlideDataSchema,
   CommercialTransitionSlideDataSchema,
+  IframeSlideDataSchema,
 ])
 
 export const TickerItemSchema = z.object({
@@ -122,6 +130,7 @@ export type CommercialSlideData = z.infer<typeof CommercialSlideDataSchema>
 export type CommercialTransitionSlideData = z.infer<
   typeof CommercialTransitionSlideDataSchema
 >
+export type IframeSlideData = z.infer<typeof IframeSlideDataSchema>
 export type SlideData = z.infer<typeof SlideDataSchema>
 export type TickerItem = z.infer<typeof TickerItemSchema>
 
