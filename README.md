@@ -117,10 +117,11 @@ All slides are 1920x1080 pixels. Each slide has a `duration` (in milliseconds) t
 ### Iframe Slide
 - **Type**: `iframe`
 - Embeds an external page (e.g. a dashboard) full-screen via an `<iframe>`.
-- The `url` must point to an **embeddable** page: sites that send `X-Frame-Options: DENY` or a CSP `frame-ancestors` directive will refuse to be framed.
+- Only rendered by themes that provide an `iframe` slide component.
+- The `url` must use `http` or `https` and point to an **embeddable** page: sites that send `X-Frame-Options: DENY` or a CSP `frame-ancestors` directive will refuse to be framed.
 - Theme iframe components should render the frame non-interactive (`pointer-events` disabled) and sandboxed (e.g. `allow-scripts allow-same-origin`).
 - Every distinct iframe URL in the playlist stays mounted (hidden while inactive), so embeds are warm before they appear and do not reload each cycle.
-- Only rendered by themes that provide an `iframe` slide component.
+- Hidden iframe instances are periodically remounted to recover from transient browser or network load failures.
 
 ## Ticker
 

@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import type { SlideData, TickerItem } from '../types'
-import { carouselReducer, initialCarouselState } from './useCarousel'
+import {
+  carouselReducer,
+  iframeUrlsFor,
+  initialCarouselState,
+} from './useCarousel'
 
 const slide: SlideData = {
   type: 'text',
@@ -10,6 +14,31 @@ const slide: SlideData = {
 }
 
 const ticker: TickerItem = { message: 'Ticker' }
+
+describe('iframeUrlsFor', () => {
+  test('returns distinct iframe URLs in first-occurrence playlist order', () => {
+    const iframeSlide = (url: string): SlideData => ({
+      type: 'iframe',
+      duration: 1000,
+      url,
+    })
+
+    // Order must follow the playlist, never the current slide: reordering
+    // keyed iframes moves their DOM nodes, which reloads the embed.
+    expect(
+      iframeUrlsFor([
+        iframeSlide('https://example.com/b'),
+        slide,
+        iframeSlide('https://example.com/a'),
+        iframeSlide('https://example.com/b'),
+      ]),
+    ).toEqual(['https://example.com/b', 'https://example.com/a'])
+  })
+
+  test('returns no URLs for a playlist without iframe slides', () => {
+    expect(iframeUrlsFor([slide])).toEqual([])
+  })
+})
 
 describe('carousel reducer initial retry behavior', () => {
   test('LOAD_NEXT does not make slides visible from an empty carousel', () => {

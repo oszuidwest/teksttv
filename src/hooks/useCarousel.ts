@@ -63,8 +63,9 @@ export const initialCarouselState: CarouselState = {
 
 // Distinct embed URLs in playlist order. The order must not depend on the
 // current slide: reordering keyed iframes moves their DOM nodes, and a moved
-// iframe reloads its document - the exact reload keeping them mounted avoids.
-function iframeUrlsFor(slides: SlideData[]): string[] {
+// iframe reloads its document — exactly the reload that keeping them mounted
+// is meant to avoid.
+export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(
       slides.flatMap((slide) => (slide.type === 'iframe' ? [slide.url] : [])),

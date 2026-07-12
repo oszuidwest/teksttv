@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCarousel } from './hooks/useCarousel'
 import type {
   FullScreenSlideData,
@@ -6,6 +7,39 @@ import type {
   TickerItem,
   WeatherSlideData,
 } from './types'
+
+const INACTIVE_IFRAME_REFRESH_MS = 5 * 60 * 1000
+
+type IframeSlideComponent = ComponentType<{
+  url: string
+  active: boolean
+}>
+
+function PersistentIframeSlide({
+  component: IframeSlide,
+  url,
+  active,
+}: {
+  component: IframeSlideComponent
+  url: string
+  active: boolean
+}) {
+  const [refreshEpoch, setRefreshEpoch] = useState(0)
+  const activeRef = useRef(active)
+  activeRef.current = active
+
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      if (!activeRef.current) {
+        setRefreshEpoch((epoch) => epoch + 1)
+      }
+    }, INACTIVE_IFRAME_REFRESH_MS)
+
+    return () => clearInterval(refreshInterval)
+  }, [])
+
+  return <IframeSlide key={refreshEpoch} url={url} active={active} />
+}
 
 export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
@@ -17,14 +51,14 @@ export interface SlideComponents {
     content: WeatherSlideData
     children?: React.ReactNode
   }>
-  // One instance per distinct URL stays mounted so the embed loads once and
-  // stays warm. The component must fill the canvas above the frame chrome
-  // (z-40, like full-screen image slides) while active, and render hidden
-  // and non-interactive - not unmount - while inactive.
-  iframe?: ComponentType<{
-    url: string
-    active: boolean
-  }>
+  // The App host keeps one instance per distinct URL mounted so embeds load
+  // once and stay warm. Preview shares this interface but renders one active
+  // instance only. The component must fill the canvas above the frame chrome
+  // (z-40, like full-screen image slides) while active, and render hidden and
+  // non-interactive - not unmount - while inactive. The App host may remount
+  // inactive instances on a slow interval to recover from transient load
+  // failures.
+  iframe?: IframeSlideComponent
 }
 
 interface AppProps {
@@ -48,6 +82,14 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     navEnabled,
   } = useCarousel({ apiBase, channel })
 
+  const TextSlide = slides.text
+  const ImageSlide = slides.image
+  const WeatherSlide = slides.weather
+  const IframeSlide = slides.iframe
+  const currentSlideData = slideData[currentSlide] ?? slideData[0]
+  const activeIframeUrl =
+    currentSlideData?.type === 'iframe' ? currentSlideData.url : null
+
   if (slideData.length === 0) {
     if (error) {
       return (
@@ -67,11 +109,6 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     return <div>Loading...</div>
   }
 
-  const TextSlide = slides.text
-  const ImageSlide = slides.image
-  const WeatherSlide = slides.weather
-  const IframeSlide = slides.iframe
-  const currentSlideData = slideData[currentSlide] ?? slideData[0]
   if (!currentSlideData) {
     return <div>Loading...</div>
   }
@@ -80,14 +117,18 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
-  const activeIframeUrl =
-    currentSlideData.type === 'iframe' ? currentSlideData.url : null
-
   // Persistent keyed-by-url layer: embeds stay mounted across slide changes
-  // so they don't reload when they reappear.
+  // so they don't reload when they reappear. The key epoch changes only while
+  // a frame is inactive, giving hidden embeds a recovery path after transient
+  // browser/network load failures without disrupting the active slide.
   const iframeLayer = IframeSlide
     ? iframeUrls.map((url) => (
-        <IframeSlide key={url} url={url} active={url === activeIframeUrl} />
+        <PersistentIframeSlide
+          key={url}
+          component={IframeSlide}
+          url={url}
+          active={url === activeIframeUrl}
+        />
       ))
     : null
 

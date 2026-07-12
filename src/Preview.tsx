@@ -70,7 +70,9 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
     if (validatedData.type === 'iframe') {
       slide = IframeSlide ? (
         <IframeSlide url={validatedData.url} active />
-      ) : null
+      ) : (
+        <div>Iframe slides worden niet ondersteund door dit thema</div>
+      )
     } else if (validatedData.type === 'text') {
       slide = <TextSlide content={validatedData}>{tickerElement}</TextSlide>
     } else if (validatedData.type === 'weather' && WeatherSlide) {

@@ -153,4 +153,16 @@ describe('IframeSlideDataSchema', () => {
       }),
     ).toThrow()
   })
+
+  test.each([
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('rejects an iframe slide with unsafe URL scheme %#', (url) => {
+    expect(() =>
+      IframeSlideDataSchema.parse({
+        ...baseIframeSlide,
+        url,
+      }),
+    ).toThrow()
+  })
 })
