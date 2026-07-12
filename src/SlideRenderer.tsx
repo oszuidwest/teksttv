@@ -29,19 +29,12 @@ export type IframeSlideComponent = ComponentType<{
   active: boolean
 }>
 
-export type TickerComponent = ComponentType<{
-  items: TickerItem[]
-  currentIndex: number
-}>
-
-export type FrameComponent = ComponentType<{ children: ReactNode }>
-
 // Everything App and Preview need to render a station: its slide components,
 // ticker, and optional frame chrome. Station kits implement this shape.
 export interface SlideKit {
   slides: SlideComponents
-  Ticker: TickerComponent
-  Frame?: FrameComponent
+  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
+  Frame?: ComponentType<{ children: ReactNode }>
 }
 
 // Single dispatch shared by live playout (App) and Preview so the two can
@@ -66,6 +59,8 @@ export function renderSlide(
         </slides.weather>
       )
     case 'iframe': {
+      // Only Preview reaches this branch: App pre-filters iframe slides into
+      // its persistent layer, so the fallback below never appears on air.
       // Aliased because biome's useIframeTitle mistakes <slides.iframe> for a
       // raw <iframe> element.
       const IframeSlide = slides.iframe

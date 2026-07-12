@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { z } from 'zod'
 import { renderSlide, type SlideKit } from './SlideRenderer'
 import type { SlideData } from './types'
 import { SlideDataSchema } from './types'
@@ -17,13 +16,12 @@ function decodeSlide(
     const decodedData = new TextDecoder().decode(bytes)
     return { slide: SlideDataSchema.parse(JSON.parse(decodedData)) }
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { error: `Validation Error: ${error.message}` }
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Error: Unable to process the provided data',
     }
-    if (error instanceof SyntaxError) {
-      return { error: `JSON Parsing Error: ${error.message}` }
-    }
-    return { error: 'Error: Unable to process the provided data' }
   }
 }
 
@@ -32,15 +30,18 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let lastScale = -1
     function resizeViewport() {
-      if (containerRef.current) {
-        const scaleFactor = Math.min(window.innerWidth / 1920, 1)
-        containerRef.current.style.transform = `scale(${scaleFactor})`
-        window.parent.postMessage(
-          { type: 'resize', height: 1080 * scaleFactor },
-          '*',
-        )
+      const scaleFactor = Math.min(window.innerWidth / 1920, 1)
+      if (scaleFactor === lastScale || !containerRef.current) {
+        return
       }
+      lastScale = scaleFactor
+      containerRef.current.style.transform = `scale(${scaleFactor})`
+      window.parent.postMessage(
+        { type: 'resize', height: 1080 * scaleFactor },
+        '*',
+      )
     }
 
     resizeViewport()
