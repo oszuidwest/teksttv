@@ -45,7 +45,6 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a'), slide],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
@@ -55,7 +54,6 @@ describe('carousel reducer iframe warm-mount list', () => {
         iframeSlide('https://example.com/a'),
       ],
       ticker: [],
-      imageUrls: [],
     })
 
     // Warm-mount /b before the swap while /a stays put, avoiding reloads.
@@ -70,21 +68,18 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const firstNextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
 
     const secondNextState = carouselReducer(firstNextState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/c')],
       ticker: [],
-      imageUrls: [],
     })
 
     // Drop unshown superseded /b immediately; keep current /a in place.
@@ -99,14 +94,12 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
     expect(nextState.iframeUrls).toEqual([
       'https://example.com/a',
@@ -125,7 +118,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_NEXT',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(nextState.slides).toEqual([])
@@ -135,6 +127,16 @@ describe('carousel reducer initial retry behavior', () => {
 
     expect(tickedState.slides).toEqual([])
     expect(tickedState.nextSlides).toEqual([slide])
+  })
+
+  test('TOGGLE_PAUSE is ignored while the deck is empty', () => {
+    // A pause on the loading/error screen must not freeze playout once
+    // slides arrive.
+    const pausedState = carouselReducer(initialCarouselState, {
+      type: 'TOGGLE_PAUSE',
+    })
+
+    expect(pausedState.paused).toBe(false)
   })
 
   test('LOAD_INITIAL replaces an initial error with visible slides', () => {
@@ -147,7 +149,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_INITIAL',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(loadedState.error).toBeNull()
