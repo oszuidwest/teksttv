@@ -8,9 +8,9 @@ export const Clock = () => {
     return () => clearInterval(timer)
   }, [])
 
-  const formatTime = (date: Date) => {
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-  }
-
-  return <span>{formatTime(time)}</span>
+  return (
+    <span>
+      {time.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+    </span>
+  )
 }
