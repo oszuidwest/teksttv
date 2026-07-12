@@ -7,6 +7,7 @@ import type {
   WeatherSlideData,
 } from './types'
 
+/** Components required to render each supported slide variant. */
 export interface SlideComponents {
   text: ComponentType<{ content: TextSlideData; children?: ReactNode }>
   image: ComponentType<{ content: FullScreenSlideData }>
@@ -14,31 +15,27 @@ export interface SlideComponents {
     content: WeatherSlideData
     children?: ReactNode
   }>
-  // The App host keeps one instance per distinct URL mounted so embeds load
-  // once and stay warm; it hides inactive instances, disables pointer
-  // interaction, and may remount inactive instances on a slow interval to
-  // recover from transient load failures. Preview renders one active
-  // instance directly. The component must fill the canvas above the frame
-  // chrome (z-40, like full-screen image slides) and must render the frame
-  // regardless of `active` — the host handles hiding.
+  /**
+   * Optional iframe renderer. It must fill the slide canvas above frame chrome
+   * and render when inactive; App owns persistence, visibility, and refreshes.
+   */
   iframe?: IframeSlideComponent
 }
 
+/** Iframe renderer contract; `active` describes the host visibility state. */
 export type IframeSlideComponent = ComponentType<{
   url: string
   active: boolean
 }>
 
-// Everything App and Preview need to render a station: its slide components,
-// ticker, and optional frame chrome. Station kits implement this shape.
+/** Station-specific render kit shared by live playout and preview. */
 export interface SlideKit {
   slides: SlideComponents
   Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
   Frame?: ComponentType<{ children: ReactNode }>
 }
 
-// Single dispatch shared by live playout (App) and Preview so the two can
-// never drift. Full-screen slides (image/commercial) play without a ticker.
+/** Renders one slide with a station kit; full-screen slides ignore the ticker. */
 export function renderSlide(
   slides: SlideComponents,
   content: SlideData,
@@ -59,10 +56,8 @@ export function renderSlide(
         </slides.weather>
       )
     case 'iframe': {
-      // Only Preview reaches this branch: App pre-filters iframe slides into
-      // its persistent layer, so the fallback below never appears on air.
-      // Aliased because biome's useIframeTitle mistakes <slides.iframe> for a
-      // raw <iframe> element.
+      // App pre-filters iframe slides into its persistent layer; this fallback
+      // is for Preview only.
       const IframeSlide = slides.iframe
       if (!IframeSlide) {
         return <div>Iframe slides worden niet ondersteund door dit thema</div>

@@ -17,11 +17,12 @@ function makeKit(theme: 'green' | 'blue'): SlideKit {
   }
 }
 
-// Built once at module scope so component identities stay stable across
-// renders; both the live app and the preview consume the same kit.
+// Module-level kits keep wrapper component identities stable for live and
+// preview renders.
 const greenKit = makeKit('green')
 const blueKit = makeKit('blue')
 
+/** Maps `tv1` to the green kit; every other channel uses the blue kit. */
 export function kitForChannel(channel: string): SlideKit {
   return channel === 'tv1' ? greenKit : blueKit
 }

@@ -90,10 +90,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
-  // Persistent keyed-by-url layer: embeds stay mounted across slide changes
-  // so they don't reload when they reappear. The key epoch changes only while
-  // a frame is inactive, giving hidden embeds a recovery path after transient
-  // browser/network load failures without disrupting the active slide.
+  // Keep embeds mounted by URL and refresh only inactive frames, so returning
+  // slides stay warm without disrupting the active frame.
   const iframeLayer = IframeSlide
     ? iframeUrls.map((url) => (
         <PersistentIframeSlide
@@ -105,16 +103,19 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       ))
     : null
 
+  // Iframe slides render through the persistent layer; without an iframe
+  // component the live app intentionally has no slide output.
+  const slideElement =
+    currentSlideData.type === 'iframe'
+      ? null
+      : renderSlide(slides, currentSlideData, tickerElement, currentSlide)
+
   const content = (
     <>
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {/* iframe slides render via the persistent layer only (blank on air
-          when the kit has no iframe component) */}
-      {currentSlideData.type === 'iframe'
-        ? null
-        : renderSlide(slides, currentSlideData, tickerElement, currentSlide)}
+      {slideElement}
       {iframeLayer}
     </>
   )
