@@ -103,8 +103,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       ))
     : null
 
-  // Iframe slides render through the persistent layer; without an iframe
-  // component the live app intentionally has no slide output.
+  // Iframe slides render through the persistent layer; themes without an
+  // iframe component intentionally leave those slides blank.
   const slideElement =
     currentSlideData.type === 'iframe'
       ? null

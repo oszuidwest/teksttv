@@ -1,6 +1,6 @@
 /**
- * Maps an OpenWeatherMap icon code to local SVG and falls back once from
- * day/night variants to generic icons; checking src prevents error loops.
+ * Renders a local OpenWeatherMap icon and falls back once from day/night
+ * variants to the generic SVG.
  */
 export function WeatherIcon({
   icon,

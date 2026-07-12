@@ -14,12 +14,12 @@ interface SlideComponents {
     content: WeatherSlideData
     children?: ReactNode
   }>
-  // Hosts own iframe lifecycle. App keeps keyed URLs mounted and hides
-  // inactive wrappers; Preview renders only the active instance. Components
-  // must fill the canvas above frame chrome and render even when inactive.
+  // Hosts own iframe persistence, visibility, and refreshes. Renderers must
+  // fill the canvas above frame chrome and still render while inactive.
   iframe?: IframeSlideComponent
 }
 
+/** Iframe renderer contract; `active` mirrors host visibility state. */
 export type IframeSlideComponent = ComponentType<{
   url: string
   active: boolean

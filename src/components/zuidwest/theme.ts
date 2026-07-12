@@ -1,6 +1,6 @@
-// Single source of truth for the ZuidWest channel palettes.
 export type ThemeName = 'green' | 'blue'
 
+/** ZuidWest channel palettes shared by themed components. */
 export const themes = {
   green: {
     accent: '#82ba26',

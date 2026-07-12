@@ -63,7 +63,10 @@ export const initialCarouselState: CarouselState = {
   error: null,
 }
 
-/** Distinct embed URLs in playlist order; moving a keyed iframe reloads it. */
+/**
+ * Returns distinct embed URLs in playlist order; moving keyed iframes reloads
+ * them.
+ */
 export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(

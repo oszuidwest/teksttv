@@ -63,8 +63,8 @@ export default function Preview({ slides, Ticker, Frame }: SlideKit) {
     return <div>{result.error}</div>
   }
 
-  // Preview renders iframe slides directly; App keeps them warm separately.
-  // The PascalCase alias prevents Biome from treating it as a raw <iframe>.
+  // Preview has no persistent iframe layer; aliasing avoids JSX/lint confusion
+  // with the intrinsic <iframe> element.
   const IframeSlide = slides.iframe
   const content =
     result.slide.type === 'iframe' ? (
