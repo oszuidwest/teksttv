@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react'
 
-const formatTime = (date: Date) => {
-  return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-}
-
 export const Clock = () => {
   const [time, setTime] = useState(new Date())
 
@@ -12,5 +8,9 @@ export const Clock = () => {
     return () => clearInterval(timer)
   }, [])
 
-  return <span>{formatTime(time)}</span>
+  return (
+    <span>
+      {time.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}
+    </span>
+  )
 }

@@ -91,6 +91,12 @@ function imageUrlsFor(slides: SlideData[]): string[] {
   })
 }
 
+// Pruning by filter keeps surviving entries in their existing positions.
+function keepOnly(urls: string[], kept: string[]): string[] {
+  const keptSet = new Set(kept)
+  return urls.filter((url) => keptSet.has(url))
+}
+
 function getValidSlides(value: unknown, source: string): SlideData[] {
   if (!Array.isArray(value)) {
     console.error(`Invalid slides payload from ${source}: expected array`)
@@ -146,10 +152,6 @@ export function carouselReducer(
 
     case 'LOAD_NEXT': {
       const nextIframeUrls = iframeUrlsFor(action.slides)
-      const keptIframeUrls = new Set([
-        ...iframeUrlsFor(state.slides),
-        ...nextIframeUrls,
-      ])
       return {
         ...state,
         nextSlides: action.slides,
@@ -162,7 +164,10 @@ export function carouselReducer(
         // dropped right away instead of staying warm until the swap.
         iframeUrls: [
           ...new Set([
-            ...state.iframeUrls.filter((url) => keptIframeUrls.has(url)),
+            ...keepOnly(state.iframeUrls, [
+              ...iframeUrlsFor(state.slides),
+              ...nextIframeUrls,
+            ]),
             ...nextIframeUrls,
           ]),
         ],
@@ -179,17 +184,12 @@ export function carouselReducer(
       const nextSlides = swapSlides ? [] : state.nextSlides
       const currentSlide = swapSlides ? 0 : candidate
       // At a slide-set boundary, drop preloaded URLs that the new set doesn't need.
-      let imagesToPreload = state.imagesToPreload
-      // Pruning by filter keeps surviving embeds in their existing positions.
-      let iframeUrls = state.iframeUrls
-      if (swapSlides) {
-        const nextImageUrls = new Set(imageUrlsFor(state.nextSlides))
-        imagesToPreload = state.imagesToPreload.filter((url) =>
-          nextImageUrls.has(url),
-        )
-        const nextIframeUrls = new Set(iframeUrlsFor(state.nextSlides))
-        iframeUrls = state.iframeUrls.filter((url) => nextIframeUrls.has(url))
-      }
+      const imagesToPreload = swapSlides
+        ? keepOnly(state.imagesToPreload, imageUrlsFor(state.nextSlides))
+        : state.imagesToPreload
+      const iframeUrls = swapSlides
+        ? keepOnly(state.iframeUrls, iframeUrlsFor(state.nextSlides))
+        : state.iframeUrls
 
       let tickerItems = state.tickerItems
       let nextTickerItems = state.nextTickerItems

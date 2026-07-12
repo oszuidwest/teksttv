@@ -1,7 +1,16 @@
 {
   "$schema": "https://react.doctor/schema/config.json",
-  "//": "dangerous-html-sink is off by design: slide/ticker HTML comes from our own CMS feed (types.ts documents 'HTML supported'), a trusted source rendered on a closed playout box.",
-  "rules": {
-    "react-doctor/dangerous-html-sink": "off"
+  "//": "dangerous-html-sink is suppressed only where slide/ticker HTML from our own CMS feed is rendered (types.ts documents 'HTML supported'), a trusted source on a closed playout box — note ?feed=/?channel= URL overrides make the feed URL selectable, so the trust boundary is whoever controls the box's URL. The rule stays on elsewhere so any new HTML sink still gets flagged.",
+  "ignore": {
+    "overrides": [
+      {
+        "files": [
+          "src/components/rucphen/TextSlide.tsx",
+          "src/components/zuidwest/TextSlide.tsx",
+          "src/components/zuidwest/Ticker.tsx"
+        ],
+        "rules": ["react-doctor/dangerous-html-sink"]
+      }
+    ]
   }
 }
