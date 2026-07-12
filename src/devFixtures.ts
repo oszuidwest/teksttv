@@ -1,7 +1,7 @@
 import type { WeatherSlideData } from './types'
 
 // Sample payload for the /dev/weather pages of both brands.
-export const sampleWeatherSlide = {
+export const sampleWeatherSlide: WeatherSlideData = {
   type: 'weather',
   duration: 15000,
   title: 'Weerstation Woensdrecht',
@@ -96,4 +96,4 @@ export const sampleWeatherSlide = {
       wind_beaufort: 4,
     },
   ],
-} satisfies WeatherSlideData
+}
