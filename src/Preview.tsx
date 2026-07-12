@@ -1,8 +1,6 @@
-import type { ComponentType } from 'react'
 import { useEffect, useRef } from 'react'
-import { z } from 'zod'
-import type { SlideComponents } from './App'
-import type { FullScreenSlideData, TickerItem } from './types'
+import { renderSlide, type SlideKit } from './SlideRenderer'
+import type { SlideData } from './types'
 import { SlideDataSchema } from './types'
 
 function base64ToBytes(base64: string) {
@@ -10,30 +8,40 @@ function base64ToBytes(base64: string) {
   return Uint8Array.from(binString, (m) => m.codePointAt(0) || 0)
 }
 
-interface PreviewProps {
-  apiBase: string
-  slides: SlideComponents
-  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
-  Frame?: ComponentType<{ children: React.ReactNode }>
+function decodeSlide(
+  encoded: string,
+): { slide: SlideData } | { error: string } {
+  try {
+    const bytes = base64ToBytes(encoded)
+    const decodedData = new TextDecoder().decode(bytes)
+    return { slide: SlideDataSchema.parse(JSON.parse(decodedData)) }
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Error: Unable to process the provided data',
+    }
+  }
 }
 
-export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
+export default function Preview({ slides, Ticker, Frame }: SlideKit) {
   const encodedData = new URLSearchParams(window.location.search).get('data')
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let lastScale = -1
     function resizeViewport() {
-      if (containerRef.current) {
-        const parentWidth = window.innerWidth
-        const scaleFactor = Math.min(parentWidth / 1920, 1)
-        containerRef.current.style.transform = `scale(${scaleFactor})`
-        containerRef.current.style.transformOrigin = 'top left'
-        containerRef.current.style.width = '1920px'
-        containerRef.current.style.height = '1080px'
-
-        const newHeight = 1080 * scaleFactor
-        window.parent.postMessage({ type: 'resize', height: newHeight }, '*')
+      const scaleFactor = Math.min(window.innerWidth / 1920, 1)
+      if (scaleFactor === lastScale || !containerRef.current) {
+        return
       }
+      lastScale = scaleFactor
+      containerRef.current.style.transform = `scale(${scaleFactor})`
+      window.parent.postMessage(
+        { type: 'resize', height: 1080 * scaleFactor },
+        '*',
+      )
     }
 
     resizeViewport()
@@ -48,61 +56,26 @@ export default function Preview({ slides, Ticker, Frame }: PreviewProps) {
     return <div>Error: No data provided</div>
   }
 
-  try {
-    const bytes = base64ToBytes(encodedData)
-    const decodedData = new TextDecoder().decode(bytes)
-    const parsedData = JSON.parse(decodedData)
-    const validatedData = SlideDataSchema.parse(parsedData)
-
-    const TextSlide = slides.text
-    const ImageSlide = slides.image
-    const WeatherSlide = slides.weather
-    const IframeSlide = slides.iframe
-
-    const tickerElement = (
-      <Ticker
-        items={[{ message: 'Dit is een preview slide' }]}
-        currentIndex={0}
-      />
-    )
-
-    let slide: React.ReactNode
-    if (validatedData.type === 'iframe') {
-      slide = IframeSlide ? (
-        <div className="pointer-events-none">
-          <IframeSlide url={validatedData.url} active />
-        </div>
-      ) : (
-        <div>Iframe slides worden niet ondersteund door dit thema</div>
-      )
-    } else if (validatedData.type === 'text') {
-      slide = <TextSlide content={validatedData}>{tickerElement}</TextSlide>
-    } else if (validatedData.type === 'weather' && WeatherSlide) {
-      slide = (
-        <WeatherSlide content={validatedData}>{tickerElement}</WeatherSlide>
-      )
-    } else {
-      slide = (
-        <ImageSlide content={validatedData as FullScreenSlideData}>
-          {tickerElement}
-        </ImageSlide>
-      )
-    }
-
-    const content = <>{slide}</>
-
-    return (
-      <div ref={containerRef} className="relative h-[1080px] w-[1920px]">
-        {Frame ? <Frame>{content}</Frame> : content}
-      </div>
-    )
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return <div>Validation Error: {error.message}</div>
-    }
-    if (error instanceof SyntaxError) {
-      return <div>JSON Parsing Error: {error.message}</div>
-    }
-    return <div>Error: Unable to process the provided data</div>
+  const result = decodeSlide(encodedData)
+  if ('error' in result) {
+    return <div>{result.error}</div>
   }
+
+  const content = renderSlide(
+    slides,
+    result.slide,
+    <Ticker
+      items={[{ message: 'Dit is een preview slide' }]}
+      currentIndex={0}
+    />,
+  )
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative h-[1080px] w-[1920px] origin-top-left"
+    >
+      {Frame ? <Frame>{content}</Frame> : content}
+    </div>
+  )
 }

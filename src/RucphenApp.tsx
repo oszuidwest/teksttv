@@ -1,18 +1,9 @@
 import App from './App'
-import { ImageSlide } from './components/rucphen/ImageSlide'
-import { TextSlide } from './components/rucphen/TextSlide'
-import { Ticker } from './components/rucphen/Ticker'
-import { WeatherSlide } from './components/rucphen/WeatherSlide'
+import { rucphenKit } from './components/rucphen/kit'
 
 export default function RucphenApp(props: {
   apiBase: string
   channel?: string
 }) {
-  return (
-    <App
-      {...props}
-      slides={{ text: TextSlide, image: ImageSlide, weather: WeatherSlide }}
-      Ticker={Ticker}
-    />
-  )
+  return <App {...props} {...rucphenKit} />
 }
