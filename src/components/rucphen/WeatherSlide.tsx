@@ -1,41 +1,7 @@
 import type { WeatherSlideData } from '../../types'
 import { tempStyle } from '../../utils/tempColor'
-import { windRotation } from '../../utils/windDirection'
-
-function weatherIconSrc(icon: string): string {
-  const base = `/icons/weather/${icon}.svg`
-  const fallback = `/icons/weather/${icon.replace(/[dn]$/, '')}.svg`
-  return base !== fallback ? base : fallback
-}
-
-function WindArrow({ direction }: { direction: string }) {
-  const rotation = windRotation(direction)
-
-  return (
-    <svg
-      className="size-[48px] shrink-0"
-      viewBox="0 0 40 40"
-      style={{ transform: `rotate(${rotation}deg)` }}
-    >
-      <circle
-        cx="20"
-        cy="20"
-        r="18"
-        fill="none"
-        stroke="white"
-        strokeWidth="2"
-      />
-      <path
-        d="M20 10 L20 30 M20 10 L13 17 M20 10 L27 17"
-        fill="none"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+import { WeatherIcon } from '../WeatherIcon'
+import { WindArrow } from '../WindArrow'
 
 export function WeatherSlide({
   content,
@@ -48,7 +14,7 @@ export function WeatherSlide({
 
   return (
     <div className="relative h-full w-full bg-[#BBBBBB] font-tahoma">
-      {/* Slanted gradient overlay — Rucphen diagonal signature */}
+      {/* Rucphen diagonal signature gradient. */}
       <svg
         className="absolute inset-0 z-5 h-full w-full"
         preserveAspectRatio="none"
@@ -69,7 +35,6 @@ export function WeatherSlide({
       </svg>
 
       <div className="absolute inset-0 flex flex-col">
-        {/* Title bar — matching TextSlide style */}
         <div className="z-20 mt-[92px] flex w-full items-baseline justify-between bg-[#626671] px-[116px] py-[14px]">
           <h1 className="font-bold text-[51px] text-shadow text-white uppercase tracking-wide">
             Weerbericht
@@ -79,16 +44,13 @@ export function WeatherSlide({
           </span>
         </div>
 
-        {/* Content area */}
         <div className="relative z-10 mt-[12px] mb-[160px] flex grow flex-col overflow-hidden bg-[#70747D] px-[116px]">
-          {/* Weather day rows */}
           <div className="flex flex-1 flex-col justify-center gap-[10px] py-[20px]">
             {days.map((day) => (
               <div
                 key={day.date}
                 className="relative flex w-full items-center bg-[#5c6069]"
               >
-                {/* Day name */}
                 <div className="w-[400px] shrink-0 py-[16px] pl-[48px]">
                   <span className="font-bold text-[42px] text-shadow text-white uppercase leading-none">
                     {day.day_short === 'vandaag'
@@ -102,24 +64,18 @@ export function WeatherSlide({
                   )}
                 </div>
 
-                {/* Weather icon + description */}
                 <div className="flex w-[380px] shrink-0 items-center gap-[16px]">
-                  <img
-                    src={weatherIconSrc(day.icon)}
+                  <WeatherIcon
+                    icon={day.icon}
                     alt={day.description}
                     className="size-[80px] shrink-0"
-                    onError={(e) => {
-                      const img = e.currentTarget
-                      const fallback = `/icons/weather/${day.icon.replace(/[dn]$/, '')}.svg`
-                      if (img.src !== fallback) img.src = fallback
-                    }}
                   />
                   <span className="text-[28px] text-shadow text-white leading-tight">
                     {day.description}
                   </span>
                 </div>
 
-                {/* Temperature pills with diagonal edges */}
+                {/* Diagonal pills match the Rucphen row geometry. */}
                 <div className="flex shrink-0 items-center gap-[4px]">
                   <div
                     className="flex h-[64px] w-[110px] items-center justify-center font-bold text-[44px] leading-none"
@@ -143,7 +99,7 @@ export function WeatherSlide({
                   </div>
                 </div>
 
-                {/* Wind info with diagonal separator */}
+                {/* Separator keeps wind info visually tied to the pills. */}
                 <div className="ml-[12px] flex items-center gap-[14px] pl-[24px]">
                   <svg
                     className="h-[80px] w-[12px] shrink-0"
@@ -159,7 +115,11 @@ export function WeatherSlide({
                       strokeWidth="2"
                     />
                   </svg>
-                  <WindArrow direction={day.wind_direction} />
+                  <WindArrow
+                    direction={day.wind_direction}
+                    stroke="white"
+                    className="size-[48px] shrink-0"
+                  />
                   <div className="flex flex-col">
                     <span className="font-bold text-[28px] text-shadow text-white leading-none">
                       {day.wind_direction}

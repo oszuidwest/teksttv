@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useReducer } from 'react'
+import type { z } from 'zod'
 import type { SlideData, TickerItem } from '../types'
 import { SlideDataSchema, TickerItemSchema } from '../types'
 import {
@@ -7,6 +8,9 @@ import {
   formatFeedUrlForDisplay,
 } from '../utils/feedUrls'
 
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000
+// Poll faster until the first successful load.
+const INITIAL_RETRY_INTERVAL_MS = 60 * 1000
 const FEED_FETCH_TIMEOUT_MS = 30_000
 
 const urlParams = new URLSearchParams(
@@ -25,7 +29,6 @@ export interface CarouselState {
   tickerItems: TickerItem[]
   nextTickerItems: TickerItem[]
   tickerIndex: number
-  imagesToPreload: string[]
   iframeUrls: string[]
   paused: boolean
   error: string | null
@@ -36,13 +39,11 @@ export type CarouselAction =
       type: 'LOAD_INITIAL'
       slides: SlideData[]
       ticker: TickerItem[]
-      imageUrls: string[]
     }
   | {
       type: 'LOAD_NEXT'
       slides: SlideData[]
       ticker: TickerItem[]
-      imageUrls: string[]
     }
   | { type: 'TICK' }
   | { type: 'NAV_PREV' }
@@ -57,17 +58,15 @@ export const initialCarouselState: CarouselState = {
   tickerItems: [],
   nextTickerItems: [],
   tickerIndex: 0,
-  imagesToPreload: [],
   iframeUrls: [],
   paused: false,
   error: null,
 }
 
-// Distinct embed URLs in playlist order. The mounted list must stay stable:
-// reordering keyed iframes moves their DOM nodes, and a moved iframe reloads
-// its document — exactly the reload that keeping them mounted is meant to
-// avoid. The reducer therefore only appends (LOAD_NEXT) or filters (LOAD_NEXT
-// for superseded next sets, TICK at the swap boundary) — it never reorders.
+/**
+ * Returns distinct embed URLs in playlist order; moving keyed iframes reloads
+ * them.
+ */
 export function iframeUrlsFor(slides: SlideData[]): string[] {
   return [
     ...new Set(
@@ -97,36 +96,24 @@ function keepOnly(urls: string[], kept: string[]): string[] {
   return urls.filter((url) => keptSet.has(url))
 }
 
-function getValidSlides(value: unknown, source: string): SlideData[] {
+// Per-item validation at the trust boundary: one malformed entry is skipped
+// (and logged) instead of rejecting the whole feed.
+function getValidItems<T>(
+  schema: z.ZodType<T>,
+  value: unknown,
+  source: string,
+  kind: string,
+): T[] {
   if (!Array.isArray(value)) {
-    console.error(`Invalid slides payload from ${source}: expected array`)
+    console.error(`Invalid ${kind} payload from ${source}: expected array`)
     return []
   }
 
   return value.flatMap((entry, index) => {
-    const parsed = SlideDataSchema.safeParse(entry)
+    const parsed = schema.safeParse(entry)
     if (!parsed.success) {
       console.error(
-        `Skipping invalid slide ${index} from ${source}`,
-        parsed.error.issues,
-      )
-      return []
-    }
-    return [parsed.data]
-  })
-}
-
-function getValidTickerItems(value: unknown, source: string): TickerItem[] {
-  if (!Array.isArray(value)) {
-    console.error(`Invalid ticker payload from ${source}: expected array`)
-    return []
-  }
-
-  return value.flatMap((entry, index) => {
-    const parsed = TickerItemSchema.safeParse(entry)
-    if (!parsed.success) {
-      console.error(
-        `Skipping invalid ticker item ${index} from ${source}`,
+        `Skipping invalid ${kind} ${index} from ${source}`,
         parsed.error.issues,
       )
       return []
@@ -145,7 +132,6 @@ export function carouselReducer(
         ...state,
         slides: action.slides,
         tickerItems: action.ticker,
-        imagesToPreload: action.imageUrls,
         iframeUrls: iframeUrlsFor(action.slides),
         error: null,
       }
@@ -156,9 +142,6 @@ export function carouselReducer(
         ...state,
         nextSlides: action.slides,
         nextTickerItems: action.ticker,
-        imagesToPreload: [
-          ...new Set([...state.imagesToPreload, ...action.imageUrls]),
-        ],
         // Upcoming embeds warm-mount before the swap. Surviving URLs keep
         // their positions; URLs only referenced by a superseded next set are
         // dropped right away instead of staying warm until the swap.
@@ -177,16 +160,14 @@ export function carouselReducer(
     case 'TICK': {
       if (state.slides.length === 0) return state
 
+      // Slides and ticker advance independently; each swaps in its pending
+      // "next" set when its own cycle wraps around.
       const candidate = (state.currentSlide + 1) % state.slides.length
       const swapSlides = candidate === 0 && state.nextSlides.length > 0
 
       const slides = swapSlides ? state.nextSlides : state.slides
       const nextSlides = swapSlides ? [] : state.nextSlides
       const currentSlide = swapSlides ? 0 : candidate
-      // At a slide-set boundary, drop preloaded URLs that the new set doesn't need.
-      const imagesToPreload = swapSlides
-        ? keepOnly(state.imagesToPreload, imageUrlsFor(state.nextSlides))
-        : state.imagesToPreload
       const iframeUrls = swapSlides
         ? keepOnly(state.iframeUrls, iframeUrlsFor(state.nextSlides))
         : state.iframeUrls
@@ -218,7 +199,6 @@ export function carouselReducer(
         slides,
         nextSlides,
         currentSlide,
-        imagesToPreload,
         iframeUrls,
         tickerItems,
         nextTickerItems,
@@ -242,6 +222,7 @@ export function carouselReducer(
       }
 
     case 'TOGGLE_PAUSE':
+      if (state.slides.length === 0) return state
       return { ...state, paused: !state.paused }
 
     case 'LOAD_ERROR':
@@ -346,8 +327,18 @@ export function useCarousel({
         }
 
         const source = channel ? `channel ${channel}` : 'feed'
-        const newSlides = getValidSlides(slidesData, source)
-        const newTickerItems = getValidTickerItems(tickerData, source)
+        const newSlides = getValidItems(
+          SlideDataSchema,
+          slidesData,
+          source,
+          'slide',
+        )
+        const newTickerItems = getValidItems(
+          TickerItemSchema,
+          tickerData,
+          source,
+          'ticker item',
+        )
 
         if (newSlides.length === 0) {
           throw new Error(
@@ -355,13 +346,10 @@ export function useCarousel({
           )
         }
 
-        const imageUrls = [...new Set(imageUrlsFor(newSlides))]
-
         dispatch({
           type: isInitialLoad ? 'LOAD_INITIAL' : 'LOAD_NEXT',
           slides: newSlides,
           ticker: newTickerItems,
-          imageUrls,
         })
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -377,25 +365,26 @@ export function useCarousel({
     fetchData(true)
   }, [fetchData])
 
+  const hasSlides = state.slides.length > 0
+
   useEffect(() => {
     const fetchInterval = setInterval(
       () => {
         // If startup failed, the retry must replace visible slides. LOAD_NEXT
         // only swaps at a slide boundary, which never happens with no slides.
-        fetchData(state.slides.length === 0)
+        fetchData(!hasSlides)
       },
-      state.slides.length > 0 ? 5 * 60 * 1000 : 60 * 1000,
+      hasSlides ? REFRESH_INTERVAL_MS : INITIAL_RETRY_INTERVAL_MS,
     )
 
     return () => clearInterval(fetchInterval)
-  }, [fetchData, state.slides.length])
+  }, [fetchData, hasSlides])
 
   useEffect(() => {
     if (!navEnabled) return
 
+    // The reducer already no-ops NAV and pause actions on an empty deck.
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (state.slides.length === 0) return
-
       if (e.key === ' ') {
         e.preventDefault()
         dispatch({ type: 'TOGGLE_PAUSE' })
@@ -408,7 +397,7 @@ export function useCarousel({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [state.slides.length])
+  }, [])
 
   useEffect(() => {
     if (state.slides.length === 0) return
@@ -429,12 +418,17 @@ export function useCarousel({
     return () => clearInterval(timer)
   }, [state.slides, state.currentSlide, state.paused])
 
+  // Derived, not stored: everything the current and pending slide sets need.
+  const imagesToPreload = [
+    ...new Set(imageUrlsFor([...state.slides, ...state.nextSlides])),
+  ]
+
   return {
     slides: state.slides,
     currentSlide: state.currentSlide,
     tickerItems: state.tickerItems,
     tickerIndex: state.tickerIndex,
-    imagesToPreload: state.imagesToPreload,
+    imagesToPreload,
     iframeUrls: state.iframeUrls,
     paused: state.paused,
     error: state.error,

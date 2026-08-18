@@ -120,7 +120,6 @@ export const ChannelPayloadSchema = z.object({
   ticker: TickerItemsSchema,
 })
 
-// Type inference
 export type ImageData = z.infer<typeof ImageDataSchema>
 export type ImageSlideData = z.infer<typeof ImageSlideDataSchema>
 export type TextSlideData = z.infer<typeof TextSlideDataSchema>
@@ -134,7 +133,7 @@ export type IframeSlideData = z.infer<typeof IframeSlideDataSchema>
 export type SlideData = z.infer<typeof SlideDataSchema>
 export type TickerItem = z.infer<typeof TickerItemSchema>
 
-// Component prop unions — image/commercial/commercial_transition all render as full-screen images
+/** Image-like slide variants accepted by full-screen renderers. */
 export type FullScreenSlideData =
   | ImageSlideData
   | CommercialSlideData

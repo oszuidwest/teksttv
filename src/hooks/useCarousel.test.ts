@@ -23,8 +23,7 @@ const iframeSlide = (url: string): SlideData => ({
 
 describe('iframeUrlsFor', () => {
   test('returns distinct iframe URLs in first-occurrence playlist order', () => {
-    // Order must follow the playlist, never the current slide: reordering
-    // keyed iframes moves their DOM nodes, which reloads the embed.
+    // Playlist order matters: moving keyed iframes reloads their embeds.
     expect(
       iframeUrlsFor([
         iframeSlide('https://example.com/b'),
@@ -46,7 +45,6 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a'), slide],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
@@ -56,11 +54,9 @@ describe('carousel reducer iframe warm-mount list', () => {
         iframeSlide('https://example.com/a'),
       ],
       ticker: [],
-      imageUrls: [],
     })
 
-    // Upcoming embeds warm-mount before the swap; /a keeps its position so
-    // its keyed iframe never moves (a moved iframe reloads its document).
+    // Warm-mount /b before the swap while /a stays put, avoiding reloads.
     expect(nextState.iframeUrls).toEqual([
       'https://example.com/a',
       'https://example.com/b',
@@ -72,25 +68,21 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const firstNextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
 
     const secondNextState = carouselReducer(firstNextState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/c')],
       ticker: [],
-      imageUrls: [],
     })
 
-    // /b was never shown and is no longer upcoming, so it should not stay
-    // warm until the swap; /a (current) keeps its position.
+    // Drop unshown superseded /b immediately; keep current /a in place.
     expect(secondNextState.iframeUrls).toEqual([
       'https://example.com/a',
       'https://example.com/c',
@@ -102,14 +94,12 @@ describe('carousel reducer iframe warm-mount list', () => {
       type: 'LOAD_INITIAL',
       slides: [iframeSlide('https://example.com/a')],
       ticker: [],
-      imageUrls: [],
     })
 
     const nextState = carouselReducer(loadedState, {
       type: 'LOAD_NEXT',
       slides: [iframeSlide('https://example.com/b')],
       ticker: [],
-      imageUrls: [],
     })
     expect(nextState.iframeUrls).toEqual([
       'https://example.com/a',
@@ -128,7 +118,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_NEXT',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(nextState.slides).toEqual([])
@@ -138,6 +127,16 @@ describe('carousel reducer initial retry behavior', () => {
 
     expect(tickedState.slides).toEqual([])
     expect(tickedState.nextSlides).toEqual([slide])
+  })
+
+  test('TOGGLE_PAUSE is ignored while the deck is empty', () => {
+    // A pause on the loading/error screen must not freeze playout once
+    // slides arrive.
+    const pausedState = carouselReducer(initialCarouselState, {
+      type: 'TOGGLE_PAUSE',
+    })
+
+    expect(pausedState.paused).toBe(false)
   })
 
   test('LOAD_INITIAL replaces an initial error with visible slides', () => {
@@ -150,7 +149,6 @@ describe('carousel reducer initial retry behavior', () => {
       type: 'LOAD_INITIAL',
       slides: [slide],
       ticker: [ticker],
-      imageUrls: [],
     })
 
     expect(loadedState.error).toBeNull()

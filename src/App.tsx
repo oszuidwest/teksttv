@@ -1,19 +1,12 @@
-import type { ComponentType } from 'react'
 import { useEffect, useState } from 'react'
 import { useCarousel } from './hooks/useCarousel'
-import type {
-  FullScreenSlideData,
-  TextSlideData,
-  TickerItem,
-  WeatherSlideData,
-} from './types'
+import {
+  type IframeSlideComponent,
+  renderSlide,
+  type SlideKit,
+} from './SlideRenderer'
 
 const INACTIVE_IFRAME_REFRESH_MS = 5 * 60 * 1000
-
-export type IframeSlideComponent = ComponentType<{
-  url: string
-  active: boolean
-}>
 
 function PersistentIframeSlide({
   component: IframeSlide,
@@ -47,32 +40,9 @@ function PersistentIframeSlide({
   )
 }
 
-export interface SlideComponents {
-  text: ComponentType<{ content: TextSlideData; children?: React.ReactNode }>
-  image: ComponentType<{
-    content: FullScreenSlideData
-    children?: React.ReactNode
-  }>
-  weather?: ComponentType<{
-    content: WeatherSlideData
-    children?: React.ReactNode
-  }>
-  // The App host keeps one instance per distinct URL mounted so embeds load
-  // once and stay warm; it hides inactive instances, disables pointer
-  // interaction, and may remount inactive instances on a slow interval to
-  // recover from transient load failures. Preview renders one active
-  // instance directly. The component must fill the canvas above the frame
-  // chrome (z-40, like full-screen image slides) and must render the frame
-  // regardless of `active` — the host handles hiding.
-  iframe?: IframeSlideComponent
-}
-
-interface AppProps {
+interface AppProps extends SlideKit {
   apiBase: string
   channel?: string
-  slides: SlideComponents
-  Ticker: ComponentType<{ items: TickerItem[]; currentIndex: number }>
-  Frame?: ComponentType<{ children: React.ReactNode }>
 }
 
 function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
@@ -112,9 +82,6 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     return <div>Loading...</div>
   }
 
-  const TextSlide = slides.text
-  const ImageSlide = slides.image
-  const WeatherSlide = slides.weather
   const IframeSlide = slides.iframe
   const activeIframeUrl =
     currentSlideData.type === 'iframe' ? currentSlideData.url : null
@@ -123,10 +90,8 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
     <Ticker items={tickerItems} currentIndex={tickerIndex} />
   )
 
-  // Persistent keyed-by-url layer: embeds stay mounted across slide changes
-  // so they don't reload when they reappear. The key epoch changes only while
-  // a frame is inactive, giving hidden embeds a recovery path after transient
-  // browser/network load failures without disrupting the active slide.
+  // Keep keyed iframe URLs mounted so returning embeds do not reload; inactive
+  // instances refresh periodically without touching the live slide.
   const iframeLayer = IframeSlide
     ? iframeUrls.map((url) => (
         <PersistentIframeSlide
@@ -138,39 +103,19 @@ function App({ apiBase, channel, slides, Ticker, Frame }: AppProps) {
       ))
     : null
 
-  let slide: React.ReactNode
-  if (currentSlideData.type === 'iframe') {
-    // Rendered by the persistent iframe layer.
-    slide = null
-  } else if (currentSlideData.type === 'text') {
-    slide = (
-      <TextSlide key={currentSlide} content={currentSlideData}>
-        {tickerElement}
-      </TextSlide>
-    )
-  } else if (currentSlideData.type === 'weather' && WeatherSlide) {
-    slide = (
-      <WeatherSlide key={currentSlide} content={currentSlideData}>
-        {tickerElement}
-      </WeatherSlide>
-    )
-  } else {
-    slide = (
-      <ImageSlide
-        key={currentSlide}
-        content={currentSlideData as FullScreenSlideData}
-      >
-        {tickerElement}
-      </ImageSlide>
-    )
-  }
+  // Iframe slides render through the persistent layer; themes without an
+  // iframe component intentionally leave those slides blank.
+  const slideElement =
+    currentSlideData.type === 'iframe'
+      ? null
+      : renderSlide(slides, currentSlideData, tickerElement, currentSlide)
 
   const content = (
     <>
       {imagesToPreload.map((url) => (
         <link key={url} rel="preload" as="image" href={url} />
       ))}
-      {slide}
+      {slideElement}
       {iframeLayer}
     </>
   )
