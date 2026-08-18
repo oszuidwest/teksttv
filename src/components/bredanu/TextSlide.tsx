@@ -1,12 +1,10 @@
 import type { TextSlideData } from '../../types'
 import { ImageMeta } from './ImageMeta'
-
-const bodyText =
-  'font-bahnschrift font-normal text-[42px] text-black leading-[1.46] [&_p+p]:mt-[0.85em]'
+import { SlideShell } from './SlideShell'
 
 function Header({ title }: { title: string }) {
   return (
-    <header className="flex h-[112px] w-full flex-shrink-0 items-center bg-bredanu-gray px-6 font-bahnschrift text-white">
+    <header className="flex h-[112px] w-full flex-shrink-0 items-center bg-bredanu-gray px-6 text-white">
       <h1
         className="font-inter font-semibold text-[48px] leading-[1.08]"
         dangerouslySetInnerHTML={{ __html: title }}
@@ -28,9 +26,9 @@ function Body({ content }: { content: TextSlideData }) {
           <ImageMeta image={content.image} />
         </div>
       )}
-      <div className="flex-1 overflow-hidden bg-white px-8 py-6 font-bahnschrift">
+      <div className="flex-1 overflow-hidden bg-white px-8 py-6">
         <div
-          className={bodyText}
+          className="font-bahnschrift font-normal text-[42px] text-black leading-[1.46] [&_p+p]:mt-[0.85em]"
           dangerouslySetInnerHTML={{ __html: content.body }}
         />
       </div>
@@ -46,12 +44,10 @@ export function TextSlide({
   children?: React.ReactNode
 }) {
   return (
-    <div className="relative h-full w-full">
-      <div className="absolute top-[108px] left-[191px] flex h-[904px] w-[1534px] flex-col items-center gap-8">
-        <Header title={content.title} />
-        <Body content={content} />
-        {children}
-      </div>
-    </div>
+    <SlideShell>
+      <Header title={content.title} />
+      <Body content={content} />
+      {children}
+    </SlideShell>
   )
 }

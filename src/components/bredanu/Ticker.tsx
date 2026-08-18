@@ -8,7 +8,7 @@ export function Ticker({
   items: TickerItem[]
   currentIndex: number
 }) {
-  const message = items?.length > 0 ? items[currentIndex]?.message : ''
+  const message = items[currentIndex]?.message ?? ''
 
   return (
     <div className="flex h-[114px] w-full flex-shrink-0 items-center gap-4 bg-bredanu-gray px-6 font-inter text-white">
