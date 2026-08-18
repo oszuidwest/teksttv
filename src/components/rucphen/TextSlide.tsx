@@ -38,7 +38,7 @@ export const TextSlide = ({
 
     <div className="absolute inset-0 flex flex-col">
       <div className="z-20 mt-[92px] w-full bg-[#626671] px-[116px] py-[14px]">
-        <h1 className="font-bold text-[51px] text-shadow text-white uppercase tracking-wide">
+        <h1 className="font-bold text-[51px] text-shadow-brand text-white uppercase tracking-wide">
           {content.title}
         </h1>
       </div>
@@ -59,7 +59,7 @@ export const TextSlide = ({
           />
         </svg>
         <div
-          className="prose relative py-[14px] font-bold text-[49px] text-shadow text-white leading-[1.23em]"
+          className="prose relative py-[14px] font-bold text-[49px] text-shadow-brand text-white leading-[1.23em]"
           dangerouslySetInnerHTML={{ __html: content.body }}
         />
       </div>

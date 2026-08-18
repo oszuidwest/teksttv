@@ -7,6 +7,7 @@
 @theme {
   --font-tahoma: Tahoma, sans-serif;
   --font-nunito: "Nunito", sans-serif;
+  --text-shadow-brand: 3px 3px 1px black;
 }
 
 .sidebar {
@@ -14,8 +15,4 @@
 }
 .prose p + p {
   margin-top: 1em;
-}
-
-.text-shadow {
-  text-shadow: 3px 3px 1px black;
 }
