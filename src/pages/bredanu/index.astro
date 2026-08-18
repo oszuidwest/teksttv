@@ -1,0 +1,8 @@
+---
+import Layout from '../../layouts/Layout.astro'
+import BredaNuApp from '../../BredaNuApp.tsx'
+---
+
+<Layout title="TekstTV - BredaNu">
+  <BredaNuApp client:only="react" apiBase="https://bredanu.nl/wp-json/teksttv/v1/slides" />
+</Layout>

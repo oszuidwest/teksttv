@@ -1,0 +1,39 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { DevOverlay } from '../../../components/DevOverlay'
+import { Frame } from '../../../components/bredanu/Frame'
+import { TextSlide } from '../../../components/bredanu/TextSlide'
+import { Ticker } from '../../../components/bredanu/Ticker'
+---
+
+<Layout title="Dev - BredaNu Text met foto">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react">
+      <TextSlide
+        client:only="react"
+        content={{
+          type: 'text',
+          duration: 20000,
+          title: 'Drie trainers vertrekken uit technische staf NAC',
+          body: '<p>NAC Breda neemt afscheid van drie leden van de technische staf. Assistent‑trainer Tomasz Kaczmarek, keeperstrainer Gábor Babos en aanvalstrainer Matthew Amoah vertrekken bij de club nu het seizoen is afgelopen. Daarmee zet NAC een volgende stap richting de voorbereiding op het nieuwe voetbaljaar.</p><p>Kaczmarek was twee seizoenen actief als assistent‑trainer, Babos werkte sinds 2020 als keeperstrainer en Amoah keerde terug bij de club waar hij eerder als speler actief was. Technisch directeur Peter Maas bedankt het drietal voor hun inzet. Gesprekken met Anouar Diba en Serdal Güvenç over een mogelijke verlenging lopen nog. Lees de rest van dit verhaal op bredanu.nl of in de BredaNu-app.</p>',
+          image: {
+            url: 'https://picsum.photos/350/650',
+            caption: 'Een random foto',
+            attribution: 'BredaNu',
+          },
+        }}
+      >
+        <Ticker
+          client:only="react"
+          items={[
+            {
+              message: 'Dit is een ticker bericht',
+            },
+          ]}
+          currentIndex={0}
+        />
+      </TextSlide>
+    </Frame>
+    <DevOverlay client:only="react" src="/bredanu/dev/text-image-overlay.png" />
+  </div>
+</Layout>

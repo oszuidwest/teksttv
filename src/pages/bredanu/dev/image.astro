@@ -1,0 +1,22 @@
+---
+import Layout from '../../../layouts/Layout.astro'
+import { Frame } from '../../../components/bredanu/Frame'
+import { ImageSlide } from '../../../components/bredanu/ImageSlide'
+---
+
+<Layout title="Dev - BredaNu Image">
+  <div class="relative h-[1080px] w-[1920px]">
+    <Frame client:only="react">
+      <ImageSlide
+        client:only="react"
+        content={{
+          type: 'image',
+          duration: 10000,
+          url: 'https://picsum.photos/1920/1080',
+          caption: 'Voorbeeld fullscreen afbeelding',
+          attribution: 'BredaNu',
+        }}
+      />
+    </Frame>
+  </div>
+</Layout>

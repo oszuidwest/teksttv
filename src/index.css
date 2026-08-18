@@ -3,10 +3,23 @@
 @import "@fontsource/nunito/500.css";
 @import "@fontsource/nunito/700.css";
 @import "@fontsource/nunito/900.css";
+@import "@fontsource/inter/600.css";
+
+@font-face {
+  font-family: "Bahnschrift";
+  src: url("/bredanu/fonts/Bahnschrift.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @theme {
   --font-tahoma: Tahoma, sans-serif;
   --font-nunito: "Nunito", sans-serif;
+  --font-bahnschrift: "Bahnschrift", sans-serif;
+  --font-inter: "Inter", sans-serif;
+  --color-bredanu-gray: #3c3c3a;
+  --color-bredanu-yellow: #fcd800;
 }
 
 .sidebar {
