@@ -3,6 +3,9 @@ name: Release
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -44,22 +47,22 @@ jobs:
         run: |
           VERSION=$(jq -r '.version' < package.json)
           PROJECT_NAME=$(jq -r '.name' < package.json)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "project_name=$PROJECT_NAME" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "project_name=$PROJECT_NAME" >> "$GITHUB_OUTPUT"
 
           # Check if prerelease
           if [[ "$VERSION" == *"beta"* || "$VERSION" == *"alpha"* || "$VERSION" == *"rc"* ]]; then
-            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
           else
-            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
           # Check if release needed
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "none")
           if [ "$LATEST_TAG" = "none" ] || [ "$VERSION" != "$LATEST_TAG" ]; then
-            echo "release_needed=true" >> $GITHUB_OUTPUT
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "release_needed=false" >> $GITHUB_OUTPUT
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create artifact
@@ -91,11 +94,11 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           ZIP_NAME="${{ needs.build.outputs.project_name }}-${{ needs.build.outputs.version }}.zip"
-          PRERELEASE_FLAG=""
+          PRERELEASE_ARGS=()
           if [ "${{ needs.build.outputs.is_prerelease }}" = "true" ]; then
-            PRERELEASE_FLAG="--prerelease"
+            PRERELEASE_ARGS=(--prerelease)
           fi
           gh release create "${{ needs.build.outputs.version }}" "$ZIP_NAME" \
             --title "${{ needs.build.outputs.version }}" \
             --generate-notes \
-            $PRERELEASE_FLAG
+            "${PRERELEASE_ARGS[@]}"
