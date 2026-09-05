@@ -1,5 +1,5 @@
-type RGB = [number, number, number]
-type ColorStop = [number, RGB]
+export type RGB = [number, number, number]
+export type ColorStop = [number, RGB]
 
 const tempScale: ColorStop[] = [
   [-10, [123, 104, 174]],
@@ -14,13 +14,13 @@ const tempScale: ColorStop[] = [
   [35, [160, 32, 32]],
 ]
 
-function interpolateColor(temp: number): RGB {
-  if (temp <= tempScale[0][0]) return tempScale[0][1]
-  if (temp >= tempScale[tempScale.length - 1][0])
-    return tempScale[tempScale.length - 1][1]
-  for (let i = 0; i < tempScale.length - 1; i++) {
-    const [t0, c0] = tempScale[i]
-    const [t1, c1] = tempScale[i + 1]
+/** Piecewise-linear interpolation over an ascending temperature color scale. */
+export function interpolateStops(scale: ColorStop[], temp: number): RGB {
+  if (temp <= scale[0][0]) return scale[0][1]
+  if (temp >= scale[scale.length - 1][0]) return scale[scale.length - 1][1]
+  for (let i = 0; i < scale.length - 1; i++) {
+    const [t0, c0] = scale[i]
+    const [t1, c1] = scale[i + 1]
     if (temp >= t0 && temp <= t1) {
       const t = (temp - t0) / (t1 - t0)
       return [
@@ -30,7 +30,7 @@ function interpolateColor(temp: number): RGB {
       ]
     }
   }
-  return tempScale[0][1]
+  return scale[0][1]
 }
 
 function luminance(r: number, g: number, b: number) {
@@ -42,7 +42,7 @@ function luminance(r: number, g: number, b: number) {
 }
 
 export function tempStyle(temp: number) {
-  const [r, g, b] = interpolateColor(temp)
+  const [r, g, b] = interpolateStops(tempScale, temp)
   return {
     backgroundColor: `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`,
     color: luminance(r, g, b) > 0.4 ? '#1d1d1b' : '#ffffff',
